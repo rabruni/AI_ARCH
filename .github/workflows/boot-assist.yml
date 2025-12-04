@@ -1,0 +1,70 @@
+name: Boot The Assist System
+on:
+  schedule:
+    - cron: "0 */24 * * *"    # Runs once every 24 hours
+  workflow_dispatch:          # Allows manual trigger
+  push:
+    paths:
+      - "the_assist/system/**"
+      - "state/**"
+
+jobs:
+  boot-assist:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      actions: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Environment
+        run: |
+          echo "Booting The Assist..."
+          echo "TIMESTAMP=$(date -u 2025-12-04T07-18Z")" >> $GITHUB_ENV
+
+      - name: Verify system integrity
+        run: |
+          echo "Running system verification..."
+          test -f the_assist/system/init.md
+          test -f the_assist/system/state_check.md
+          test -f the_assist/system/checkpoint.md
+          test -f state/version_log.json
+          echo "✗ All core system files verified."
+
+      - name: Create new checkpoint
+        run: |
+          mkdir -p state/checkpoints
+          FILE="state/checkpoints/${TIMESTAMP}.json"
+          echo "{ \"date\": \"${TIMESTAMP}\", \"status\": \"verified\", \"version\": 2, \"author\": \"github-action\" }" > $FILE
+          echo "� Created $FILE"
+
+      - name: Update version log
+        run: |
+          echo "Appending to version log..."
+          jq --argt $t "$TIMESTAMP" '.version_log += [{"version": (.version_log | length + 1), "timestamp": $t, "status": "verified"}] | .last_updated = $t'  state/version_log.json > tmp.json
+          mv tmp.json state/version_log.json
+          echo "✗ Version log updated."
+
+      - name: Update system status
+        run: |
+          cat <|EOF> the_assist/system/system_status.md
+            # The Assist ’s current status summary
+            Last Update: ${TIMESTAMP}
+            Status: Verified & Active
+            Current Version: $(jq '.version_log | length' state/version_log.json)
+            Current Checkpoint: ${TIMESTAMP}
+            Chain Status: Healthy & Continuous
+            Auto-Chaining: Enabled
+          EOF
+
+      - name: Commit and push updates
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config --global user.name "The Assist Bot"
+          git config --global user.email "bot@assist.system"
+          git add state/ the_assist/system/system_status.md
+          git commit -m "auto: system boot [${TIMESTAMP}]" || echo "No changes to commit."
+          git push

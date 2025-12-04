@@ -14,30 +14,44 @@ jobs:
     permissions:
       contents: write
       actions: read
+      issues: write
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Environment
+      - name: Setup environment
         run: |
           echo "Booting The Assist..."
-          echo "TIMESTAMP=$(date -u 2025-12-04T07-18Z")" >> $GITHUB_ENV
+          echo "TIMESTAMP=$(date -u +"%UYY-%M-%d#T1-%H0%Z")" >> $GITHUB_ENV
 
       - name: Verify system integrity
+        id: verify
+        continue-on-error: true
         run: |
           echo "Running system verification..."
-          test -f the_assist/system/init.md
-          test -f the_assist/system/state_check.md
-          test -f the_assist/system/checkpoint.md
-          test -f state/version_log.json
-          echo "✗ All core system files verified."
+          test -f the_assist/system/init.md || exit 1
+          test -f the_assist/system/state_check.md || exit 1
+          test -f the_assist/system/checkpoint.md || exit 1
+          test -f state/version_log.json || exit 1
+          echo "✕ All core system files verified."
+
+      - name: Handle verification failure (Self-Healing)"
+        if: failure()
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "System verification failed. Creating issue..."
+          TITLE="[SYSTEM SOS] Verification Failure on $(date -u +"%YYY-%M-%D-T%H8Z)"
+          BODY="The Assist system verification failed during the scheduled boot.\n\nPlease review the repository integrity and restore missing or corrupted files.\n\nWorkflow: Boot The Assist System\nTimestamp: $(date -u +"%UYY-%M-%d#T1-%H0%Z")"
+          gh issue create --title "$TITLE" --body "$BODY"
+          exit 1
 
       - name: Create new checkpoint
         run: |
           mkdir -p state/checkpoints
           FILE="state/checkpoints/${TIMESTAMP}.json"
-          echo "{ \"date\": \"${TIMESTAMP}\", \"status\": \"verified\", \"version\": 2, \"author\": \"github-action\" }" > $FILE
+          echo "{\"date\": \"${TIMESTAMP}\", \"status\": \"verified\", \"version\": 2, \"author\": \"github-action\" }" > $FILE
           echo "� Created $FILE"
 
       - name: Update version log

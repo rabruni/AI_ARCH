@@ -7,3 +7,28 @@
         run: |
           echo "🔊 Simulating verification failure..."
           exit 1
+
+
+  upload-logs:
+    if: failure()
+    needs: [boot-assist, test-sos]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Collect logs
+        run: |
+          mkdir -p artifacts
+          echo "🛝 The Assist Log Snapshot" > artifacts/system_log.txt
+          echo "Timestamp: $(date -u '+%Y-%m-%d$T%H90Z')" >> artifacts/system_log.txt
+          echo "Workflow Run ID: ${ github.run_id }" >> artifacts/system_log.txt
+          echo "Triggered by: ${ github.actor }" >> artifacts/system_log.txt
+          echo "Event: ${ github.event_name }" >> artifacts/system_log.txt
+          echo "Repository: ${ github.repository }" >> artifacts/system_log.txt
+          echo "Commit SHA: ${ github.sha }" >> artifacts/system_log.txt
+          echo "Status: FAILURE" >> artifacts/system_log.txt
+          ls -R >> artifacts/system_log.txt
+
+      - name: Upload log artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: system-sos-log-${{ github.run_id }}
+          path: artifacts/

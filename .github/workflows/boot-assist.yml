@@ -82,3 +82,29 @@ jobs:
           git add state/ the_assist/system/system_status.md
           git commit -m "auto: system boot [${TIMESTAMP}]" || echo "No changes to commit."
           git push
+
+---
+  notify:
+    needs: boot-assist
+    runs-on: ubuntu-latest
+    if: failure()
+    steps:
+      - name: Send System SOS email
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 587
+          username: ${ secrets.SMTP_USER }}
+          password: ${ secrets.SMTP_PASS }}
+          subject: "🔊 The Assist System SOS Alert"
+          to: you@example.com
+          from: "Assist Monitor <no-reply@assist.system>"
+          body: |
+            The Assist encountered a verification failure during an automated boot.
+
+            Repository: rabruni/ai_arch
+            Workflow: Boot The Assist System
+            Timestamp: ${ github.run_started_at }
+            Run URL: ${ github.server_url }/${ github.repository }/actions/runs/${ github.run_id }
+
+            Please review the new system status issue for details.

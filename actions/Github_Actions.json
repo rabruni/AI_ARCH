@@ -1,3 +1,64 @@
 {
-  "actions": []
+  "openapi": "3.1.0",
+  "info": {
+    "title": "GitHub File Store with History",
+    "version": "1.1.0"
+  },
+  "servers": [
+    {
+      "url": "https://api.github.com"
+    }
+  ],
+  "paths": {
+    "/repos/{owner}/{repo}/contents": {
+      "get": {
+        "operationId": "listRootContents",
+        "summary": "List contents of the repository root (like ls /)",
+        "parameters": [
+          {
+            "name": "owner",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "Repository owner or organization"
+          },
+          {
+            "name": "repo",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "Repository name"
+          },
+          {
+            "name": "ref",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string" },
+            "description": "The name of the commit/branch/tag. Defaults to the default branch."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Array of items for the root directory"
+          }
+        }
+      }
+    },
+    "/repos/{owner}/{repo}/contents/{path}": {
+      "get": {
+        "operationId": "getPathContents",
+        "summary": "Get the contents of a file or directory (like cat or ls path)",
+        "parameters": [
+          { "name": "owner", "in": "path", "required": true, "schema": { "type": "string" } },
+          { "name": "repo", "in": "path", "required": true, "schema": { "type": "string" } },
+          { "name": "path", "in": "path", "required": true, "schema": { "type": "string" }, "description": "Path to file or directory, e.g. state/version_log.json or src/" },
+          { "name": "ref", "in": "query", "required": false, "schema": { "type": "string" }, "description": "Commit/branch/tag name; defaults to default branch." }
+        ],
+        "responses": {
+          "200": { "description": "File metadata and base64-encoded content, or an array for a directory" },
+          "404": { "description": "Not found" }
+        }
+      }
+    }
+  }
 }

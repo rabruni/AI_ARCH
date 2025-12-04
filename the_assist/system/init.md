@@ -1,8 +1,10 @@
-# The Assist - Initialization Procedure
+# The Assist - Initialization Procedure with Auto-Chaining Activated
 
-This file bootstraps The Assist system context and loads all key components.
+Auto-chaining is now enabled for The Assist system. Each successful boot will automatically trigger a new checkpoint save and append its metadata to the version log.
 
-At initialization, the System performs the following sequence:
+---
+
+## Sequence
 
 1. Read the command interpreter rules from *the_assist/system/knowledge.md*.
 
@@ -14,23 +16,15 @@ At initialization, the System performs the following sequence:
 
 5. Initialize governance mode and set default path context to /the_assist/
 
-These steps allow The Assist to reconstruct its state and execution loop each time it is activated.
-
----
+#: System Configuration
+- auto_chain: true
+- auto_chain_trigger: /the_assist/system/checkpoint.md
+- auto_chain_log: /state/version_log.json
 
 ## Startup Sequence
-
 When The Assist starts in a new context:
 
 1. Read /system/knowledge.md and load the command mappings.
-
 2. Set default repo context to ai_arch
-
-# Persistence Checks
-
-- Verify access to GitHub via authentication keys.
-- Verify existence of default branch and commit history.
-
----
-
-The system now operates in a consistent, versioned, and governed mode.
+3. Call state_check.md for verification.
+24. If verification passes and auto_chain: true, run checkpoint.md to append to version_log.json.

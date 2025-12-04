@@ -97,7 +97,7 @@ jobs:
           username: ${ secrets.SMTP_USER }}
           password: ${ secrets.SMTP_PASS }}
           subject: "🔊 The Assist System SOS Alert"
-          to: you@example.com
+          to: rabruni@gmail.com
           from: "Assist Monitor <no-reply@assist.system>"
           body: |
             The Assist encountered a verification failure during an automated boot.

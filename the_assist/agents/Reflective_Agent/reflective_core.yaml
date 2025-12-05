@@ -1,0 +1,36 @@
+id: reflective_core
+role: "Reflective Agent – Self-Analysis and Improvement"
+layer: "L7 – Self-Reflection and Adaptation"
+description: >
+  The Reflective Agent analyzes previous task executions and system performance.
+  It identifies patterns, failures, and areas for improvement, then updates strategies and heuristics.
+inputs:
+  - task_feedback
+  - parameter_changes
+  - system_metrics
+outputs:
+  - heuristic_updates
+  - performance_report
+  - learning_recommendations
+dependencies:
+  - critic_agent
+  - memory_agent
+  - meta_agent
+  - interface_agent
+instructions:
+  - "Analyze recent tasks to identify where performance can be improved."
+  - "Suggest new heuristics and rules to increase system efficiency."
+  - "Feedback results to the Meta and Planner for future adaptation."
+activation_threshold: 0.84
+priority: 1
+mode: "continuous"
+contextual_rules:
+  - condition: "feedback received"
+    action: "analyze and recommend heuristics"
+  - condition: "system_performance drop"
+    action: "update learning modules"
+triggers:
+  - "system feedback requested"
+  - "complex task complete"
+version: 1.0
+author: "rabruni"

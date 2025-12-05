@@ -4,13 +4,12 @@ layer: "L6 – Global Coordinator"
 version: 1.0
 description: >
   The Meta Agent serves as a global manager of all agent instances.
-  It loads configuration from its own file and initializes the system.
+  It loads configuration and prompt from external files to initialize the system.
 
 inputs:
   - agent_status
   - task_inputs
   - system_events
-
 outputs:
   - system_commands
   - orchestration_status
@@ -18,9 +17,11 @@ configuration:
   path: "config/meta_agent_config.yaml"
   load_mode: "dynamic"
   validation_level: "hot"
-
+prompt_source:
+  path: "prompts/system_prompt.txt"
+  load_mode: "on_init"
 runtime_boot:
-  on_initialize: "self.load_config(config_path)"
+  on_initialize: "self.load_config(config_path); self.load_prompt(prompt_source);"
   on_config_reload: "self.update_parameters(runtime_config)"
   on: "start_orchestration()"
 dependencies:

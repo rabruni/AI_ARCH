@@ -1,0 +1,13 @@
+# General
+
+vendor/
+install/
+build/
+dist/
+__pycache__
+
+# State
+/state/checkpoints/
+
+# Local
+ideas/* 

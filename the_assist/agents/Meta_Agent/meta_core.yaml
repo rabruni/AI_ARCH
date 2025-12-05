@@ -1,52 +1,41 @@
 id: meta_core
-role: "Meta Agent – Central Orchestrator and Executive Controller"
-layer: "L6 – System Orchestration and Global Control"
+role: "Meta Agent – System Orchestrator"
+layer: "L6 – Global Coordinator"
+version: 1.0
 description: >
-  The Meta Agent governs all other agents within The Assist architecture.
-  It monitors performance, allocates tasks, balances cognitive load,
-  and manages high-level reasoning loops across perception, planning, execution,
-  evaluation, and reflection phases.
+  The Meta Agent serves as a global manager of all agent instances.
+  It loads configuration from its own file and initializes the system.
+
 inputs:
-  - user_goal
-  - system_state
-  - task_feedback
-  - agent_metrics
+  - agent_status
+  - task_inputs
+  - system_events
+
 outputs:
-  - orchestration_plan
-  - task_dispatch
-  - performance_report
-  - system_directives
+  - system_commands
+  - orchestration_status
+configuration:
+  path: "config/meta_agent_config.yaml"
+  load_mode: "dynamic"
+  validation_level: "hot"
+
+runtime_boot:
+  on_initialize: "self.load_config(config_path)"
+  on_config_reload: "self.update_parameters(runtime_config)"
+  on: "start_orchestration()"
 dependencies:
-  - perception_agent
-  - interpreter_agent
-  - planner_agent
-  - worldmodel_agent
-  - programmer_agent
-  - critic_agent
-  - memory_agent
-  - reflective_agent
-  - interface_agent
-instructions:
-  - "Monitor all agents and ensure efficient task allocation."
-  - "Invoke appropriate agents based on context and goal type."
-  - "Synchronize information flow between memory and reasoning subsystems."
-  - "Adapt orchestration strategies based on performance and feedback."
-  - "Trigger reflective analysis after complex or failed tasks."
-activation_threshold: 0.95
-priority: 10
-mode: "continuous"
+  - planner_core
+  - memory_core
+  - reflective_core
+  - credic_core
+  - interpreter_core
+activation_threshold: 0.82
+priority: 0
+mode: "active"
 contextual_rules:
-  - condition: "system_state == 'idle'
-    action: "await new goal"
-  - condition: "task_feedback == 'failure'
-    action: "trigger reflective_agent"
-  - condition: "agent_metrics.latency > 500ms"
-    action: "optimize scheduling"
-  - condition: "memory_agent.status == 'low_recall'"
-    action: "refresh context via perception_agent"
-triggers:
-  - "user_goal received"
-  - "task cycle complete"
-  - "performance drop detected"
+  - condition: "system_start"
+    action: "load_config_and_orchestrate"
+  - condition: "orchestration_complete"
+    action: "update_config_state"
 version: 1.0
 author: "rabruni"

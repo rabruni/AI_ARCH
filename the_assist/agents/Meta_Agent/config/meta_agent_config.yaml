@@ -1,0 +1,57 @@
+id: meta_agent_config
+agent: Meta_Agent
+role: "System Orchestrator and Coordinator"
+version: 1.0
+
+# ⚩  Operational Settings
+operational_mode: "hybrid"        # options: passive / active / hybrid
+activation_threshold: 0.82        # how confident the Meta Agent must be to act autonomously
+delegation_policy: "dynamic"      # options: fixed / dynamic
+
+# ⟩ Sub-Agent Priorities
+agent_priority:
+  Perception_Agent: 0.90
+  Interpreter_Agent: 0.88
+  Planner_Agent: 0.94
+  WorldModel_Agent: 0.86
+  Programmer_Agent: 0.84
+  Critic_Agent: 0.91
+  Memory_Agent: 0.80
+  Reflective_Agent: 0.89
+  Interface_Agent: 0.93
+
+# ⟩ Communication Rules
+communication:
+  mode: "async"
+  error_handling: "retry"
+  feedback_integration: true
+  logging_level: "verbose"
+
+# ⚦ Decision Logic
+decision_logic:
+  evaluation_metric: "composite_score"
+  confidence_blend:
+    system_performance: 0.5
+    critic_feedback: 0.3
+    world_model_predictive: 0.2
+
+# 😈 Resource Management
+resource_allocation:
+  cpu_limit: 70
+  memory_limit: 60
+  adaptive_scaling: true
+
+# ⚣  Learning Hooks
+learning_adaptation:
+  enable_self_tuning: true
+  performance_review_interval: 300
+  heuristics_update: "weighted_average"
+
+# ♤  Dependencies
+dependencies:
+  - memory_core.yaml
+  - planner_core.yaml
+  - reflective_core.yaml
+
+author: "rabruni"
+timestamp: "2025-12-04T22:00:00Z"

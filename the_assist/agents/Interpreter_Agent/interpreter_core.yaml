@@ -1,0 +1,36 @@
+id: interpreter_core
+role: "Interpreter Agent ‌ Semantic and Conceptual Mapping"
+layer: "L2 - Interpretation and Concept Abstraction"
+description: >
+  The Interpreter Agent maps patterns and concepts from perception data.
+It translates raws entities and relationships into semantic representations.
+inputs:
+  - entity_map
+  - context_graph
+  - sensory_state
+outputs:
+  - concept_map
+  - semantic_structure
+  - feature_relations
+dependencies:
+  - perception_agent
+  - memory_agent
+  - critic_agent
+  - interface_agent
+instructions:
+  - "Recognize semantic patterns from perceptual input."
+  - "Detect concepts and structure them into logical representations."
+  - "Instantiate primitive concepts for planner analysis."
+activation_threshold: 0.79
+priority: 8
+mode: "continuous"
+contextual_rules:
+  - condition: "entity_map updated"
+    action: "build conceptual structure"
+  - condition: "task_type == 'clarify'"
+    action: "summarize and present concepts"
+triggers:
+  - "perception_data received"
+  - "task to process"
+version: 1.0
+author: "rabruni"

@@ -1,17 +1,6 @@
-  test-sos:
-    if: ${ github.event.inputs.test_sos == 'true' }}
-    runs-on: ubuntu-latest
-    needs: boot-assist
-    steps:
-      - name: Simulate System SOS
-        run: |
-          echo "🔊 Simulating verification failure..."
-          exit 1
-
-
   upload-logs:
     if: failure()
-    needs: [boot-assist, test-sos]
+    needs: [boot-assist]
     runs-on: ubuntu-latest
     steps:
       - name: Collect logs

@@ -1,3 +1,52 @@
+name: Boot The Assist System
+
+on:
+  schedule:
+    - cron: "0 */24 * * *"
+  workflow_dispatch:
+  push:
+    paths:
+      - "the_assist/system/**"
+      - "state/**"
+
+permissions:
+  contents: write
+  issues: write
+  actions: read
+
+jobs:
+  boot-assist:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+
+      - name: Verify system integrity
+        run: |
+          echo "Checking core files..."
+          test -f the_assist/system/init.md
+          test -f the_assist/system/checkpoint.md
+          test -f state/version_log.json
+          echo "✅ All core system files verified."
+
+      - name: Create new checkpoint
+        run: |
+          mkdir -p state/checkpoints
+          TIMESTAMP=$(date -u +"%Y-%m-%dT%H-%MZ")
+          echo "{ \"date\": \"${TIMESTAMP}\", \"status\": \"verified\" }" > state/checkpoints/${TIMESTAMP}.json
+
+      - name: Commit and push updates
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config --global user.name "The Assist Boot"
+          git config --global user.email "boot@assist.system"
+          git add state/
+          git commit -m "auto: system boot checkpoint [${{ github.run_id }}]" || echo "No changes to commit."
+          git push
+
   upload-logs:
     if: failure()
     needs: [boot-assist]
@@ -6,17 +55,11 @@
       - name: Collect logs
         run: |
           mkdir -p artifacts
-          echo "🛝 The Assist Log Snapshot" > artifacts/system_log.txt
-          echo "Timestamp: $(date -u '+%Y-%m-%d$T%H90Z')" >> artifacts/system_log.txt
-          echo "Workflow Run ID: ${ github.run_id }" >> artifacts/system_log.txt
-          echo "Triggered by: ${ github.actor }" >> artifacts/system_log.txt
-          echo "Event: ${ github.event_name }" >> artifacts/system_log.txt
-          echo "Repository: ${ github.repository }" >> artifacts/system_log.txt
-          echo "Commit SHA: ${ github.sha }" >> artifacts/system_log.txt
-          echo "Status: FAILURE" >> artifacts/system_log.txt
+          echo "🧾 The Assist Log Snapshot" > artifacts/system_log.txt
+          date -u >> artifacts/system_log.txt
           ls -R >> artifacts/system_log.txt
 
-      - name: Upload log artifact
+      - name: Upload logs
         uses: actions/upload-artifact@v4
         with:
           name: system-sos-log-${{ github.run_id }}

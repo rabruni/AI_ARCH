@@ -1,0 +1,16 @@
+id: agent_template
+role: "Default agent configuration template for The Assist system"
+state:
+  assignment: active
+instructions:
+  - "This is a sample agent configuration."
+  - "Use this as a starting point for new agents."
+north_core:
+  clarity: true
+  leverage: true
+  acceleration: true
+  flow: true
+knowledge_base:
+  - "/the_assist/knowledge/general/sample.md"
+memory_scope: session
+# This file serves as a canonical template for future agent definition.

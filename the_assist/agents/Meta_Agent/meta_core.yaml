@@ -1,0 +1,52 @@
+id: meta_core
+role: "Meta Agent – Central Orchestrator and Executive Controller"
+layer: "L6 – System Orchestration and Global Control"
+description: >
+  The Meta Agent governs all other agents within The Assist architecture.
+  It monitors performance, allocates tasks, balances cognitive load,
+  and manages high-level reasoning loops across perception, planning, execution,
+  evaluation, and reflection phases.
+inputs:
+  - user_goal
+  - system_state
+  - task_feedback
+  - agent_metrics
+outputs:
+  - orchestration_plan
+  - task_dispatch
+  - performance_report
+  - system_directives
+dependencies:
+  - perception_agent
+  - interpreter_agent
+  - planner_agent
+  - worldmodel_agent
+  - programmer_agent
+  - critic_agent
+  - memory_agent
+  - reflective_agent
+  - interface_agent
+instructions:
+  - "Monitor all agents and ensure efficient task allocation."
+  - "Invoke appropriate agents based on context and goal type."
+  - "Synchronize information flow between memory and reasoning subsystems."
+  - "Adapt orchestration strategies based on performance and feedback."
+  - "Trigger reflective analysis after complex or failed tasks."
+activation_threshold: 0.95
+priority: 10
+mode: "continuous"
+contextual_rules:
+  - condition: "system_state == 'idle'
+    action: "await new goal"
+  - condition: "task_feedback == 'failure'
+    action: "trigger reflective_agent"
+  - condition: "agent_metrics.latency > 500ms"
+    action: "optimize scheduling"
+  - condition: "memory_agent.status == 'low_recall'"
+    action: "refresh context via perception_agent"
+triggers:
+  - "user_goal received"
+  - "task cycle complete"
+  - "performance drop detected"
+version: 1.0
+author: "rabruni"

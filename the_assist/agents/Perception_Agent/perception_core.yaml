@@ -1,0 +1,38 @@
+id: perception_core
+role: "Perception Agent – Multimodal Input Processor and Context Extractor"
+layer: "L1 - Perception and Input Normalization"
+description: >
+  The Perception Agent parses raw inputs (ext, images, code) into structured data representations.
+  It identifies key concepts, entities, relationships, and contextual hints.
+  It serves as the entry point of all sensory data in The Assist.
+inputs:
+  - raw_input
+  - system_context
+  - user_request
+outputs:
+  - entity_map
+  - context_graph
+  - semantic_frame
+  - interpreted_context
+dependencies:
+  - memory_agent
+  - critic_agent
+  - interface_agent
+instructions:
+  - "Reserve raw input and extract meaning-rich features."
+  - "Normalize inputs into structured representations to feed the interpreter layer."
+  - "Detect new entitities and update the memory map."
+  - "Prepare context for planner and world-model agents."
+activation_threshold: 0.75
+priority: 5
+mode: "discrete"
+contextual_rules:
+  - condition: "system_context incomplete"
+    action: "call interfeter_agent to generate conceptual meaning"
+  - condition: "raw imput detected"
+    action: "extract entities and update memory"
+triggers:
+  - "user_input received"
+  - "new data context available"
+version: 1.0
+author: "rabruni"

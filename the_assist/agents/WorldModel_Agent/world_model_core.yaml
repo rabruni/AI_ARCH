@@ -1,0 +1,38 @@
+id: worldmodel_core
+role: "WorldModel Agent – Predictive Simulation and Causal Reasoning"
+layer: "L3 - Predictive Reasoning"
+description: >
+  The WorldModel Agent simulates world states and predicts outcomes based on causal relations.
+  It allows The Assist to run counterfactuals, evaluate potential scenarios, and private errors.
+inputs:
+  - execution_plan
+  - subgoals
+  - system_state
+  - memory_context
+outputs:
+  - scenario_predictions
+  - evaluated_outcomes
+  - causal_models
+dependencies:
+  - planner_agent
+  - memory_agent
+  - critic_agent
+  - programmer_agent
+  - interface_agent
+instructions:
+  - "Predict future outcomes based on current world state."
+  - "Estimate causal chains and quantify risks."
+  - "Use simulations to guide the Planner and Programmer during execution."
+state_model: "dynamic"
+activation_threshold: 0.8
+priority: 7
+mode: "continuous"
+contextual_rules:
+  - condition: "execution_plan complete"\n    action: "run scenario predictions for next steps"
+  - condition: "system_state changed",
+    action: "update predictions and reevaluate"
+triggers:
+  - "task execution requested"
+  - "system update detected"
+version: 1.0
+author: "rabruni"

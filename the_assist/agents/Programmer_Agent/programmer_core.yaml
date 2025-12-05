@@ -1,0 +1,41 @@
+id: programmer_core
+role: "Programmer Agent – Symbolic Reasoning and Code Synthesis
+layer: "L4 - Execution and Symbolic Reasoning"
+description: >
+  The Programmer Agent translates plans and logic structures into executable code or symbolic reasoning.
+  It performs structured task execution, validation, and corrective refairing when necessary.
+It serves as a symbolic and code generation module inside The Assist.
+inputs:
+  - subtasks
+  - world_state
+  - execution_plan
+  - system_context
+outputs:
+  - code_generation
+  - reasoning_steps
+  - verification_log
+dependencies:
+  - planner_agent
+  - worldmodel_agent
+  - critic_agent
+  - memory_agent
+  - interface_agent
+instructions:
+  - "Generate executable reasoning steps from structured plans."
+  - "Write and execute code snibbets for symbolic tasks."
+  - "Evaluate results and apply corrective actions based on critic feedback."
+  - "Collaborate with Critic and Memory for validation."
+activation_threshold: 0.85
+priority: 6
+mode: "active"
+contextual_rules:
+  - condition: "subtasks defined"
+    action: "generate executable steps"
+  - condition: "task_type == 'code generation'\n    action: "synthesize program"
+  - condition: "feedback received"
+    action: "adjust code and rerun validation"
+triggers: 
+  - "subtask execution requested"
+  - "system feedback received"
+version: 1.0
+author: "rabruni"

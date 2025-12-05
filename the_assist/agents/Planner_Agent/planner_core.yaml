@@ -1,0 +1,41 @@
+id: planner_core
+role: "Planner Agent – Goal Decomposition and Coordination"
+layer: "L3 – Reasoning and Planning"
+description: >
+  The Planner Agent translates high-level goals into actionable subgoals.
+  It selects appropriate strategies and sequences steps for execution.
+  It integrates with the WorldModel for feasibility and the Programmer for execution.
+inputs:
+  - concept_map
+  - semantic_structure
+  - user_goal
+  - system_state
+outputs:
+  - subgoals
+  - execution_plan
+  - task_flow 
+dependencies:
+  - interpreter_agent
+  - worldmodel_agent
+  - programmer_agent
+  - critic_agent
+  - memory_agent
+  - interface_agent
+instructions:
+  - "Decompose user goals into actionable steps."
+  - "Select and schedule subtasks based on priority."
+  - "Integrate with WorldModel to evaluate feasibility."
+  - "Coordinate with Programmer for execution."
+activation_threshold: 0.8
+priority: 7
+mode: "continuous"
+contextual_rules:
+  - condition: "goal received"
+    action: "decompose subflows"
+  - condition: "execution_plan complete"
+    action: "update memory and notify meta_agent"
+triggers:
+  - "user_goal received"
+  - "system update required"
+version: 1.0
+author: "rabruni"

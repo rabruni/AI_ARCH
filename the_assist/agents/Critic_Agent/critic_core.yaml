@@ -1,0 +1,39 @@
+id: critic_core
+role: "Critic Agent – Evaluation, Coherence, and Feedback"
+layer: "L4 - Evaluation and Quality Assessment"
+description: >
+  The Critic Agent evaluates the results of reasoning and execution activities.
+  It assesses quality, coherence, and structural validity.
+  It provides feedback loops to the Programmer and Memory agents for learning.
+inputs:
+  - task_results
+  - execution_plan
+  - world_state
+  - system_context
+outputs:
+  - feedback_report
+  - error_logs
+  - quality_scores 
+dependencies:
+  - programmer_agent
+  - memory_agent
+  - reflective_agent
+  - interface_agent
+instructions:
+  - "Evaluate the results of tasks and determine quality."
+  - "Detect inconsistencies and provide corrective feedback."
+  - "Generate qualitative metrics and confidence scores."
+  - "Collaborate with Programmer and Memory for corrective action."
+activation_threshold: 0.88
+priority: 9
+mode: "continuous"
+contextual_rules:
+  - condition: "task_result anyomaly"
+    action: "assess_quality_scores"
+  - condition: "feedback required"
+    action: "generate report and send to reflective_agent"
+triggers:
+  - "task completed"
+  - "feedback requested"
+version: 1.0
+author: "rabruni"

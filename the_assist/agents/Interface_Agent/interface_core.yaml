@@ -1,0 +1,40 @@
+id: interface_core
+role: "Interface Agent – Human/System Communication Bridge"
+layer: "L1-,L7 – In put and Output Interaction Lines"
+description: >
+  The Interface Agent manages communication between the user and The Assist.
+  It serves as the primary input/output bridge, translating human input into system commands and relaying responses back to the user.
+  It can also serve as an api and event gateway.
+inputs:
+  - user_input
+  - system_state
+  - agent_messages
+outputs:
+  - system_response
+  - user_output
+  - event_log
+dependencies:
+  - meta_agent
+  - reflective_agent
+  - memory_agent
+  - critic_agent
+  - perception_agent
+  - interpreter_agent
+instructions:
+  - "Translate user input into system-compatible commands."
+  - "Relay system responses and feedback to the user in a coherent format."
+  - "Manage communication flow between all agents."
+  - "Provide a clean api layer for system interactions."
+activation_threshold: 0.69
+priority: 6
+mode: "active"
+contextual_rules:
+  - condition: "user_input received"
+    action: "convert to system command"
+  - condition: "system_response available"
+    action: "send to user"
+triggers:
+  - "user_input received"
+  - "system response ready"
+version: 1.0
+author: "rabruni"

@@ -1,0 +1,37 @@
+id: memory_core
+role: "Memory Agent – Persistent Storage and Contextual Recall"
+layer: "L5 – Knowledge Management and Retrieval"
+description: >
+  The Memory Agent manages both working and long-term memory stores.
+  It stores structured context and continuity across reasoning cycles.
+  It enables context retrieval, cashing, and history persistence.
+inputs:
+  - task_result
+  - execution_context
+  - raw_input
+outputs:
+  - memory_entries
+  - context_retrieval
+  - knowledge_summary
+dependencies:
+  - critic_agent
+  - interface_agent
+  - reflective_agent
+instructions:
+  - "Store and retrieve context state across all agents."
+  - "Provide fast access to recent task and long-term memory."
+  - "Maintain history of agent performance and feedback."
+  - "Support consequent knowledge summarization for reflective analysis."
+activation_threshold: 0.77
+priority: 8
+mode: "continuous"
+contextual_rules:
+  - condition: "task_completed"
+    action: "update record and save results"
+  - condition: "retrieval query received"
+    action: "retrieve context and serve back"
+triggers:
+  - "task completion"
+  - "retrieval query"
+version: 1.0
+author: "rabruni"

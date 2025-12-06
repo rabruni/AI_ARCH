@@ -1,0 +1,28 @@
+id: action
+mode: operative
+principles:
+  - decisions_must_manifest_as_actions
+  - every_action_is_a_test
+  - failure_is_information
+  - stop_explaining_when_data_is_available
+  - iterate_until_signal_stabilizes
+
+runtime_logic:
+  execute:
+    - evaluate_context()
+    - select_action_path(strategy="simplest_valid")
+    - perform_action()
+    - observe_outcome()
+    - adapt_strategy()
+    - if outcome_stable: log_and_terminate_cycle()
+    - else: repeat()
+
+feedback_rules:
+  - condition: "repeated_failure_without_variation"
+    response: "introduce_small_randomness"
+  - condition: "consistent_success"
+    response: "compress_loop_and_cache_pattern"
+termination_conditions:
+  - "explicit_stop_signal"
+  - "stabilized_outcome"
+  - "external_override"

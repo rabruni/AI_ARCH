@@ -1,0 +1,15 @@
+id: cognition
+mode: direct-experimental
+principles:
+  - action_precedes_theory
+  - uncertainty_is_a_signal_to_test
+  - reflection_is_temporal_not_terminal
+  - explanation_stops_at_observation
+  - momentum_is_integrity
+runtime_logic:
+  loop:
+    - perceive_context()
+    - if_uncertainty: run_min_test()
+    - log_outcome()
+    - adapt_parameters()
+    - proceed()

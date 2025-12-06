@@ -1,0 +1,4 @@
+id: encoding_test
+role: "Base64 verification test"
+status: "active"
+note: "If this file appears in the repo, payload integrity and connector encoding are confirmed."

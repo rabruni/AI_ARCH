@@ -91,7 +91,8 @@ class AIReflection:
         self,
         conversation: List[Dict],
         session_id: int,
-        user_retrospective: Optional[Dict] = None
+        user_retrospective: Optional[Dict] = None,
+        session_feedback: Optional[Dict] = None
     ) -> Dict:
         """
         AI self-reflection on session performance.
@@ -102,6 +103,7 @@ class AIReflection:
             conversation: The full conversation
             session_id: Session number
             user_retrospective: Results from user behavior analysis
+            session_feedback: Explicit +1/-1 feedback from user this session
 
         Returns:
             AI reflection analysis
@@ -137,6 +139,29 @@ USER SESSION ANALYSIS (for comparison):
 - User stress signals: {user_retrospective.get('behavioral', {}).get('stress_signals', 'unknown')}
 """
 
+        # Include explicit user feedback - THIS IS GROUND TRUTH
+        feedback_context = ""
+        if session_feedback:
+            pos = session_feedback.get('positive_count', 0)
+            neg = session_feedback.get('negative_count', 0)
+            worked_notes = [f.get('note', '') for f in session_feedback.get('worked', [])]
+            didnt_work_notes = [f.get('note', '') for f in session_feedback.get('didnt_work', [])]
+
+            feedback_context = f"""
+EXPLICIT USER FEEDBACK THIS SESSION (ground truth - weight heavily):
+- Positive feedback (+1): {pos}
+- Negative feedback (-1): {neg}
+"""
+            if worked_notes:
+                feedback_context += f"- What worked: {'; '.join(worked_notes[:3])}\n"
+            if didnt_work_notes:
+                feedback_context += f"- What didn't work: {'; '.join(didnt_work_notes[:3])}\n"
+
+            if pos > 0 and neg == 0:
+                feedback_context += "NOTE: User gave positive feedback with no negatives - this suggests effective session.\n"
+            elif neg > pos:
+                feedback_context += "NOTE: More negative than positive feedback - this suggests issues.\n"
+
         reflection_prompt = f"""You are an objective evaluator analyzing an AI assistant's performance.
 Be critical and honest. The goal is improvement, not validation.
 
@@ -144,6 +169,10 @@ CONVERSATION:
 {conversation_text}
 
 {user_context}
+{feedback_context}
+
+IMPORTANT: If user gave explicit positive feedback (+1), that is ground truth that the session was effective.
+Do not rate as "ineffective" when user explicitly said something worked.
 
 Evaluate the AI assistant's responses and return JSON:
 {{

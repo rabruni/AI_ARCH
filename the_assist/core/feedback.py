@@ -67,3 +67,31 @@ def get_feedback_summary() -> dict:
     }
 
     return summary
+
+
+def get_session_feedback(session_start: datetime) -> dict:
+    """Get feedback logged since session start."""
+    _ensure_feedback_dir()
+
+    with open(FEEDBACK_FILE, 'r') as f:
+        data = json.load(f)
+
+    feedback = data.get("feedback", [])
+
+    # Filter to feedback since session start
+    session_feedback = []
+    for f in feedback:
+        try:
+            ts = datetime.fromisoformat(f["timestamp"])
+            if ts >= session_start:
+                session_feedback.append(f)
+        except (ValueError, KeyError):
+            continue
+
+    return {
+        "worked": [f for f in session_feedback if f["type"] == "worked"],
+        "didnt_work": [f for f in session_feedback if f["type"] == "didnt_work"],
+        "suggestions": [f for f in session_feedback if f["type"] == "suggestion"],
+        "positive_count": len([f for f in session_feedback if f["type"] == "worked"]),
+        "negative_count": len([f for f in session_feedback if f["type"] == "didnt_work"]),
+    }

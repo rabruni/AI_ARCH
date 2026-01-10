@@ -5,12 +5,13 @@ Run this to start a conversation with The Assist.
 """
 import sys
 import os
+from datetime import datetime
 
 # Add parent to path for imports
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from the_assist.core.orchestrator import Orchestrator
-from the_assist.core.feedback import log_feedback, get_feedback_summary
+from the_assist.core.feedback import log_feedback, get_feedback_summary, get_session_feedback
 from the_assist.core.curator import MemoryCurator
 from the_assist.core.memory_v2 import CompressedMemory
 from the_assist.core.integrity import boot_or_warn, shutdown_safe, get_status
@@ -107,6 +108,7 @@ def main():
     insights = curator.run_if_needed()
 
     orchestrator = Orchestrator()
+    session_start = datetime.now()  # Track for feedback correlation
     last_exchange = (None, None)
 
     # Surface any curator insights (brief, not intrusive)
@@ -152,11 +154,14 @@ def main():
                             print(format_system_message(f"Learned: {learnings[0][:50]}...", "info"))
 
                     # Run AI self-reflection (the mirror)
+                    # Include explicit user feedback from this session
+                    session_feedback = get_session_feedback(session_start)
                     reflector = AIReflection()
                     ai_retro = reflector.reflect_on_session(
                         orchestrator.conversation_history,
                         status['session_count'],
-                        retro
+                        retro,
+                        session_feedback
                     )
                     if not ai_retro.get("skipped"):
                         effectiveness = ai_retro.get("outcome_analysis", {}).get("overall_effectiveness", "unknown")

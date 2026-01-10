@@ -72,8 +72,16 @@ gov.can_descend("L3", "L2")             # -> ValidationResult
 4. **Each layer has isolated context** - Fresh API calls for Planner and Evaluator (Chinese walls)
 5. **Design for wrongness** - Expect mistakes, repair > prevent, learn from corrections
 
+## Architecture Evolution
+
+The current `the_assist/hrm/` is being replaced by the **Locked System** architecture:
+- See `the_assist/docs/LOCKED_SYSTEM.md` for the canonical design
+- Two loops: Slow (authority) + Fast (execution)
+- Four components: Commitment, Stance, HRM, Memory
+- Key invariant: Evaluators propose only, never decide
+
 ## Session Continuity
 
 - Read `SESSION_HANDOFF.md` for current project state and next steps
 - Update `the_assist/docs/LEARNINGS.md` with session patterns
-- Intent (L1) persists across sessions; conversation is ephemeral
+- Commitment persists via leases; conversation is ephemeral

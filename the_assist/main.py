@@ -17,6 +17,7 @@ from the_assist.core.memory_v2 import CompressedMemory
 from the_assist.core.integrity import boot_or_warn, shutdown_safe, get_status, boot_or_warn_with_context, get_boot_context_for_ai
 from the_assist.core.retrospective import run_retrospective, get_behavioral_summary
 from the_assist.core.ai_reflection import AIReflection, analyze_session_complete
+from the_assist.core.hrm_agent import HRMAgent
 from the_assist.core.formatter import (
     format_header, format_user_message, format_assist_message,
     format_system_message, format_divider, get_simple_prompt,
@@ -35,7 +36,9 @@ Commands:
   idea [note]    - Log a suggestion/idea
   feedback       - Show feedback summary
   memory         - Show current memory state
+  hrm            - Show HRM state (blocked topics, cooldowns)
   clear [topic]  - Remove item from active memory
+  unblock [topic]- Remove topic from HRM blocked list
   status         - Show system integrity status
   trends         - Show behavioral trends (user)
   reflect        - Show AI performance trends
@@ -263,6 +266,39 @@ def main():
                 if r['outcome_patterns']:
                     print(f"  Outcome patterns: {r['outcome_patterns']}")
                 print()
+                continue
+
+            if user_input.lower() == 'hrm':
+                hrm = HRMAgent()
+                state = hrm.get_active_blocks()
+                print(f"\n[HRM State]")
+                print(f"  Blocked topics ({len(state.get('blocked', []))}):")
+                for b in state.get('blocked', []):
+                    print(f"    - {b['topic']} ({b['strength']})")
+                print(f"  Cooldowns ({len(state.get('cooldowns', {}))}):")
+                for topic, cd in state.get('cooldowns', {}).items():
+                    print(f"    - {topic}: {cd['remaining']} exchanges remaining")
+                if orchestrator._last_hrm_injection:
+                    print(f"  Last injection:")
+                    for line in orchestrator._last_hrm_injection.split('\n')[:5]:
+                        print(f"    {line}")
+                print()
+                continue
+
+            if user_input.lower().startswith('unblock '):
+                topic = user_input[8:].strip()
+                if topic:
+                    hrm = HRMAgent()
+                    state = hrm.get_active_blocks()
+                    before = len(state.get('blocked', []))
+                    state['blocked'] = [b for b in state.get('blocked', []) if b['topic'].lower() != topic.lower()]
+                    after = len(state.get('blocked', []))
+                    hrm._save_blocked(state)
+                    if before > after:
+                        print(f"\n[Unblocked '{topic}']")
+                    else:
+                        print(f"\n['{topic}' was not blocked]")
+                    print()
                 continue
 
             # Handle feedback commands

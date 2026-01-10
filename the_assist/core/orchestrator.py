@@ -13,6 +13,8 @@ from the_assist.core.memory_v2 import CompressedMemory, PATTERN_CODES, COACHING_
 from the_assist.core.proactive import ProactiveEngine
 from the_assist.core.ai_reflection import AIReflection
 from the_assist.core.integrity import get_boot_context_for_ai
+from the_assist.core.perception_agent import PerceptionAgent
+from the_assist.core.hrm_agent import HRMAgent
 
 
 class Orchestrator:
@@ -26,6 +28,11 @@ class Orchestrator:
         self.system_prompt = self._load_system_prompt()
         self.conversation_history = []
         self._last_user_input = None  # For reaction tracking
+
+        # Multi-agent architecture - fresh context agents
+        self.perception = PerceptionAgent()  # Observes from outside
+        self.hrm = HRMAgent()  # Strategic adjustment
+        self._last_hrm_injection = ""  # Track for debugging
 
     def _load_system_prompt(self) -> str:
         """Load the system prompt."""
@@ -216,19 +223,50 @@ Return ONLY valid JSON."""
 
         self._last_user_input = user_message
 
+        # IMMEDIATE: Check for explicit blocks in this message
+        explicit_blocks = self.perception.detect_explicit_blocks(user_message)
+        for block in explicit_blocks:
+            if block["topic"] != "_frustration_detected_":
+                self.hrm.add_blocked_topic(block["topic"], block["strength"])
+
         # Add user message to history
         self.conversation_history.append({
             "role": "user",
             "content": user_message
         })
 
-        # Perception check: detect tunnel vision
-        perception_injection = self._perception_check()
+        # ============================================================
+        # MULTI-AGENT FLOW - Fresh context agents before main call
+        # ============================================================
 
-        # Build context
+        # Step 1: Perception Agent (fresh context - Chinese wall #1)
+        mem_state = self.memory.get_state()
+        perception_data = self.perception.perceive(
+            self.conversation_history,
+            mem_state
+        )
+
+        # Step 2: HRM Agent (fresh context - Chinese wall #2)
+        hrm_adjustments = self.hrm.adjust_prompt(
+            perception_data,
+            mem_state
+        )
+
+        # Step 3: Build HRM injection for orchestrator
+        hrm_injection = self.hrm.build_orchestrator_injection(hrm_adjustments)
+        self._last_hrm_injection = hrm_injection  # Track for debugging
+
+        # ============================================================
+        # Build context with HRM guidance
+        # ============================================================
         system_context = self._build_full_context()
 
-        # If predictive perception flagged something, inject it
+        # Inject HRM guidance (this is where the Chinese walls pay off)
+        if hrm_injection:
+            system_context += f"\n{hrm_injection}\n"
+
+        # Legacy perception check (kept for redundancy, may remove later)
+        perception_injection = self._perception_check()
         if perception_injection:
             system_context += f"""
 # Predictive Perception
@@ -252,6 +290,9 @@ ACT ON THIS: Don't wait for a mistake. Change course now. Be a partner, not a he
             "role": "assistant",
             "content": assistant_message
         })
+
+        # Decrement cooldowns after each exchange
+        self.hrm.decrement_cooldowns()
 
         return assistant_message
 

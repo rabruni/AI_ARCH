@@ -14,7 +14,7 @@ from the_assist.core.orchestrator import Orchestrator
 from the_assist.core.feedback import log_feedback, get_feedback_summary, get_session_feedback
 from the_assist.core.curator import MemoryCurator
 from the_assist.core.memory_v2 import CompressedMemory
-from the_assist.core.integrity import boot_or_warn, shutdown_safe, get_status
+from the_assist.core.integrity import boot_or_warn, shutdown_safe, get_status, boot_or_warn_with_context, get_boot_context_for_ai
 from the_assist.core.retrospective import run_retrospective, get_behavioral_summary
 from the_assist.core.ai_reflection import AIReflection, analyze_session_complete
 from the_assist.core.formatter import (
@@ -92,7 +92,8 @@ def main():
     print(format_header("THE ASSIST", "Cognitive Anchor | v0.2"))
 
     # Boot sequence with integrity checks
-    if not boot_or_warn():
+    boot_success, boot_ctx = boot_or_warn_with_context()
+    if not boot_success:
         print(format_system_message("Boot failed. Check errors above.", "error"))
         return
 

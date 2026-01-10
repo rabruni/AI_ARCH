@@ -1,6 +1,6 @@
 {
-  "timestamp": "2026-01-10T05:17:44.334131Z",
-  "status": "passed",
+  "timestamp": "2026-01-10T05:24:12.688367Z",
+  "status": "warning",
   "verified_dirs": [
     "the_assist/core",
     "the_assist/config",
@@ -19,5 +19,7 @@
     "proactive/state.json": "valid"
   },
   "errors": [],
-  "warnings": []
+  "warnings": [
+    "Memory state changed outside of session (external modification or corruption)"
+  ]
 }

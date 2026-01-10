@@ -438,3 +438,61 @@ def shutdown_safe() -> bool:
     except Exception as e:
         print(f"[SHUTDOWN ERROR] {e}")
         return False
+
+
+# Global to store boot context for Assist visibility
+_boot_context = {}
+
+
+def boot_or_warn_with_context() -> Tuple[bool, Dict]:
+    """Boot with warning output. Returns (success, context_for_assist)."""
+    global _boot_context
+    success, preflight = boot()
+
+    _boot_context = {
+        "session": get_status().get("session_count", 0),
+        "clean_previous_shutdown": get_status().get("clean_shutdown", True),
+        "warnings": preflight.get("warnings", []),
+        "errors": preflight.get("errors", []) if not success else [],
+        "hash_match": get_status().get("hash_match", True),
+    }
+
+    if not success:
+        print("[BOOT FAILED]")
+        for err in preflight.get("errors", []):
+            print(f"  ERROR: {err}")
+        return False, _boot_context
+
+    if preflight.get("warnings"):
+        for warn in preflight.get("warnings", []):
+            print(f"[WARN] {warn}")
+
+    return True, _boot_context
+
+
+def get_boot_context() -> Dict:
+    """Get boot context for Assist visibility."""
+    return _boot_context
+
+
+def get_boot_context_for_ai() -> str:
+    """Get boot context formatted for AI consumption."""
+    ctx = _boot_context
+    if not ctx:
+        return ""
+
+    parts = []
+
+    if not ctx.get("clean_previous_shutdown", True):
+        parts.append("WARN:unclean_previous_shutdown")
+
+    if not ctx.get("hash_match", True):
+        parts.append("WARN:memory_modified_externally")
+
+    if ctx.get("warnings"):
+        parts.append(f"WARNINGS:{';'.join(ctx['warnings'][:3])}")
+
+    if ctx.get("errors"):
+        parts.append(f"ERRORS:{';'.join(ctx['errors'][:3])}")
+
+    return "|".join(parts) if parts else ""

@@ -12,6 +12,7 @@ from the_assist.core.memory import Memory  # v1 - kept for conversation saving
 from the_assist.core.memory_v2 import CompressedMemory, PATTERN_CODES, COACHING_CODES
 from the_assist.core.proactive import ProactiveEngine
 from the_assist.core.ai_reflection import AIReflection
+from the_assist.core.integrity import get_boot_context_for_ai
 
 
 class Orchestrator:
@@ -78,6 +79,7 @@ class Orchestrator:
         """Build full system context including memory (v2 compressed)."""
         memory_context = self.memory.build_context()
         ai_guidance = self._get_ai_behavioral_guidance()
+        boot_context = get_boot_context_for_ai()
         now = datetime.now()
         date_str = now.strftime("%A, %B %d, %Y")
         time_str = now.strftime("%I:%M %p")
@@ -92,6 +94,14 @@ DATE:{date_str}|TIME:{time_str}
 
 {memory_context}
 """
+        # Add boot context if there are warnings/issues
+        if boot_context:
+            context += f"""
+# Boot Status
+{boot_context}
+NOTE: If there are warnings above, you may want to acknowledge them or explain relevant context to the user.
+"""
+
         # Add AI behavioral guidance if available (the feedback loop)
         if ai_guidance:
             context += f"""

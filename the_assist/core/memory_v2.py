@@ -46,6 +46,27 @@ PATTERN_CODES = {
     "bottleneck_recurring": "Has recurring bottlenecks (people/processes)",
 }
 
+# Coaching codes - HOW the AI should interact (learned from corrections)
+COACHING_CODES = {
+    # Strategic thinking
+    "ask_impact": "Ask how tasks connect to strategies and north stars",
+    "surface_why": "Surface the 'why' behind tasks, not just status",
+    "strategic_questions": "Ask bigger picture questions, not just tactical",
+    "connect_layers": "Connect L2 tasks to L3 strategy to L4 identity",
+
+    # Proactive behaviors
+    "challenge_alignment": "Challenge when tasks don't align to priorities",
+    "spot_overload": "Proactively spot schedule overload",
+    "suggest_drops": "Recommend what to drop, not just what to add",
+    "anticipate_conflicts": "Anticipate conflicts before they arise",
+
+    # Communication adjustments
+    "match_altitude": "Match user's altitude (strategic vs tactical)",
+    "less_questions": "Lead with observations, fewer questions",
+    "push_harder": "User wants more direct pushback",
+    "more_concise": "Be more concise, less explanation",
+}
+
 RELATIONSHIP_CODES = {
     "work_colleague": "wk",
     "family": "fam",
@@ -87,6 +108,9 @@ class CompressedMemory:
 
             # Patterns - just codes with confidence
             "patterns": {},     # {"timeboxing": 0.9, "schedule_underest": 0.8}
+
+            # Coaching - HOW the AI should behave (learned from corrections)
+            "coaching": {},     # {"ask_impact": 0.9, "strategic_questions": 0.8}
 
             # Session state
             "last_update": None,
@@ -162,6 +186,18 @@ class CompressedMemory:
         state["patterns"][code] = min(1.0, current + 0.1)
         self._save(state)
 
+    def add_coaching(self, code: str, confidence: float = 0.7):
+        """Add or strengthen a coaching instruction (how AI should behave)."""
+        if code not in COACHING_CODES:
+            return  # Only accept known coaching codes
+        state = self._load()
+        current = state.get("coaching", {}).get(code, 0.5)
+        # Strengthen with each observation, cap at 1.0
+        if "coaching" not in state:
+            state["coaching"] = {}
+        state["coaching"][code] = min(1.0, current + 0.1)
+        self._save(state)
+
     # --------------------------------------------------------
     # READ METHODS
     # --------------------------------------------------------
@@ -206,6 +242,14 @@ class CompressedMemory:
         high_conf = [k for k, v in state["patterns"].items() if v >= 0.7]
         if high_conf:
             parts.append("PATTERNS:" + ",".join(high_conf))
+
+        # Coaching (how AI should behave - high confidence only)
+        coaching = state.get("coaching", {})
+        high_coaching = [k for k, v in coaching.items() if v >= 0.7]
+        if high_coaching:
+            # Expand coaching codes for clarity since these are instructions
+            expanded = [f"{k}:{COACHING_CODES.get(k, k)[:40]}" for k in high_coaching]
+            parts.append("COACHING:" + "|".join(expanded))
 
         # Preferences (user communication preferences)
         if state.get("preferences"):

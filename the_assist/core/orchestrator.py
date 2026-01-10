@@ -9,7 +9,7 @@ from typing import Optional
 
 from the_assist.config.settings import MODEL, MAX_TOKENS, PROMPTS_DIR, MEMORY_DIR
 from the_assist.core.memory import Memory  # v1 - kept for conversation saving
-from the_assist.core.memory_v2 import CompressedMemory, PATTERN_CODES
+from the_assist.core.memory_v2 import CompressedMemory, PATTERN_CODES, COACHING_CODES
 from the_assist.core.proactive import ProactiveEngine
 from the_assist.core.ai_reflection import AIReflection
 
@@ -146,8 +146,10 @@ DATE:{date_str}|TIME:{time_str}
         """
         Extract memory items in compressed v2 format.
         AI extracts structured data, not prose.
+        Also detects coaching moments (user teaching AI how to behave).
         """
         pattern_codes_str = ", ".join(PATTERN_CODES.keys())
+        coaching_codes_str = ", ".join(COACHING_CODES.keys())
 
         extraction_prompt = f"""Extract memory items from this exchange in COMPRESSED format.
 
@@ -159,9 +161,16 @@ Return JSON with these fields (only include if relevant):
     "active": ["topic:status:detail"],     // New active threads, format topic:status:detail
     "commits": ["what:when:context"],      // New commitments, format what:when:context
     "people": [{{"name":"x","rel":"work_colleague|family|friend","tags":["tag1"]}}],
-    "patterns": ["code"],                  // From: {pattern_codes_str}
+    "patterns": ["code"],                  // User behavior patterns from: {pattern_codes_str}
+    "coaching": ["code"],                  // How AI should behave from: {coaching_codes_str}
     "clear_commits": ["topic"]             // Commits that are now done (topic prefix to remove)
 }}
+
+IMPORTANT - coaching codes detect when user is teaching AI how to interact better:
+- If user asks for bigger picture questions → "ask_impact", "strategic_questions"
+- If user wants tasks connected to goals → "connect_layers", "surface_why"
+- If user wants more pushback → "push_harder", "challenge_alignment"
+- If user wants less explaining → "more_concise", "less_questions"
 
 Be aggressive about compression. Use codes not prose. Return ONLY valid JSON, or {{}} if nothing."""
 
@@ -200,6 +209,10 @@ Be aggressive about compression. Use codes not prose. Return ONLY valid JSON, or
 
             for code in extracted.get('patterns', []):
                 self.memory.add_pattern(code)
+
+            # Save coaching instructions (how AI should behave)
+            for code in extracted.get('coaching', []):
+                self.memory.add_coaching(code)
 
         except (json.JSONDecodeError, KeyError):
             pass  # Silently fail - memory extraction is nice-to-have

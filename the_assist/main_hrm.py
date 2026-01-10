@@ -32,10 +32,13 @@ Commands:
   plan           - Show current plan (L2)
   eval           - Show last evaluation (L4)
   patterns       - Show evaluation patterns
+  history        - Show recent sessions
+  session [n]    - Show session #n details
   stance [x]     - Set stance (partner|support|challenge)
   nongoal [x]    - Add a non-goal
   success [x]    - Set success criteria
   unblock [x]    - Remove topic from blocked list
+  reset          - Clear session state (keeps intent)
   help           - Show this message
 
 Otherwise, just talk naturally.
@@ -159,6 +162,28 @@ def main():
                 topic = user_input[8:].strip()
                 hrm.clear_blocked_topic(topic)
                 print(f"\n[Unblocked: {topic}]\n")
+                continue
+
+            if user_input.lower() == 'reset':
+                hrm.reset()
+                print("\n[Session state cleared. Intent preserved.]\n")
+                continue
+
+            if user_input.lower() == 'history':
+                history_text = hrm.format_session_history()
+                print(f"\n[Session History]\n{history_text}\n")
+                continue
+
+            if user_input.lower().startswith('session '):
+                try:
+                    index = int(user_input[8:].strip())
+                    session = hrm.get_session(index)
+                    if session:
+                        print(f"\n{hrm.history.format_session(session)}\n")
+                    else:
+                        print(f"\n[Session #{index} not found]\n")
+                except ValueError:
+                    print("\n[Usage: session <number>]\n")
                 continue
 
             # Process through HRM loop

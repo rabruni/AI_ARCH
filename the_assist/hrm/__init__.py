@@ -11,6 +11,7 @@ Key principle: State flows up, meaning flows down.
 Reusable components:
 - AltitudeGovernor: Manages altitude transitions for any agent
 - AltitudePolicy: Configurable rules per agent/use case
+- SessionHistory: Lightweight session memory for continuity
 """
 
 from the_assist.hrm.intent import IntentStore
@@ -18,18 +19,22 @@ from the_assist.hrm.planner import Planner
 from the_assist.hrm.executor import Executor
 from the_assist.hrm.evaluator import Evaluator
 from the_assist.hrm.loop import HRMLoop
+from the_assist.hrm.history import SessionHistory
 from the_assist.hrm.altitude import (
     AltitudeGovernor,
     AltitudePolicy,
     AltitudeContext,
     ValidationResult,
     Level,
+    RequestType,
     check_altitude,
     detect_altitude
 )
 
 __all__ = [
     'IntentStore', 'Planner', 'Executor', 'Evaluator', 'HRMLoop',
+    'SessionHistory',
     'AltitudeGovernor', 'AltitudePolicy', 'AltitudeContext',
-    'ValidationResult', 'Level', 'check_altitude', 'detect_altitude'
+    'ValidationResult', 'Level', 'RequestType',
+    'check_altitude', 'detect_altitude'
 ]

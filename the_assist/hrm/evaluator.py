@@ -234,3 +234,13 @@ Return ONLY valid JSON."""
             if datetime.fromisoformat(e["timestamp"]).timestamp() > cutoff
         ]
         self._save_evaluations(data)
+
+    def reset(self):
+        """Reset evaluator state for new session."""
+        self._save_evaluations({
+            "recent": [],
+            "patterns": {
+                "repeated_issues": [],
+                "successful_approaches": []
+            }
+        })

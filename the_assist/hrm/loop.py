@@ -22,6 +22,7 @@ from the_assist.hrm.planner import Planner, Plan, Situation
 from the_assist.hrm.executor import Executor, ExecutionResult
 from the_assist.hrm.evaluator import Evaluator, Evaluation
 from the_assist.hrm.altitude import AltitudeGovernor, AltitudePolicy
+from the_assist.hrm.history import SessionHistory
 
 
 class HRMLoop:
@@ -34,7 +35,7 @@ class HRMLoop:
 
     def __init__(self, altitude_policy: Optional[AltitudePolicy] = None):
         # Initialize all layers
-        self.intent = IntentStore()      # L1 - tiny, stable, high authority
+        self.intent = IntentStore()      # L1 - tiny, stable, high authority (PERSISTS)
         self.planner = Planner()         # L2 - semi-stable, rewritable
         self.executor = Executor()       # L3 - ephemeral, disposable
         self.evaluator = Evaluator()     # L4 - delta-based, time-bounded
@@ -42,8 +43,15 @@ class HRMLoop:
         # Altitude governance (reusable across agents)
         self.altitude = AltitudeGovernor(altitude_policy)
 
+        # Session history (persists across sessions, loaded on-demand)
+        self.history = SessionHistory()
+
         self._last_plan: Optional[Plan] = None
         self._last_evaluation: Optional[Evaluation] = None
+
+        # New session = clean slate (except intent and history which persist)
+        self._reset_session_state()
+        self.history.start_session()
 
     def process(self, user_input: str) -> str:
         """
@@ -51,6 +59,11 @@ class HRMLoop:
 
         Returns response to user.
         """
+        # Step 0: Check for continuity question (load history on-demand)
+        history_context = None
+        if SessionHistory.is_continuity_question(user_input):
+            history_context = self.history.build_context_for_continuity()
+
         # Step 1: Get current situation from Executor (state report UP)
         situation = self.executor.get_situation()
         situation.user_input = user_input
@@ -58,8 +71,8 @@ class HRMLoop:
         # Step 2: Detect altitude of user input
         detected_altitude = self.altitude.detect_level(user_input)
 
-        # Step 3: Validate altitude transition
-        altitude_validation = self.altitude.validate_transition(detected_altitude)
+        # Step 3: Validate altitude transition (with L2 fast lane logic)
+        altitude_validation = self.altitude.validate_transition(detected_altitude, user_input)
 
         # Step 4: Planner creates plan (meaning flows DOWN)
         # Include altitude context and any evaluation feedback
@@ -72,22 +85,47 @@ class HRMLoop:
                 "outcome_summary": self._last_evaluation.outcome_summary
             }
 
-        # Add altitude context to situation
+        # Handle altitude validation results
         if not altitude_validation.allowed:
-            # Inject altitude constraint
+            # BLOCKED: Inject altitude constraint, track friction
             evaluation_feedback = evaluation_feedback or {}
             evaluation_feedback["altitude_blocked"] = True
             evaluation_feedback["altitude_reason"] = altitude_validation.reason
             evaluation_feedback["altitude_required"] = altitude_validation.suggested_level
+            self.altitude.record_friction(detected_altitude, altitude_validation.suggested_level, True)
+
+        elif altitude_validation.use_micro_anchor:
+            # L2 ATOMIC FAST LANE: Allow but inject micro-anchor
+            evaluation_feedback = evaluation_feedback or {}
+            evaluation_feedback["micro_anchor"] = altitude_validation.micro_anchor_text
+            evaluation_feedback["request_type"] = altitude_validation.request_type
+
+        elif altitude_validation.execute_first:
+            # URGENCY: Execute first, offer alignment after
+            evaluation_feedback = evaluation_feedback or {}
+            evaluation_feedback["execute_first"] = True
+            evaluation_feedback["micro_anchor"] = altitude_validation.micro_anchor_text
+
+        elif altitude_validation.requires_verification:
+            # HIGH-STAKES: Slow down, verify
+            evaluation_feedback = evaluation_feedback or {}
+            evaluation_feedback["high_stakes"] = True
+            evaluation_feedback["requires_verification"] = True
+
+        # Inject history context if this is a continuity question
+        if history_context:
+            evaluation_feedback = evaluation_feedback or {}
+            evaluation_feedback["history_context"] = history_context
 
         plan = self.planner.plan(situation, evaluation_feedback)
         self._last_plan = plan
 
         # Step 5: Executor executes plan (state report UP)
-        result = self.executor.execute(plan, user_input, self.planner)
+        result = self.executor.execute(plan, user_input, self.planner, history_context)
 
-        # Step 6: Update altitude context based on what happened
+        # Step 6: Update altitude context and record exchange
         self.altitude.record_exchange()
+        self.history.record_exchange(result.topics_discussed or [])
         if detected_altitude in ["L4", "L3"]:
             # Mark higher levels as established when discussed
             self.altitude.mark_established(detected_altitude)
@@ -150,17 +188,65 @@ One or two sentences maximum."""
 
         return response.content[0].text
 
-    def end_session(self):
+    def end_session(self, summary: str = None):
         """
-        End session. Clear ephemeral memory.
+        End session. Save summary, clear ephemeral memory.
 
-        Stable memories (intent, evaluations) persist.
-        Plans persist for continuity.
-        Conversation history (ephemeral) is cleared.
-        Altitude context is reset.
+        Intent persists (user preferences).
+        Session history persists (for continuity).
+        Everything else is cleared for next session.
         """
+        # Generate summary if not provided
+        if not summary:
+            summary = self._generate_session_summary()
+
+        # Save to history
+        self.history.end_session(summary)
+
+        # Clear ephemeral
         self.executor.clear_history()
         self.altitude.reset()
+
+    def _generate_session_summary(self) -> str:
+        """Generate a brief summary of what was discussed."""
+        topics = self.history._current_topics
+        exchanges = self.history._exchange_count
+
+        if not topics and exchanges == 0:
+            return "Brief session, no substantial discussion."
+
+        if not topics:
+            return f"Session with {exchanges} exchanges."
+
+        # Quick summary from topics
+        topic_str = ", ".join(topics[:5])
+        return f"Discussed: {topic_str}"
+
+    def _reset_session_state(self):
+        """
+        Reset session state for a fresh start.
+
+        Called automatically on init. Clears:
+        - Plans (L2) - fresh planning each session
+        - Evaluations (L4) - no stale patterns
+        - Executor history (L3) - ephemeral anyway
+        - Altitude context
+
+        Preserves:
+        - Intent (L1) - user's stable preferences
+        """
+        self.planner.reset()
+        self.evaluator.reset()
+        self.executor.clear_history()
+        self.altitude.reset()
+        self._last_plan = None
+        self._last_evaluation = None
+
+    def reset(self):
+        """
+        Manual reset. Clears all session state except intent.
+        """
+        self._reset_session_state()
 
     # ========================================
     # INSPECTION METHODS
@@ -202,6 +288,35 @@ One or two sentences maximum."""
     def get_altitude_rules(self) -> list[str]:
         """Get altitude enforcement rules."""
         return self.altitude.get_enforcement_rules()
+
+    def get_friction_status(self) -> dict:
+        """Get friction tracking status."""
+        return {
+            "score": self.altitude.get_friction_score(),
+            "is_high": self.altitude.is_friction_high(),
+            "events": self.altitude.context.friction_events[-5:]
+        }
+
+    def get_session_history(self, n: int = 5) -> list:
+        """Get recent session history."""
+        return self.history.get_recent_sessions(n)
+
+    def get_last_session(self):
+        """Get last session record."""
+        return self.history.get_last_session()
+
+    def get_session(self, index: int):
+        """Get session by index."""
+        return self.history.get_session(index)
+
+    def search_sessions(self, keyword: str) -> list:
+        """Search sessions by keyword."""
+        return self.history.search_sessions(keyword)
+
+    def format_session_history(self, n: int = 5) -> str:
+        """Format recent sessions for display."""
+        sessions = self.history.get_recent_sessions(n)
+        return self.history.format_sessions_brief(sessions)
 
     # ========================================
     # MODIFICATION METHODS (user actions)

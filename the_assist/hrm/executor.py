@@ -58,9 +58,16 @@ class Executor:
         with open(path, 'r') as f:
             return f.read()
 
-    def execute(self, plan: Plan, user_input: str, planner: Planner) -> ExecutionResult:
+    def execute(self, plan: Plan, user_input: str, planner: Planner,
+                history_context: str = None) -> ExecutionResult:
         """
         Execute the plan with the given user input.
+
+        Args:
+            plan: The plan to execute
+            user_input: User's message
+            planner: Planner instance for building context
+            history_context: Optional session history for continuity questions
 
         Returns state report (not meaning).
         """
@@ -72,12 +79,24 @@ class Executor:
 
         # Build system context with plan injection
         plan_context = planner.build_context_for_executor(plan)
+
+        # Include history context if this is a continuity question
+        history_section = ""
+        if history_context:
+            history_section = f"""
+---
+
+{history_context}
+
+Use this context to answer questions about previous sessions.
+"""
+
         system_context = f"""{self.system_prompt}
 
 ---
 
 {plan_context}
-
+{history_section}
 EXECUTOR RULES:
 1. Follow the plan. You are executing, not deciding.
 2. Stay at the specified altitude ({plan.altitude}).

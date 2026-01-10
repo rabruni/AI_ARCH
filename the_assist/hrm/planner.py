@@ -231,3 +231,10 @@ BLOCKED_TOPICS: {', '.join(plan.blocked_topics) if plan.blocked_topics else 'non
                 t for t in blocked if topic.lower() not in t.lower()
             ]
             self._save_plans(data)
+
+    def reset(self):
+        """Reset planner state for new session."""
+        self._save_plans({
+            "current_plan": None,
+            "revision_history": []
+        })

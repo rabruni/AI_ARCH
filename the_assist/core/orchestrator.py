@@ -84,6 +84,18 @@ class Orchestrator:
         date_str = now.strftime("%A, %B %d, %Y")
         time_str = now.strftime("%I:%M %p")
 
+        # Get north stars for anchoring
+        mem_state = self.memory.get_state()
+        north_stars = mem_state.get("north_stars", [])
+
+        # North star anchor - inject every few exchanges for breadth
+        north_star_anchor = ""
+        if north_stars and len(self.conversation_history) >= 4:
+            north_star_anchor = f"""
+NORTH STAR ANCHOR: Every response should connect to at least one of: {', '.join(north_stars)}
+If current topic doesn't connect, acknowledge that or pivot to what matters.
+"""
+
         context = f"""{self.system_prompt}
 
 ---
@@ -91,7 +103,7 @@ class Orchestrator:
 # Context
 
 DATE:{date_str}|TIME:{time_str}
-
+{north_star_anchor}
 {memory_context}
 """
         # Add boot context if there are warnings/issues
@@ -114,6 +126,73 @@ NOTE: If there are warnings above, you may want to acknowledge them or explain r
         """Get intuition-based opening instead of generic prompt."""
         return self.proactive.generate_opening()
 
+    def _perception_check(self) -> str:
+        """
+        Perception check: detect tunnel vision before responding.
+        Returns injection text if stuck, empty string if fine.
+
+        This is the lightweight perception agent - runs before each response.
+        """
+        if len(self.conversation_history) < 6:
+            return ""  # Not enough history to detect patterns
+
+        # Get recent exchanges
+        recent = self.conversation_history[-6:]
+        recent_text = "\n".join([
+            f"{m['role'].upper()}: {m['content'][:200]}"
+            for m in recent
+        ])
+
+        # Get memory for north stars
+        mem_state = self.memory.get_state()
+        north_stars = mem_state.get("north_stars", [])
+
+        check_prompt = f"""You are a perception checker. Analyze this conversation for tunnel vision.
+
+RECENT EXCHANGES:
+{recent_text}
+
+USER'S NORTH STARS: {north_stars}
+
+Check for:
+1. Same topic repeated 3+ times without progress
+2. Tactical focus when strategic is needed
+3. Missing connection to north stars
+4. User corrections being ignored
+
+Return JSON:
+{{
+    "stuck": true/false,
+    "reason": "why stuck, if stuck",
+    "injection": "what to add to response to break out, or empty string"
+}}
+
+Be aggressive - if there's ANY sign of tunnel vision, flag it.
+Return ONLY valid JSON."""
+
+        try:
+            response = self.client.messages.create(
+                model="claude-sonnet-4-20250514",  # Fast model for check
+                max_tokens=200,
+                messages=[{"role": "user", "content": check_prompt}]
+            )
+
+            text = response.content[0].text.strip()
+            if text.startswith("```"):
+                text = text.split("\n", 1)[1]
+                if text.endswith("```"):
+                    text = text[:-3]
+
+            import json
+            result = json.loads(text.strip())
+
+            if result.get("stuck") and result.get("injection"):
+                return f"\n\n[ZOOM OUT: {result['injection']}]"
+            return ""
+
+        except Exception:
+            return ""  # Fail silently - don't break conversation
+
     def chat(self, user_message: str) -> str:
         """Process a user message and return response."""
         # Track for reaction analysis
@@ -130,8 +209,19 @@ NOTE: If there are warnings above, you may want to acknowledge them or explain r
             "content": user_message
         })
 
+        # Perception check: detect tunnel vision
+        perception_injection = self._perception_check()
+
         # Build context
         system_context = self._build_full_context()
+
+        # If perception check flagged something, inject it
+        if perception_injection:
+            system_context += f"""
+# Perception Check Alert
+{perception_injection}
+IMPORTANT: Address this in your response. Step back from current topic if needed.
+"""
 
         # Call Claude
         response = self.client.messages.create(

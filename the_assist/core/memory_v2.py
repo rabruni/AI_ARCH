@@ -148,9 +148,13 @@ class CompressedMemory:
     def add_active(self, item: str):
         """Add active thread. Format: 'topic:status:detail'"""
         state = self._load()
-        # Dedupe by topic (first segment)
-        topic = item.split(":")[0]
-        state["active"] = [a for a in state["active"] if not a.startswith(topic + ":")]
+        # Dedupe by topic (first segment) - aggressive
+        topic = item.split(":")[0].lower().replace("_", "").replace("-", "")
+        # Remove any existing with similar topic (fuzzy match)
+        state["active"] = [
+            a for a in state["active"]
+            if topic not in a.split(":")[0].lower().replace("_", "").replace("-", "")
+        ]
         state["active"].append(item)
         state["active"] = state["active"][-15:]  # Cap at 15
         self._save(state)
@@ -158,6 +162,13 @@ class CompressedMemory:
     def add_commit(self, item: str):
         """Add commitment. Format: 'what:when:context'"""
         state = self._load()
+        # Dedupe by first segment (what) - aggressive
+        what = item.split(":")[0].lower().replace("_", "").replace("-", "")
+        # Remove similar commits
+        state["commits"] = [
+            c for c in state["commits"]
+            if what not in c.split(":")[0].lower().replace("_", "").replace("-", "")
+        ]
         state["commits"].append(item)
         state["commits"] = state["commits"][-10:]
         self._save(state)
@@ -167,6 +178,38 @@ class CompressedMemory:
         state = self._load()
         state["commits"] = [c for c in state["commits"] if not c.startswith(topic)]
         self._save(state)
+
+    def dedupe_all(self) -> int:
+        """Aggressive deduplication of all memory. Returns count removed."""
+        state = self._load()
+        removed = 0
+
+        # Dedupe active threads
+        seen_topics = set()
+        new_active = []
+        for item in reversed(state.get("active", [])):  # Keep newest
+            topic = item.split(":")[0].lower().replace("_", "").replace("-", "")
+            if topic not in seen_topics:
+                seen_topics.add(topic)
+                new_active.append(item)
+            else:
+                removed += 1
+        state["active"] = list(reversed(new_active))
+
+        # Dedupe commits
+        seen_commits = set()
+        new_commits = []
+        for item in reversed(state.get("commits", [])):
+            what = item.split(":")[0].lower().replace("_", "").replace("-", "")
+            if what not in seen_commits:
+                seen_commits.add(what)
+                new_commits.append(item)
+            else:
+                removed += 1
+        state["commits"] = list(reversed(new_commits))
+
+        self._save(state)
+        return removed
 
     def add_person(self, name: str, relationship: str, tags: list[str]):
         """Add person with compressed format."""

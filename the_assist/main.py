@@ -111,6 +111,7 @@ def main():
     orchestrator = Orchestrator()
     session_start = datetime.now()  # Track for feedback correlation
     last_exchange = (None, None)
+    exchange_count = 0  # Track for mid-session checkpoints
 
     # Surface any curator insights (brief, not intrusive)
     if insights:
@@ -275,6 +276,19 @@ def main():
 
             # Track for feedback context
             last_exchange = (user_input, response)
+            exchange_count += 1
+
+            # Mid-session checkpoint every 10 exchanges
+            if exchange_count > 0 and exchange_count % 10 == 0:
+                # Run lightweight reflection
+                mem = CompressedMemory()
+                removed = mem.dedupe_all()
+                if removed > 0:
+                    print(format_system_message(f"Memory cleaned: {removed} duplicates removed", "info"))
+
+                # Check session health
+                if len(orchestrator.conversation_history) >= 10:
+                    print(format_system_message(f"Checkpoint: {exchange_count} exchanges", "info"))
 
             # Background memory processing
             orchestrator.process_for_memory(user_input, response)

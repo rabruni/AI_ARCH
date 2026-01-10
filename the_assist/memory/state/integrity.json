@@ -1,13 +1,14 @@
 {
   "session_count": 11,
   "last_boot": "2026-01-10T05:24:12.690215Z",
-  "last_shutdown": "2026-01-10T05:18:43.655004Z",
-  "last_hash": "4f9a9578ea39c6e8b63aa9e285e0df82",
-  "clean_shutdown": false,
+  "last_shutdown": "2026-01-10T05:35:21.888489Z",
+  "last_hash": "1e73ff47a61114908f962d7d92a3dddf",
+  "clean_shutdown": true,
   "agents": {
     "orchestrator": {
       "last_boot": "2026-01-10T05:24:12.690215Z",
-      "status": "active"
+      "status": "stopped",
+      "last_shutdown": "2026-01-10T05:35:21.888489Z"
     }
   }
 }

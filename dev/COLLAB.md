@@ -114,9 +114,26 @@ Combined analysis enables: "User state + AI behavior = Outcome" pattern learning
 ## Token Budget Awareness
 - **V2 compressed memory**: ~338 tokens (was ~3,882 in v1 = 91% reduction)
 - **Full context**: ~1,110 tokens (system prompt + memory)
-- Memory format: `NORTH:|PRIO:|ACTIVE:|COMMITS:|PEOPLE:|PATTERNS:|PREFS:`
+- Memory format: `NORTH:|PRIO:|ACTIVE:|COMMITS:|PEOPLE:|PATTERNS:|COACHING:|PREFS:`
 - AI expands codes at inference time
 - Curator maintains via topic-prefix removal
+
+## Interaction Learning (Coaching)
+
+Coaching captures HOW the AI should behave (learned from user corrections):
+
+| Code | Meaning |
+|------|---------|
+| ask_impact | Ask how tasks connect to strategies and north stars |
+| strategic_questions | Ask bigger picture questions, not just tactical |
+| connect_layers | Connect L2 tasks to L3 strategy to L4 identity |
+| surface_why | Surface the 'why' behind tasks, not just status |
+| challenge_alignment | Challenge when tasks don't align to priorities |
+| push_harder | User wants more direct pushback |
+| more_concise | Be more concise, less explanation |
+
+Coaching is extracted from conversations when user teaches AI how to interact better.
+Example context: `COACHING:ask_impact:Ask how tasks connect to strategies|strategic_questions:Ask bigger picture questions`
 
 ## Next Steps (Priority Order)
 1. Test full shutdown analysis with real usage

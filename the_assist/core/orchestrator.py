@@ -128,52 +128,58 @@ NOTE: If there are warnings above, you may want to acknowledge them or explain r
 
     def _perception_check(self) -> str:
         """
-        Perception check: detect tunnel vision before responding.
-        Returns injection text if stuck, empty string if fine.
+        Predictive perception: detect TRAJECTORY toward problems, not problems themselves.
+        Intervene BEFORE mistakes happen, like Donna would.
 
-        This is the lightweight perception agent - runs before each response.
+        This is anticipatory, not reactive.
         """
-        if len(self.conversation_history) < 6:
-            return ""  # Not enough history to detect patterns
+        if len(self.conversation_history) < 3:
+            return ""  # Need minimal history
 
-        # Get recent exchanges
-        recent = self.conversation_history[-6:]
+        # Get recent exchanges - fewer needed for prediction
+        recent = self.conversation_history[-4:]
         recent_text = "\n".join([
             f"{m['role'].upper()}: {m['content'][:200]}"
             for m in recent
         ])
 
-        # Get memory for north stars
+        # Get memory for north stars and coaching
         mem_state = self.memory.get_state()
         north_stars = mem_state.get("north_stars", [])
+        coaching = list(mem_state.get("coaching", {}).keys())
 
-        check_prompt = f"""You are a perception checker. Analyze this conversation for tunnel vision.
+        check_prompt = f"""You are a predictive perception system. Anticipate where this conversation is HEADING, not where it is.
 
 RECENT EXCHANGES:
 {recent_text}
 
 USER'S NORTH STARS: {north_stars}
+LEARNED COACHING: {coaching}
 
-Check for:
-1. Same topic repeated 3+ times without progress
-2. Tactical focus when strategic is needed
-3. Missing connection to north stars
-4. User corrections being ignored
+Predict trajectory - look for EARLY signs of:
+1. Topic narrowing that will lead to tunnel vision
+2. Tactical drift away from strategic value
+3. Patterns that previously led to corrections
+4. Missed opportunities to connect to north stars
+5. Assistant being helpful instead of being a partner
+
+The goal is to intervene BEFORE the problem, not after.
 
 Return JSON:
 {{
-    "stuck": true/false,
-    "reason": "why stuck, if stuck",
-    "injection": "what to add to response to break out, or empty string"
+    "trajectory_concern": true/false,
+    "prediction": "what will go wrong if we continue this path",
+    "intervention": "what to do NOW to change trajectory, or empty string",
+    "opportunity": "what valuable direction we could pivot to"
 }}
 
-Be aggressive - if there's ANY sign of tunnel vision, flag it.
+Think like Donna - she doesn't wait for Harvey to fail. She sees it coming and redirects.
 Return ONLY valid JSON."""
 
         try:
             response = self.client.messages.create(
                 model="claude-sonnet-4-20250514",  # Fast model for check
-                max_tokens=200,
+                max_tokens=300,
                 messages=[{"role": "user", "content": check_prompt}]
             )
 
@@ -186,8 +192,15 @@ Return ONLY valid JSON."""
             import json
             result = json.loads(text.strip())
 
-            if result.get("stuck") and result.get("injection"):
-                return f"\n\n[ZOOM OUT: {result['injection']}]"
+            if result.get("trajectory_concern"):
+                parts = []
+                if result.get("intervention"):
+                    parts.append(f"REDIRECT: {result['intervention']}")
+                if result.get("opportunity"):
+                    parts.append(f"OPPORTUNITY: {result['opportunity']}")
+                if result.get("prediction"):
+                    parts.append(f"(Avoiding: {result['prediction']})")
+                return "\n".join(parts) if parts else ""
             return ""
 
         except Exception:
@@ -215,12 +228,12 @@ Return ONLY valid JSON."""
         # Build context
         system_context = self._build_full_context()
 
-        # If perception check flagged something, inject it
+        # If predictive perception flagged something, inject it
         if perception_injection:
             system_context += f"""
-# Perception Check Alert
+# Predictive Perception
 {perception_injection}
-IMPORTANT: Address this in your response. Step back from current topic if needed.
+ACT ON THIS: Don't wait for a mistake. Change course now. Be a partner, not a helper.
 """
 
         # Call Claude

@@ -162,6 +162,27 @@ EVAL:
 
 ---
 
+## Altitude Governance (Added Late Session)
+
+Reusable component for any HRM agent:
+
+```python
+from hrm.altitude import AltitudeGovernor, AltitudePolicy
+
+gov = AltitudeGovernor()  # or with custom policy
+gov.detect_level("What are my tasks?")  # -> L2
+gov.can_descend("L3", "L2")  # -> ValidationResult
+gov.build_prompt_injection()  # -> text for any agent
+```
+
+Rules enforced:
+- L4 (Identity) can be discussed anytime
+- L3 (Strategy) requires connection to L4
+- L2 (Operations) requires L3 established
+- Cannot skip levels
+
+---
+
 ## Open Questions
 
 - Should Intent be user-editable at runtime, or only between sessions?
@@ -180,10 +201,12 @@ NEW:
   the_assist/hrm/executor.py
   the_assist/hrm/evaluator.py
   the_assist/hrm/loop.py
+  the_assist/hrm/altitude.py      <- Reusable altitude governance
   the_assist/main_hrm.py
   the_assist/docs/HRM.md
   the_assist/docs/HRM_ARCHITECTURE.md
   the_assist/docs/LEARNINGS.md
+  setup_hrm.sh                    <- Reproducible setup script
   SESSION_HANDOFF.md
 
 MODIFIED:

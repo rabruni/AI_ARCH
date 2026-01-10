@@ -5,11 +5,12 @@ Wires together Intent, Planner, Executor, Evaluator.
 The flow:
 1. User input arrives
 2. Executor reports current situation to Planner
-3. Planner reads intent + situation, creates plan
-4. Executor executes plan, reports state
-5. Evaluator compares outcome to intent
-6. If revision needed, Planner revises (loop back to 3)
-7. Response returned to user
+3. Altitude Governor validates proposed level
+4. Planner reads intent + situation, creates plan
+5. Executor executes plan, reports state
+6. Evaluator compares outcome to intent
+7. If revision needed, Planner revises (loop back to 3)
+8. Response returned to user
 
 Key principle: State flows UP, meaning flows DOWN.
 """
@@ -20,6 +21,7 @@ from the_assist.hrm.intent import IntentStore
 from the_assist.hrm.planner import Planner, Plan, Situation
 from the_assist.hrm.executor import Executor, ExecutionResult
 from the_assist.hrm.evaluator import Evaluator, Evaluation
+from the_assist.hrm.altitude import AltitudeGovernor, AltitudePolicy
 
 
 class HRMLoop:
@@ -30,12 +32,15 @@ class HRMLoop:
     Each layer maintains its own memory type.
     """
 
-    def __init__(self):
+    def __init__(self, altitude_policy: Optional[AltitudePolicy] = None):
         # Initialize all layers
         self.intent = IntentStore()      # L1 - tiny, stable, high authority
         self.planner = Planner()         # L2 - semi-stable, rewritable
         self.executor = Executor()       # L3 - ephemeral, disposable
         self.evaluator = Evaluator()     # L4 - delta-based, time-bounded
+
+        # Altitude governance (reusable across agents)
+        self.altitude = AltitudeGovernor(altitude_policy)
 
         self._last_plan: Optional[Plan] = None
         self._last_evaluation: Optional[Evaluation] = None
@@ -50,8 +55,14 @@ class HRMLoop:
         situation = self.executor.get_situation()
         situation.user_input = user_input
 
-        # Step 2: Planner creates plan (meaning flows DOWN)
-        # Include last evaluation if revision was needed
+        # Step 2: Detect altitude of user input
+        detected_altitude = self.altitude.detect_level(user_input)
+
+        # Step 3: Validate altitude transition
+        altitude_validation = self.altitude.validate_transition(detected_altitude)
+
+        # Step 4: Planner creates plan (meaning flows DOWN)
+        # Include altitude context and any evaluation feedback
         evaluation_feedback = None
         if self._last_evaluation and self._last_evaluation.revision_needed:
             evaluation_feedback = {
@@ -61,32 +72,42 @@ class HRMLoop:
                 "outcome_summary": self._last_evaluation.outcome_summary
             }
 
+        # Add altitude context to situation
+        if not altitude_validation.allowed:
+            # Inject altitude constraint
+            evaluation_feedback = evaluation_feedback or {}
+            evaluation_feedback["altitude_blocked"] = True
+            evaluation_feedback["altitude_reason"] = altitude_validation.reason
+            evaluation_feedback["altitude_required"] = altitude_validation.suggested_level
+
         plan = self.planner.plan(situation, evaluation_feedback)
         self._last_plan = plan
 
-        # Step 3: Executor executes plan (state report UP)
+        # Step 5: Executor executes plan (state report UP)
         result = self.executor.execute(plan, user_input, self.planner)
 
-        # Step 4: Evaluator compares to intent (state flows UP)
+        # Step 6: Update altitude context based on what happened
+        self.altitude.record_exchange()
+        if detected_altitude in ["L4", "L3"]:
+            # Mark higher levels as established when discussed
+            self.altitude.mark_established(detected_altitude)
+        if plan.altitude != self.altitude.context.current_level:
+            self.altitude.record_transition(plan.altitude)
+
+        # Step 7: Evaluator compares to intent (state flows UP)
         evaluation = self.evaluator.evaluate(result, asdict(plan))
         self._last_evaluation = evaluation
 
-        # Step 5: Check if revision needed
+        # Step 8: Check if revision needed
         if self.evaluator.should_revise_plan(evaluation):
-            # Revision loop - but limit to prevent infinite loops
             revision_context = self.evaluator.get_revision_context(evaluation, result)
             revision_context["last_user_input"] = user_input
             revision_context["conversation_length"] = len(self.executor.get_history()) // 2
-
-            # Revise plan for NEXT exchange, not this one
-            # (We don't re-execute - revision is cheap, re-execution is expensive)
             self.planner.revise(plan, revision_context)
 
-        # Step 6: Check if intent escalation needed
+        # Step 9: Check if intent escalation needed
         if self.evaluator.should_escalate_to_intent(evaluation):
-            # For now, just log this - intent modification requires user action
-            # In future, could prompt user to clarify intent
-            pass
+            pass  # Intent modification requires user action
 
         return result.response
 
@@ -136,8 +157,10 @@ One or two sentences maximum."""
         Stable memories (intent, evaluations) persist.
         Plans persist for continuity.
         Conversation history (ephemeral) is cleared.
+        Altitude context is reset.
         """
         self.executor.clear_history()
+        self.altitude.reset()
 
     # ========================================
     # INSPECTION METHODS
@@ -164,6 +187,21 @@ One or two sentences maximum."""
     def get_evaluation_patterns(self) -> dict:
         """Get evaluation patterns."""
         return self.evaluator.get_patterns()
+
+    def get_altitude_status(self) -> dict:
+        """Get current altitude governance status."""
+        ctx = self.altitude.get_context()
+        return {
+            "current_level": ctx.current_level,
+            "l4_connected": ctx.l4_connected,
+            "l3_established": ctx.l3_established,
+            "exchanges_at_level": ctx.time_at_current,
+            "history": ctx.level_history[-5:]  # Last 5 transitions
+        }
+
+    def get_altitude_rules(self) -> list[str]:
+        """Get altitude enforcement rules."""
+        return self.altitude.get_enforcement_rules()
 
     # ========================================
     # MODIFICATION METHODS (user actions)

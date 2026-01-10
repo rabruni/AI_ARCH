@@ -15,7 +15,7 @@ from typing import Optional, Tuple
 import anthropic
 
 from the_assist.config.settings import MODEL, MEMORY_DIR
-from the_assist.core.memory_v2 import CompressedMemory
+from the_assist.core.memory_v2 import CompressedMemory, COACHING_CODES
 
 
 class ProactiveEngine:
@@ -58,6 +58,20 @@ class ProactiveEngine:
 
         directness = pro_state.get("directness_level", 0)
 
+        # Get coaching instructions that affect opening format
+        coaching = mem_state.get("coaching", {})
+        coaching_instructions = []
+        for code, confidence in coaching.items():
+            if confidence >= 0.7 and code in COACHING_CODES:
+                coaching_instructions.append(f"- {code}: {COACHING_CODES[code]}")
+
+        coaching_text = ""
+        if coaching_instructions:
+            coaching_text = f"""
+COACHING INSTRUCTIONS (learned from user corrections - MUST follow):
+{chr(10).join(coaching_instructions)}
+"""
+
         # Build context for AI
         now = datetime.now()
         day_of_week = now.strftime("%A")
@@ -70,7 +84,7 @@ MEMORY STATE:
 TODAY: {day_of_week}, {now.strftime("%B %d")}
 DIRECTNESS LEVEL: {directness} (0=soft intuition, 1=medium, 2=direct question)
 CONSECUTIVE MISSES: {pro_state.get("consecutive_misses", 0)}
-
+{coaching_text}
 RULES:
 - Level 0 (soft): Lead with what YOU think matters. Make a statement, not a question.
   Example: "Gaurav's been the blocker for a while now. That might be worth pushing on."
@@ -87,6 +101,9 @@ ALSO CONSIDER:
 - Recurring bottlenecks (people who block repeatedly)
 - Time-sensitive items (things with dates)
 - Patterns that suggest stress or overload
+
+IMPORTANT: If coaching includes "cap_with_question", you MUST end your opening with
+a strategic open-ended question based on what you see across all memory and assessments.
 
 Return JSON:
 {{

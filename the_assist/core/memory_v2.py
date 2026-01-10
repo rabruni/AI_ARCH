@@ -65,6 +65,9 @@ COACHING_CODES = {
     "less_questions": "Lead with observations, fewer questions",
     "push_harder": "User wants more direct pushback",
     "more_concise": "Be more concise, less explanation",
+
+    # Entry/opening format
+    "cap_with_question": "End entry statements with an important open-ended question",
 }
 
 RELATIONSHIP_CODES = {

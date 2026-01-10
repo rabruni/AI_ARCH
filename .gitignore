@@ -1,13 +1,36 @@
 # General
-
 vendor/
 install/
 build/
 dist/
-__pycache__
+__pycache__/
+*.pyc
+*.pyo
+venv/
+.venv/
+*.egg-info/
 
-# State
+# Secrets - NEVER commit
+.env
+
+# Legacy state (archived)
 /state/checkpoints/
 
-# Local
-ideas/* 
+# Memory and feedback (personal data - NEVER commit)
+the_assist/memory/store/
+the_assist/feedback/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Local scratch
+ideas/*
+scratch/
+*.log 

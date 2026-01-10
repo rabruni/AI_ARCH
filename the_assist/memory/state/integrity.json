@@ -1,0 +1,14 @@
+{
+  "session_count": 3,
+  "last_boot": "2026-01-10T04:16:35.113750Z",
+  "last_shutdown": "2026-01-10T04:34:27.254608Z",
+  "last_hash": "b99f815af617a9f5ed933978e266bd17",
+  "clean_shutdown": true,
+  "agents": {
+    "orchestrator": {
+      "last_boot": "2026-01-10T04:16:35.113750Z",
+      "status": "stopped",
+      "last_shutdown": "2026-01-10T04:34:27.254608Z"
+    }
+  }
+}

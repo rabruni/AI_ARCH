@@ -19,6 +19,7 @@ venv/
 # Memory and feedback (personal data - NEVER commit)
 the_assist/memory/store/
 the_assist/memory/state/checkpoints/
+the_assist/hrm/memory/
 the_assist/feedback/
 
 # IDE

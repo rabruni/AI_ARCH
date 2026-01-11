@@ -1,10 +1,4 @@
-"""Fast Memory - Ephemeral state for fast loop.
-
-Stores:
-- Progress state
-- Interaction signals
-- Session-level preferences
-"""
+"""Fast Memory - Ephemeral state for fast loop."""
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
@@ -67,112 +61,75 @@ class InteractionSignals:
 
 
 class FastMemory:
-    """
-    Session-level fast memory.
-
-    More freely writable than slow memory.
-    Resets between sessions unless explicitly persisted.
-    """
+    """Session-level fast memory."""
 
     def __init__(self, memory_dir: Path):
         self.memory_dir = Path(memory_dir)
         self.memory_dir.mkdir(parents=True, exist_ok=True)
-
         self._progress_file = self.memory_dir / "progress.json"
         self._interactions_file = self.memory_dir / "interactions.json"
-
         self._progress: ProgressState = ProgressState()
         self._interactions: list[InteractionSignals] = []
-
         self._load()
 
     def _load(self):
-        """Load state from disk."""
-        # Load progress
         if self._progress_file.exists():
             try:
                 data = json.loads(self._progress_file.read_text())
                 self._progress = ProgressState.from_dict(data)
-            except (json.JSONDecodeError, TypeError):
+            except:
                 self._progress = ProgressState()
-
-        # Load interactions
         if self._interactions_file.exists():
             try:
                 data = json.loads(self._interactions_file.read_text())
                 self._interactions = [InteractionSignals.from_dict(i) for i in data]
-            except (json.JSONDecodeError, TypeError):
+            except:
                 self._interactions = []
 
     def _save_progress(self):
-        """Save progress to disk."""
         self._progress_file.write_text(json.dumps(self._progress.to_dict(), indent=2))
 
     def _save_interactions(self):
-        """Save interactions to disk."""
-        # Only keep last 100 interactions
         recent = self._interactions[-100:]
         data = [i.to_dict() for i in recent]
         self._interactions_file.write_text(json.dumps(data, indent=2))
 
-    # Progress methods
     def get_progress(self) -> ProgressState:
-        """Get current progress state."""
         return self._progress
 
-    def update_progress(
-        self,
-        milestone_completed: Optional[str] = None,
-        blocker_added: Optional[str] = None,
-        blocker_removed: Optional[str] = None,
-        momentum: Optional[str] = None
-    ):
-        """Update progress state."""
+    def update_progress(self, milestone_completed: Optional[str] = None,
+                       blocker_added: Optional[str] = None,
+                       blocker_removed: Optional[str] = None,
+                       momentum: Optional[str] = None):
         if milestone_completed:
             self._progress.milestones_completed.append(milestone_completed)
-
         if blocker_added:
             self._progress.blockers.append(blocker_added)
-
         if blocker_removed and blocker_removed in self._progress.blockers:
             self._progress.blockers.remove(blocker_removed)
-
         if momentum:
             self._progress.momentum = momentum
-
         self._progress.last_update = datetime.now()
         self._save_progress()
 
     def reset_progress(self, total_milestones: int = 0):
-        """Reset progress for new commitment."""
         self._progress = ProgressState(milestones_total=total_milestones)
         self._save_progress()
 
-    # Interaction methods
     def record_interaction(self, signals: InteractionSignals):
-        """Record interaction signals."""
         self._interactions.append(signals)
         self._save_interactions()
 
     def get_recent_interactions(self, n: int = 10) -> list[InteractionSignals]:
-        """Get n most recent interactions."""
         return self._interactions[-n:]
 
     def get_interaction_summary(self) -> dict:
-        """Get summary of recent interactions."""
         recent = self._interactions[-20:]
         if not recent:
-            return {
-                "count": 0,
-                "avg_input_length": 0,
-                "avg_response_length": 0,
-                "altitude_distribution": {}
-            }
-
+            return {"count": 0, "avg_input_length": 0, "avg_response_length": 0, "altitude_distribution": {}}
         altitudes = {}
         for i in recent:
             altitudes[i.altitude_used] = altitudes.get(i.altitude_used, 0) + 1
-
         return {
             "count": len(recent),
             "avg_input_length": sum(i.user_input_length for i in recent) / len(recent),

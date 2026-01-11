@@ -213,11 +213,38 @@ class LockedLoop:
 
         if result.get("transition_proposal"):
             # Bootstrap complete, transition to normal operation
-            return None
+            user_name = self.bootstrap.get_user_name()
 
-        # Use LLM to generate natural Bootstrap response
-        hook = result.get("hook", "")
+            # Generate a completion message
+            completion_prompt = f"""The user just told you about their interests: "{user_input}"
+Their name is: {user_name}
+
+Give a brief, warm acknowledgment (1-2 sentences) that:
+1. Thanks them for sharing
+2. Shows you're ready to be their cognitive partner
+3. Asks what they'd like to work on or talk about
+
+Be genuine and direct, not effusive."""
+
+            response = self.executor._llm(completion_prompt)
+
+            # Update conversation history
+            self._conversation_history.append({"role": "user", "content": user_input})
+            self._conversation_history.append({"role": "assistant", "content": response})
+
+            return LoopResult(
+                response=response,
+                stance="sensemaking",
+                altitude="L3",
+                bootstrap_active=False,
+                gate_transitions=["Bootstrap complete"],
+                quality_health="healthy",
+                turn_number=self._turn_count
+            )
+
+        # Still in bootstrap - generate response for current stage
         next_prompt = result.get("next_prompt", "")
+        user_name = result.get("user_name", "")
         stage = self.bootstrap.current_stage.value
 
         # Build conversation context
@@ -230,21 +257,21 @@ class LockedLoop:
                 history_lines.append(f"{role}: {turn['content']}")
             history_text = "\n".join(history_lines)
 
-        bootstrap_llm_prompt = f"""You are having a supportive first conversation with someone.
+        bootstrap_llm_prompt = f"""You are introducing yourself to a new user.
 
 Current stage: {stage}
 {f"Previous conversation:{chr(10)}{history_text}" if history_text else ""}
 
 What they just said: "{user_input}"
-{f'Identity-affirming hook to incorporate: "{hook}"' if hook else ''}
-{f'Question to naturally lead into: "{next_prompt}"' if next_prompt else ''}
+{f"They said their name is: {user_name}" if user_name else ""}
+{f'Next question to ask: "{next_prompt}"' if next_prompt else ''}
 
-Respond naturally and warmly:
-1. Acknowledge what they shared (briefly, genuinely)
-2. {f'Include the hook sentiment naturally' if hook else 'Be present with them'}
-3. {f'Lead into the next question conversationally' if next_prompt else 'Invite them to share more'}
+Respond naturally:
+1. Acknowledge what they shared warmly but briefly
+2. {f"Use their name ({user_name}) naturally" if user_name else ""}
+3. Lead into the next question conversationally
 
-Keep it to 2-4 sentences. Be human, not clinical. Maintain continuity with what was discussed before."""
+Keep it to 2-3 sentences. Be genuine and direct."""
 
         response = self.executor._llm(bootstrap_llm_prompt)
 

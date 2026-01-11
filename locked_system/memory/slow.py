@@ -1,10 +1,4 @@
-"""Slow Memory - Persistent state for slow loop.
-
-Stores:
-- Active commitment lease
-- Binding decisions
-- Bootstrap snapshot
-"""
+"""Slow Memory - Persistent state for slow loop."""
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
@@ -24,7 +18,6 @@ class CommitmentLease:
     turns_remaining: int = 20
 
     def is_expired(self) -> bool:
-        """Check if commitment has expired."""
         return self.turns_remaining <= 0
 
     def to_dict(self) -> dict:
@@ -56,13 +49,9 @@ class Decision:
 
     def to_dict(self) -> dict:
         return {
-            "id": self.id,
-            "decision": self.decision,
-            "rationale": self.rationale,
-            "tradeoffs": self.tradeoffs,
-            "confidence": self.confidence,
-            "revisit_triggers": self.revisit_triggers,
-            "timestamp": self.timestamp.isoformat()
+            "id": self.id, "decision": self.decision, "rationale": self.rationale,
+            "tradeoffs": self.tradeoffs, "confidence": self.confidence,
+            "revisit_triggers": self.revisit_triggers, "timestamp": self.timestamp.isoformat()
         }
 
     @classmethod
@@ -104,127 +93,96 @@ class BootstrapSnapshot:
 
 
 class SlowMemory:
-    """
-    Persistent storage for slow loop state.
-
-    Writes are gate-controlled - only gates can modify this.
-    """
+    """Persistent storage for slow loop state."""
 
     def __init__(self, memory_dir: Path):
         self.memory_dir = Path(memory_dir)
         self.memory_dir.mkdir(parents=True, exist_ok=True)
-
         self._commitment_file = self.memory_dir / "commitment.json"
         self._decisions_file = self.memory_dir / "decisions.json"
         self._bootstrap_file = self.memory_dir / "bootstrap.json"
-
         self._commitment: Optional[CommitmentLease] = None
         self._decisions: list[Decision] = []
         self._bootstrap: Optional[BootstrapSnapshot] = None
-
         self._load()
 
     def _load(self):
-        """Load state from disk."""
-        # Load commitment
         if self._commitment_file.exists():
             try:
                 data = json.loads(self._commitment_file.read_text())
                 self._commitment = CommitmentLease.from_dict(data)
-            except (json.JSONDecodeError, TypeError):
+            except:
                 self._commitment = None
-
-        # Load decisions
         if self._decisions_file.exists():
             try:
                 data = json.loads(self._decisions_file.read_text())
                 self._decisions = [Decision.from_dict(d) for d in data]
-            except (json.JSONDecodeError, TypeError):
+            except:
                 self._decisions = []
-
-        # Load bootstrap
         if self._bootstrap_file.exists():
             try:
                 data = json.loads(self._bootstrap_file.read_text())
                 self._bootstrap = BootstrapSnapshot.from_dict(data)
-            except (json.JSONDecodeError, TypeError):
+            except:
                 self._bootstrap = None
 
     def _save_commitment(self):
-        """Save commitment to disk."""
         if self._commitment:
             self._commitment_file.write_text(json.dumps(self._commitment.to_dict(), indent=2))
         elif self._commitment_file.exists():
             self._commitment_file.unlink()
 
     def _save_decisions(self):
-        """Save decisions to disk."""
         data = [d.to_dict() for d in self._decisions]
         self._decisions_file.write_text(json.dumps(data, indent=2))
 
     def _save_bootstrap(self):
-        """Save bootstrap to disk."""
         if self._bootstrap:
             self._bootstrap_file.write_text(json.dumps(self._bootstrap.to_dict(), indent=2))
         elif self._bootstrap_file.exists():
             self._bootstrap_file.unlink()
 
-    # Commitment methods
     def get_commitment(self) -> Optional[CommitmentLease]:
-        """Get current commitment."""
         return self._commitment
 
     def has_commitment(self) -> bool:
-        """Check if there's an active commitment."""
         return self._commitment is not None and not self._commitment.is_expired()
 
     def set_commitment(self, commitment: CommitmentLease):
-        """Set active commitment (gate-controlled)."""
         self._commitment = commitment
         self._save_commitment()
 
     def renew_commitment(self, turns: int = 20):
-        """Renew commitment turns (gate-controlled)."""
         if self._commitment:
             self._commitment.turns_remaining = turns
             self._save_commitment()
 
     def decrement_commitment(self):
-        """Decrement commitment turn counter."""
         if self._commitment:
             self._commitment.turns_remaining -= 1
             self._save_commitment()
 
     def clear_commitment(self):
-        """Clear commitment (gate-controlled)."""
         self._commitment = None
         self._save_commitment()
 
-    # Decision methods
     def add_decision(self, decision: Decision):
-        """Add a binding decision (gate-controlled)."""
         self._decisions.append(decision)
         self._save_decisions()
 
     def get_decisions(self) -> list[Decision]:
-        """Get all decisions."""
         return self._decisions.copy()
 
     def get_recent_decisions(self, n: int = 5) -> list[Decision]:
-        """Get n most recent decisions."""
         return self._decisions[-n:]
 
-    # Bootstrap methods
     def get_bootstrap(self) -> Optional[BootstrapSnapshot]:
-        """Get bootstrap snapshot."""
         return self._bootstrap
 
     def set_bootstrap(self, snapshot: BootstrapSnapshot):
-        """Set bootstrap snapshot."""
         self._bootstrap = snapshot
         self._save_bootstrap()
 
     def clear_bootstrap(self):
-        """Clear bootstrap snapshot."""
         self._bootstrap = None
         self._save_bootstrap()

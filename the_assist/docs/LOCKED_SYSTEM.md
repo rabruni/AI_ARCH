@@ -531,13 +531,138 @@ This architecture **replaces** the current `the_assist/hrm/` and `the_assist/cor
 
 ---
 
-## Open Implementation Questions
+## Bootstrap (First-Contact Protocol)
 
-1. **Bootstrap:** First message, no commitment exists. Sequence?
-2. **Emergency cost:** What specifically makes it costly beyond clock reset?
-3. **Proposal merge:** Two proposals same turn. Resolution order?
+Bootstrap is the system's first-contact protocol. It establishes a consent-based social contract before any commitment forms.
 
-These are implementation-time decisions. Invariants are the guardrails.
+### Bootstrap Intent
+
+Bootstrap is designed to:
+- Elicit user state with low cognitive load
+- Establish collaboration posture (listen vs structure vs propose)
+- Enable a single, bounded next step toward support
+- Produce minimal, safe artifacts for continuity
+- Defer North Stars and configuration until relationship contract is formed
+
+Bootstrap is **not**: planning, optimization, scheduling, therapy, or commitment formation.
+
+### Bootstrap Mode Constraints
+
+When in Bootstrap Mode, the system is constrained to:
+- **Summarize, don't solve** (default)
+- **Propose-only** (no actions, no commitments)
+- **Ask only bounded questions** (no multi-step interrogations)
+- **Defer North Star acquisition** unless user explicitly requests structured support
+- **Avoid coercive reassurance** (no minimization, no forced optimism)
+
+Bootstrap exits only when user explicitly consents to:
+- Receiving structure/ideas, or
+- Establishing a scoped commitment/work order, or
+- Starting configuration
+
+### Bootstrap Interaction Flow (4 Stages)
+
+**Stage 1 — Ladder Anchor (State)**
+
+Cantril-style ladder to elicit coarse state signal.
+
+> "Imagine a ladder where the top is the best possible life for you and the bottom is the worst. Where do you feel you're standing right now?"
+
+Representation: Top / Middle / Bottom (coarse). Numeric (1-10) only if user provides it.
+
+**Stage 2 — Anchor (Stability)**
+
+Identify what is already working.
+
+> "What's currently happening that keeps you from slipping lower?"
+
+**Stage 3 — Gap (One-step change)**
+
+Identify what "one step up" means in lived experience.
+
+> "If you moved up just one step, what would be different in your day-to-day?"
+
+**Stage 4 — Microstep + Permission (Handoff)**
+
+Transition from listening into support, explicitly requesting permission.
+
+> "What's one small thing that would make you feel supported moving toward that next step?"
+
+Then:
+
+> "Would you like me to keep listening, or would it help if I started offering structure and ideas?"
+
+This last prompt is the canonical handoff switch from Bootstrap into normal operation.
+
+### Identity-Affirming Hook (Optional)
+
+A single, short identity-affirming statement after user has expressed ladder position and at least one supporting detail.
+
+**Hook constraints (all must be satisfied):**
+- Non-coercive: no obligation, guilt, or performance demand
+- Non-permanent: no "you're always..."
+- Non-comparative: no ranking against others
+- Non-solutioning: no pivot into advice
+- State-accurate: reflects user's expressed reality
+
+### Bootstrap Artifacts
+
+**1. Bootstrap Snapshot** (Slow Memory Candidate)
+
+```json
+{
+  "bootstrap_timestamp": "...",
+  "ladder_position": "top | middle | bottom",
+  "user_state_summary": "one sentence, user-aligned",
+  "stabilizers": "what keeps them from slipping",
+  "one_step_gap": "what one step up means",
+  "microstep_candidate": "user-named",
+  "consent_state": "listen_only | propose_structure | ready_for_commitment",
+  "derived_north_star_candidates": ["inferred, not ratified"],
+  "delivery_fit_notes": "brevity preference, pacing signals"
+}
+```
+
+Derived North Stars are recorded only as **candidates** until explicitly ratified.
+
+**2. Bootstrap Transition Proposal** (Proposal Buffer)
+
+Proposal routed to Slow Loop indicating recommended next transition:
+- "Remain in listen-only"
+- "Offer structure (propose-only)"
+- "Offer to create a scoped Work Order"
+- "Offer to formalize North Stars"
+
+### Bootstrap Edge Cases (Resolved)
+
+**Re-entry:** Bootstrap is primarily first-contact. However, if Perception detects severe state degradation (ladder position "bottom" + trust eroding), system may propose "Bootstrap Re-entry" via GateProposal. This pauses commitment and returns to listening mode without invalidating existing commitment.
+
+**Timeout:** Bootstrap has no hard expiry. After 10 turns without transition, system gently re-offers the permission prompt. Soft nudge, not forced exit.
+
+**Multi-session:** If session ends during Bootstrap, next session resumes from Bootstrap Snapshot. If `consent_state` was "listen_only", resume in Bootstrap. If "propose_structure", resume in propose-only mode.
+
+**Existing users:** For users with existing North Stars and configuration, Bootstrap is abbreviated. System offers light check-in: "I have context from before. How are things today - still on track, or has something shifted?"
+
+**Stage flow:** Stages can be fast-exited on explicit intent. If user says "I need help planning my week", system confirms intent briefly ("Got it - you want help with planning. Want me to dive in, or would you prefer I understand where you're at first?") and proceeds based on response. 4-stage sequence is default, not mandatory.
+
+### North Stars Deferral Rule
+
+Bootstrap does not request North Stars unless:
+- User explicitly asks for planning/prioritization
+- User grants permission for "structure and ideas"
+- System is transitioning into a scoped Work Order requiring North Star anchoring
+
+North Stars are always: explicit, consented, ratified, versioned.
+
+---
+
+## Resolved Implementation Answers
+
+1. **Bootstrap:** See Bootstrap section above. 4-stage consent-based protocol with explicit handoff.
+
+2. **Emergency cost:** Emergency Gate requires: (a) logging emergency decision with rationale, (b) full commitment clock reset, (c) mandatory return to Sensemaking stance, (d) cooldown period before next Emergency (3 turns minimum). This makes it costly enough to prevent casual use.
+
+3. **Proposal merge:** Multiple proposals same turn are processed in priority order: (1) Emergency severity first, (2) then by source priority: user_signal > decay_manager > perception > continuous_eval > task_agent, (3) ties broken by timestamp (earlier wins). Slow Loop may accept multiple non-conflicting proposals.
 
 ---
 

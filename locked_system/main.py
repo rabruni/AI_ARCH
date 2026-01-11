@@ -19,40 +19,85 @@ from locked_system.config import Config
 from locked_system.loop import LockedLoop, LoopResult
 
 
-def create_default_llm() -> callable:
-    """Create default LLM callable (placeholder for actual implementation)."""
-    def llm(prompt: str) -> str:
-        """
-        Placeholder LLM implementation.
+def create_llm(config: Config) -> callable:
+    """
+    Create LLM callable - uses Claude if API key available, otherwise placeholder.
 
-        In production, replace with actual LLM call:
-        - Anthropic Claude
-        - OpenAI GPT
-        - Local model
-        """
+    Same approach as the_assist - uses anthropic.Anthropic() with claude-sonnet.
+    """
+    import os
+
+    # Try to use Claude if API key is set
+    if os.environ.get("ANTHROPIC_API_KEY"):
+        try:
+            import anthropic
+            client = anthropic.Anthropic()
+
+            def claude_llm(prompt: str) -> str:
+                """Call Claude API."""
+                response = client.messages.create(
+                    model=config.model,
+                    max_tokens=config.max_tokens,
+                    messages=[{"role": "user", "content": prompt}]
+                )
+                return response.content[0].text
+
+            print("[Using Claude API]")
+            return claude_llm
+
+        except ImportError:
+            print("[Warning: anthropic package not installed, using placeholder]")
+        except Exception as e:
+            print(f"[Warning: Claude API error ({e}), using placeholder]")
+
+    # Fallback to placeholder
+    print("[Using placeholder LLM - set ANTHROPIC_API_KEY for real responses]")
+    return _create_placeholder_llm()
+
+
+def _create_placeholder_llm() -> callable:
+    """Create placeholder LLM for testing without API key."""
+
+    state = {"turn": 0}
+
+    def placeholder(prompt: str) -> str:
+        import re
+
         # Handle greeting generation
         if "Generate a warm, natural welcome" in prompt:
             if "Bootstrap" in prompt and "Stage prompt to incorporate" in prompt:
-                # Extract the stage prompt
-                import re
                 match = re.search(r'Stage prompt to incorporate: "([^"]+)"', prompt)
                 if match:
                     stage_prompt = match.group(1)
-                    return f"Hey there. Before we dive in, I'm curious - {stage_prompt.lower()}"
+                    return f"Hey there. Before we dive in - {stage_prompt.lower()}"
             elif "Active commitment" in prompt:
                 return "Good to see you again. Ready to pick up where we left off?"
             else:
                 return "Hey. What's on your mind today?"
 
-        # Handle regular user messages
+        # Bootstrap-aware responses
+        prompt_lower = prompt.lower()
+        if "sensemaking" in prompt_lower:
+            state["turn"] += 1
+            if state["turn"] == 1:
+                return "I hear you. What's helping you stay where you are right now?"
+            elif state["turn"] == 2:
+                return "Those are real anchors. If you moved one step up, what would be different?"
+            elif state["turn"] == 3:
+                return "That sounds meaningful. What's one small thing that would help?"
+            elif state["turn"] == 4:
+                return "Would you like me to keep listening, or start offering structure?"
+            else:
+                return "Let's work on this together. Where should we start?"
+
+        # Default
         if "User message:" in prompt:
-            user_msg = prompt.split("User message:")[-1].strip()
-            user_msg = user_msg.split("\n")[0]
-            return f"I hear you. {user_msg[:50]}... Tell me more about that."
+            user_msg = prompt.split("User message:")[-1].strip().split("\n")[0]
+            return f"I'm with you. Tell me more about '{user_msg[:30]}'."
 
-        return "I'm listening. What would you like to explore?"
+        return "I'm listening. What's on your mind?"
 
-    return llm
+    return placeholder
 
 
 def run_interactive(loop: LockedLoop):
@@ -161,8 +206,8 @@ def main():
     else:
         config = Config()
 
-    # Create loop with default LLM
-    llm = create_default_llm()
+    # Create loop with LLM (Claude if API key set, otherwise placeholder)
+    llm = create_llm(config)
     loop = LockedLoop(config, llm)
 
     # Run appropriate mode

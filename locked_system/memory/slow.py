@@ -2,7 +2,7 @@
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import Optional, Literal
+from typing import Optional
 import json
 
 
@@ -22,12 +22,9 @@ class CommitmentLease:
 
     def to_dict(self) -> dict:
         return {
-            "frame": self.frame,
-            "horizon_authority": self.horizon_authority,
-            "success_criteria": self.success_criteria,
-            "non_goals": self.non_goals,
-            "lease_expiry": self.lease_expiry,
-            "renewal_prompt": self.renewal_prompt,
+            "frame": self.frame, "horizon_authority": self.horizon_authority,
+            "success_criteria": self.success_criteria, "non_goals": self.non_goals,
+            "lease_expiry": self.lease_expiry, "renewal_prompt": self.renewal_prompt,
             "turns_remaining": self.turns_remaining
         }
 
@@ -64,24 +61,18 @@ class Decision:
 
 @dataclass
 class BootstrapSnapshot:
-    """Bootstrap state snapshot."""
+    """Bootstrap state snapshot for 2-stage flow."""
     bootstrap_timestamp: datetime
-    ladder_position: Literal["top", "middle", "bottom"]
-    user_state_summary: str
-    stabilizers: str
-    one_step_gap: str
-    microstep_candidate: str
-    consent_state: Literal["listen_only", "propose_structure", "ready_for_commitment"]
+    stage: str  # "intro", "connect", "complete"
+    user_name: str = ""
+    favorite_things: str = ""  # Pipe-separated list
+    complete: bool = False
 
     def to_dict(self) -> dict:
         return {
             "bootstrap_timestamp": self.bootstrap_timestamp.isoformat(),
-            "ladder_position": self.ladder_position,
-            "user_state_summary": self.user_state_summary,
-            "stabilizers": self.stabilizers,
-            "one_step_gap": self.one_step_gap,
-            "microstep_candidate": self.microstep_candidate,
-            "consent_state": self.consent_state
+            "stage": self.stage, "user_name": self.user_name,
+            "favorite_things": self.favorite_things, "complete": self.complete
         }
 
     @classmethod
@@ -89,6 +80,15 @@ class BootstrapSnapshot:
         data = data.copy()
         if "bootstrap_timestamp" in data:
             data["bootstrap_timestamp"] = datetime.fromisoformat(data["bootstrap_timestamp"])
+        # Handle old format migration
+        if "ladder_position" in data:
+            return cls(
+                bootstrap_timestamp=data.get("bootstrap_timestamp", datetime.now()),
+                stage="complete" if data.get("consent_state") != "listen_only" else "intro",
+                user_name=data.get("user_state_summary", ""),
+                favorite_things=data.get("stabilizers", ""),
+                complete=data.get("consent_state") != "listen_only"
+            )
         return cls(**data)
 
 

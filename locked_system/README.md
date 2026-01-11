@@ -179,11 +179,16 @@ from locked_system import LockedLoop, Config
 
 client = Anthropic()
 
-def call_claude(prompt: str) -> str:
+def call_claude(system: str = None, messages: list = None, prompt: str = None) -> str:
+    """Multi-turn LLM callable with proper conversation support."""
+    msgs = list(messages) if messages else []
+    if prompt:
+        msgs.append({"role": "user", "content": prompt})
     response = client.messages.create(
         model="claude-sonnet-4-20250514",
         max_tokens=2000,
-        messages=[{"role": "user", "content": prompt}]
+        system=system or "",
+        messages=msgs
     )
     return response.content[0].text
 
@@ -268,18 +273,17 @@ print(f"Health: {state['health']}")
 
 ### slow_loop/bootstrap.py
 
-**Purpose:** 4-stage first-contact protocol for new users.
+**Purpose:** 2-stage first-contact protocol for new users.
 
 **Stages:**
-1. Ladder (state assessment)
-2. Anchor (what's working)
-3. Gap (one step up)
-4. Microstep + Permission (handoff)
+1. Intro - Introduce as cognitive partner, ask user's name
+2. Connect - Ask about two favorite things/interests
 
 **Key Methods:**
 - `process_input(user_input)` - Process bootstrap stage
 - `is_active` - Check if still in bootstrap
-- `complete_with_consent(consent)` - Exit bootstrap
+- `get_user_name()` - Get captured user name
+- `complete()` - Force complete bootstrap
 
 ### fast_loop/hrm.py
 

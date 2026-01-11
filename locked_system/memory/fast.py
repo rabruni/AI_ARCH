@@ -19,8 +19,7 @@ class ProgressState:
         return {
             "milestones_completed": self.milestones_completed,
             "milestones_total": self.milestones_total,
-            "blockers": self.blockers,
-            "momentum": self.momentum,
+            "blockers": self.blockers, "momentum": self.momentum,
             "last_update": self.last_update.isoformat()
         }
 
@@ -46,10 +45,8 @@ class InteractionSignals:
         return {
             "user_input_length": self.user_input_length,
             "response_length": self.response_length,
-            "altitude_used": self.altitude_used,
-            "stance_used": self.stance_used,
-            "had_commitment": self.had_commitment,
-            "timestamp": self.timestamp.isoformat()
+            "altitude_used": self.altitude_used, "stance_used": self.stance_used,
+            "had_commitment": self.had_commitment, "timestamp": self.timestamp.isoformat()
         }
 
     @classmethod
@@ -75,14 +72,12 @@ class FastMemory:
     def _load(self):
         if self._progress_file.exists():
             try:
-                data = json.loads(self._progress_file.read_text())
-                self._progress = ProgressState.from_dict(data)
+                self._progress = ProgressState.from_dict(json.loads(self._progress_file.read_text()))
             except:
                 self._progress = ProgressState()
         if self._interactions_file.exists():
             try:
-                data = json.loads(self._interactions_file.read_text())
-                self._interactions = [InteractionSignals.from_dict(i) for i in data]
+                self._interactions = [InteractionSignals.from_dict(i) for i in json.loads(self._interactions_file.read_text())]
             except:
                 self._interactions = []
 
@@ -90,17 +85,14 @@ class FastMemory:
         self._progress_file.write_text(json.dumps(self._progress.to_dict(), indent=2))
 
     def _save_interactions(self):
-        recent = self._interactions[-100:]
-        data = [i.to_dict() for i in recent]
+        data = [i.to_dict() for i in self._interactions[-100:]]
         self._interactions_file.write_text(json.dumps(data, indent=2))
 
     def get_progress(self) -> ProgressState:
         return self._progress
 
-    def update_progress(self, milestone_completed: Optional[str] = None,
-                       blocker_added: Optional[str] = None,
-                       blocker_removed: Optional[str] = None,
-                       momentum: Optional[str] = None):
+    def update_progress(self, milestone_completed: Optional[str] = None, blocker_added: Optional[str] = None,
+                       blocker_removed: Optional[str] = None, momentum: Optional[str] = None):
         if milestone_completed:
             self._progress.milestones_completed.append(milestone_completed)
         if blocker_added:
@@ -122,17 +114,3 @@ class FastMemory:
 
     def get_recent_interactions(self, n: int = 10) -> list[InteractionSignals]:
         return self._interactions[-n:]
-
-    def get_interaction_summary(self) -> dict:
-        recent = self._interactions[-20:]
-        if not recent:
-            return {"count": 0, "avg_input_length": 0, "avg_response_length": 0, "altitude_distribution": {}}
-        altitudes = {}
-        for i in recent:
-            altitudes[i.altitude_used] = altitudes.get(i.altitude_used, 0) + 1
-        return {
-            "count": len(recent),
-            "avg_input_length": sum(i.user_input_length for i in recent) / len(recent),
-            "avg_response_length": sum(i.response_length for i in recent) / len(recent),
-            "altitude_distribution": altitudes
-        }

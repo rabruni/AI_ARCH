@@ -15,11 +15,9 @@ class BridgeSignal:
     timestamp: datetime = field(default_factory=datetime.now)
 
     def to_dict(self) -> dict:
-        return {
-            "signal_type": self.signal_type, "source": self.source,
-            "content": self.content, "severity": self.severity,
-            "timestamp": self.timestamp.isoformat()
-        }
+        return {"signal_type": self.signal_type, "source": self.source,
+                "content": self.content, "severity": self.severity,
+                "timestamp": self.timestamp.isoformat()}
 
     @classmethod
     def from_dict(cls, data: dict) -> "BridgeSignal":
@@ -42,14 +40,12 @@ class BridgeMemory:
     def _load(self):
         if self._signals_file.exists():
             try:
-                data = json.loads(self._signals_file.read_text())
-                self._signals = [BridgeSignal.from_dict(s) for s in data]
+                self._signals = [BridgeSignal.from_dict(s) for s in json.loads(self._signals_file.read_text())]
             except:
                 self._signals = []
 
     def _save(self):
-        data = [s.to_dict() for s in self._signals]
-        self._signals_file.write_text(json.dumps(data, indent=2))
+        self._signals_file.write_text(json.dumps([s.to_dict() for s in self._signals], indent=2))
 
     def add_signal(self, signal: BridgeSignal):
         self._signals.append(signal)

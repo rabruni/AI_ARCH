@@ -57,26 +57,32 @@ class Bootstrap:
     def _load_or_init(self):
         """Load existing bootstrap or initialize new."""
         snapshot = self.memory.get_bootstrap()
-        if snapshot and snapshot.consent_state == "listen_only":
+        if snapshot and not snapshot.complete:
             # Resume bootstrap
             self._state = BootstrapState(
-                stage=self._infer_stage(snapshot),
-                user_name=snapshot.user_state_summary if snapshot.user_state_summary else None,
-                favorite_things=snapshot.stabilizers.split("|") if snapshot.stabilizers else None
+                stage=self._stage_from_string(snapshot.stage),
+                user_name=snapshot.user_name if snapshot.user_name else None,
+                favorite_things=snapshot.favorite_things.split("|") if snapshot.favorite_things else None
+            )
+        elif snapshot and snapshot.complete:
+            # Bootstrap already complete
+            self._state = BootstrapState(
+                stage=BootstrapStage.COMPLETE,
+                user_name=snapshot.user_name,
+                favorite_things=snapshot.favorite_things.split("|") if snapshot.favorite_things else None
             )
         else:
             # Start fresh
             self._state = BootstrapState(stage=BootstrapStage.INTRO)
 
-    def _infer_stage(self, snapshot: BootstrapSnapshot) -> BootstrapStage:
-        """Infer current stage from snapshot."""
-        if snapshot.consent_state != "listen_only":
-            return BootstrapStage.COMPLETE
-        if snapshot.stabilizers:  # Has favorite things
-            return BootstrapStage.COMPLETE
-        if snapshot.user_state_summary:  # Has name
-            return BootstrapStage.CONNECT
-        return BootstrapStage.INTRO
+    def _stage_from_string(self, stage_str: str) -> BootstrapStage:
+        """Convert stage string to enum."""
+        mapping = {
+            "intro": BootstrapStage.INTRO,
+            "connect": BootstrapStage.CONNECT,
+            "complete": BootstrapStage.COMPLETE
+        }
+        return mapping.get(stage_str, BootstrapStage.INTRO)
 
     @property
     def is_active(self) -> bool:
@@ -167,12 +173,10 @@ class Bootstrap:
 
         snapshot = BootstrapSnapshot(
             bootstrap_timestamp=datetime.now(),
-            ladder_position="middle",  # Not used in new bootstrap
-            user_state_summary=self._state.user_name or "",
-            stabilizers="|".join(self._state.favorite_things) if self._state.favorite_things else "",
-            one_step_gap="",
-            microstep_candidate="",
-            consent_state="listen_only" if self._state.stage != BootstrapStage.COMPLETE else "ready_for_commitment"
+            stage=self._state.stage.value,
+            user_name=self._state.user_name or "",
+            favorite_things="|".join(self._state.favorite_things) if self._state.favorite_things else "",
+            complete=(self._state.stage == BootstrapStage.COMPLETE)
         )
         self.memory.set_bootstrap(snapshot)
 

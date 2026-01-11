@@ -187,27 +187,18 @@ class Executor:
         system_prompt: str,
         context: ExecutionContext
     ) -> str:
-        """Generate response using LLM."""
-        # Build conversation context from history
-        history_text = ""
+        """Generate response using LLM with proper multi-turn conversation."""
+        # Build messages from conversation history + current input
+        messages = []
         if context.conversation_history:
-            # Include recent conversation for context (last 10 turns)
-            recent = context.conversation_history[-10:]
-            history_lines = []
-            for turn in recent:
-                role = "User" if turn["role"] == "user" else "Assistant"
-                history_lines.append(f"{role}: {turn['content']}")
-            history_text = "\n".join(history_lines)
+            # Include recent conversation (last 20 messages = 10 turns)
+            messages = list(context.conversation_history[-20:])
 
-        # Build full prompt with history
-        full_prompt = f"""{system_prompt}
+        # Add current user input
+        messages.append({"role": "user", "content": context.user_input})
 
-{f"Previous conversation:{chr(10)}{history_text}{chr(10)}" if history_text else ""}
-Current user message: {context.user_input}
-
-Respond according to the constraints above, maintaining continuity with the conversation.
-"""
-        return self._llm(full_prompt)
+        # Call LLM with new signature: (system, messages, prompt)
+        return self._llm(system=system_prompt, messages=messages)
 
     def _apply_constraints(
         self,
@@ -235,12 +226,12 @@ Respond according to the constraints above, maintaining continuity with the conv
         )
         self.memory.record_interaction(signals)
 
-    def _default_llm(self, prompt: str) -> str:
+    def _default_llm(self, system: str = None, messages: list = None, prompt: str = None) -> str:
         """Default LLM implementation (placeholder)."""
         # In production, this would call the actual LLM
-        return f"[Response generated for prompt of {len(prompt)} chars]"
+        return "[No LLM configured - set llm_callable in LockedLoop]"
 
-    def set_llm(self, llm_callable: Callable[[str], str]):
+    def set_llm(self, llm_callable: Callable):
         """Set the LLM callable."""
         self._llm = llm_callable
 

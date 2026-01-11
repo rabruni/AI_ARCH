@@ -12,6 +12,8 @@ Invariants:
 from typing import Optional, Callable
 from datetime import datetime
 from dataclasses import dataclass
+from pathlib import Path
+import json
 
 from locked_system.config import Config
 
@@ -78,11 +80,11 @@ class LockedLoop:
     ):
         self.config = config or Config()
 
-        # Initialize memory layers
-        self.slow_memory = SlowMemory(self.config.memory_dir)
-        self.fast_memory = FastMemory(self.config.memory_dir)
-        self.bridge_memory = BridgeMemory(self.config.memory_dir)
-        self.history = History(self.config.memory_dir)
+        # Initialize memory layers with proper subdirectories
+        self.slow_memory = SlowMemory(self.config.memory_dir / "slow")
+        self.fast_memory = FastMemory(self.config.memory_dir / "fast")
+        self.bridge_memory = BridgeMemory(self.config.memory_dir / "bridge")
+        self.history = History(self.config.memory_dir / "history")
 
         # Initialize proposal buffer
         self.proposal_buffer = ProposalBuffer()
@@ -113,6 +115,10 @@ class LockedLoop:
         # State
         self._turn_count = 0
         self._conversation_history: list[dict] = []
+        self._conversation_file = self.config.memory_dir / "conversation.json"
+
+        # Load existing conversation history
+        self._load_conversation_history()
 
     def process(self, user_input: str) -> LoopResult:
         """
@@ -146,9 +152,10 @@ class LockedLoop:
         # Phase 5: Continuous evaluation
         quality_health = self._post_execution_eval(user_input, response)
 
-        # Update conversation history
+        # Update conversation history and persist
         self._conversation_history.append({"role": "user", "content": user_input})
         self._conversation_history.append({"role": "assistant", "content": response})
+        self._save_conversation_history()
 
         return LoopResult(
             response=response,
@@ -189,9 +196,10 @@ class LockedLoop:
         # Add the note
         confirmation = self.notes.add_note(note_type, content)
 
-        # Update conversation history
+        # Update conversation history and persist
         self._conversation_history.append({"role": "user", "content": user_input})
         self._conversation_history.append({"role": "assistant", "content": confirmation})
+        self._save_conversation_history()
 
         return LoopResult(
             response=confirmation,
@@ -215,22 +223,24 @@ class LockedLoop:
             # Bootstrap complete, transition to normal operation
             user_name = self.bootstrap.get_user_name()
 
-            # Generate a completion message
-            completion_prompt = f"""The user just told you about their interests: "{user_input}"
-Their name is: {user_name}
+            # Build messages with current input
+            messages = list(self._conversation_history)
+            messages.append({"role": "user", "content": user_input})
 
+            # Generate completion using proper multi-turn
+            system = f"""Bootstrap complete. User's name is: {user_name}
 Give a brief, warm acknowledgment (1-2 sentences) that:
 1. Thanks them for sharing
 2. Shows you're ready to be their cognitive partner
 3. Asks what they'd like to work on or talk about
-
 Be genuine and direct, not effusive."""
 
-            response = self.executor._llm(completion_prompt)
+            response = self.executor._llm(system=system, messages=messages)
 
-            # Update conversation history
+            # Update conversation history and persist
             self._conversation_history.append({"role": "user", "content": user_input})
             self._conversation_history.append({"role": "assistant", "content": response})
+            self._save_conversation_history()
 
             return LoopResult(
                 response=response,
@@ -247,37 +257,25 @@ Be genuine and direct, not effusive."""
         user_name = result.get("user_name", "")
         stage = self.bootstrap.current_stage.value
 
-        # Build conversation context
-        history_text = ""
-        if self._conversation_history:
-            recent = self._conversation_history[-6:]
-            history_lines = []
-            for turn in recent:
-                role = "User" if turn["role"] == "user" else "Assistant"
-                history_lines.append(f"{role}: {turn['content']}")
-            history_text = "\n".join(history_lines)
+        # Build messages with current input
+        messages = list(self._conversation_history)
+        messages.append({"role": "user", "content": user_input})
 
-        bootstrap_llm_prompt = f"""You are introducing yourself to a new user.
+        # System prompt for this bootstrap stage
+        system = f"""You are introducing yourself to a new user. Stage: {stage}
+{f"User's name is: {user_name}" if user_name else ""}
+{f'Lead into this question naturally: "{next_prompt}"' if next_prompt else ''}
 
-Current stage: {stage}
-{f"Previous conversation:{chr(10)}{history_text}" if history_text else ""}
+Respond naturally in 2-3 sentences:
+- Acknowledge what they shared warmly but briefly
+- Be genuine and direct"""
 
-What they just said: "{user_input}"
-{f"They said their name is: {user_name}" if user_name else ""}
-{f'Next question to ask: "{next_prompt}"' if next_prompt else ''}
+        response = self.executor._llm(system=system, messages=messages)
 
-Respond naturally:
-1. Acknowledge what they shared warmly but briefly
-2. {f"Use their name ({user_name}) naturally" if user_name else ""}
-3. Lead into the next question conversationally
-
-Keep it to 2-3 sentences. Be genuine and direct."""
-
-        response = self.executor._llm(bootstrap_llm_prompt)
-
-        # Update conversation history
+        # Update conversation history and persist
         self._conversation_history.append({"role": "user", "content": user_input})
         self._conversation_history.append({"role": "assistant", "content": response})
+        self._save_conversation_history()
 
         return LoopResult(
             response=response,
@@ -453,56 +451,67 @@ Keep it to 2-3 sentences. Be genuine and direct."""
         """
         # Build context for greeting generation
         if self.bootstrap.is_active:
-            stage_prompt = self.bootstrap.get_current_prompt()
-            stage = self.bootstrap.current_stage.value
-
-            greeting_prompt = f"""You are starting a new conversation. You are a thoughtful assistant.
-
-Current mode: Bootstrap (first-contact protocol)
-Current stage: {stage}
-Stage prompt to incorporate: "{stage_prompt}"
-
-Generate a warm, natural welcome that:
-1. Greets the user briefly
-2. Naturally leads into the stage prompt question
-3. Feels conversational, not robotic
-4. Is 2-3 sentences maximum
-
-Do not use phrases like "I'm here to help" or "How can I assist you today".
-Just be genuine and lead into the question naturally."""
-
+            # For bootstrap, use the intro greeting directly
+            greeting = self.bootstrap.INTRO_GREETING
         else:
             # Check if returning user with existing commitment
             commitment = self.commitment.get_current()
             if commitment:
-                greeting_prompt = f"""You are resuming a conversation. You are a thoughtful assistant.
-
+                system = f"""You are resuming a conversation.
 Active commitment: {commitment.frame}
 Turns remaining: {commitment.turns_remaining}
 
-Generate a warm, natural welcome that:
+Generate a warm, natural welcome (2-3 sentences) that:
 1. Acknowledges you're picking up where you left off
 2. Briefly references the ongoing work
-3. Invites them to continue
-4. Is 2-3 sentences maximum"""
+3. Invites them to continue"""
             else:
-                greeting_prompt = """You are starting a new conversation. You are a thoughtful assistant.
-
-Generate a warm, natural welcome that:
+                system = """Generate a warm, natural welcome (1-2 sentences) that:
 1. Greets the user genuinely
 2. Opens space for them to share what's on their mind
 3. Feels conversational, not corporate
-4. Is 1-2 sentences maximum
 
 Do not use phrases like "I'm here to help" or "How can I assist you today"."""
 
-        # Use the executor's LLM to generate greeting
-        greeting = self.executor._llm(greeting_prompt)
+            # Use proper LLM call with system prompt
+            greeting = self.executor._llm(system=system, prompt="Generate greeting")
 
         # Store as assistant turn in history
         self._conversation_history.append({
             "role": "assistant",
             "content": greeting
         })
+        self._save_conversation_history()
 
         return greeting
+
+    def _load_conversation_history(self):
+        """Load conversation history from disk."""
+        if self._conversation_file.exists():
+            try:
+                data = json.loads(self._conversation_file.read_text())
+                self._conversation_history = data.get("messages", [])
+                self._turn_count = data.get("turn_count", 0)
+            except (json.JSONDecodeError, TypeError):
+                self._conversation_history = []
+                self._turn_count = 0
+
+    def _save_conversation_history(self):
+        """Save conversation history to disk."""
+        # Keep last 100 messages to avoid unbounded growth
+        recent = self._conversation_history[-100:]
+        data = {
+            "messages": recent,
+            "turn_count": self._turn_count,
+            "last_saved": datetime.now().isoformat()
+        }
+        self._conversation_file.write_text(json.dumps(data, indent=2))
+
+    def clear_conversation(self):
+        """Clear conversation history (start fresh)."""
+        self._conversation_history = []
+        self._turn_count = 0
+        if self._conversation_file.exists():
+            self._conversation_file.unlink()
+        # Also clear bootstrap to start fresh
+        self.slow_memory.clear_bootstrap()

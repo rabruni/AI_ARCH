@@ -95,8 +95,15 @@ def create_llm(config: Config) -> tuple[callable, str]:
     Create LLM callable - uses Claude if API key available, otherwise placeholder.
 
     Returns (llm_callable, status_message) for display.
+
+    The LLM callable signature is:
+        llm(system: str, messages: list[dict], prompt: str = None) -> str
+
+    - system: System prompt
+    - messages: Conversation history [{"role": "user/assistant", "content": "..."}]
+    - prompt: Optional additional prompt to append (for internal prompts)
     """
-    system_prompt = load_system_prompt()
+    base_system_prompt = load_system_prompt()
 
     # Try to use Claude if API key is set
     if os.environ.get("ANTHROPIC_API_KEY"):
@@ -104,13 +111,29 @@ def create_llm(config: Config) -> tuple[callable, str]:
             import anthropic
             client = anthropic.Anthropic()
 
-            def claude_llm(prompt: str) -> str:
-                """Call Claude API with system prompt."""
+            def claude_llm(system: str = None, messages: list = None, prompt: str = None) -> str:
+                """Call Claude API with proper multi-turn conversation."""
+                # Use base system prompt, optionally extended
+                full_system = base_system_prompt
+                if system:
+                    full_system = f"{base_system_prompt}\n\n{system}"
+
+                # Build messages list
+                msgs = list(messages) if messages else []
+
+                # If prompt provided, add as user message
+                if prompt:
+                    msgs.append({"role": "user", "content": prompt})
+
+                # Ensure we have at least one message
+                if not msgs:
+                    msgs = [{"role": "user", "content": "Hello"}]
+
                 response = client.messages.create(
                     model=config.model,
                     max_tokens=config.max_tokens,
-                    system=system_prompt,
-                    messages=[{"role": "user", "content": prompt}]
+                    system=full_system,
+                    messages=msgs
                 )
                 return response.content[0].text
 
@@ -130,52 +153,35 @@ def _create_placeholder_llm() -> callable:
 
     state = {"turn": 0}
 
-    def placeholder(prompt: str) -> str:
-        import re
+    def placeholder(system: str = None, messages: list = None, prompt: str = None) -> str:
+        """Placeholder that simulates conversation."""
+        state["turn"] += 1
 
-        # Handle greeting generation
-        if "Generate a warm, natural welcome" in prompt:
-            if "Bootstrap" in prompt and "Stage prompt to incorporate" in prompt:
-                match = re.search(r'Stage prompt to incorporate: "([^"]+)"', prompt)
-                if match:
-                    stage_prompt = match.group(1)
-                    return f"Hey there. Before we dive in - {stage_prompt.lower()}"
-            elif "Active commitment" in prompt:
-                return "Good to see you again. Ready to pick up where we left off?"
-            else:
-                return "Hey. What's on your mind today?"
+        # Get the last user message from messages or prompt
+        last_user_msg = ""
+        if messages:
+            for msg in reversed(messages):
+                if msg["role"] == "user":
+                    last_user_msg = msg["content"]
+                    break
+        if prompt:
+            last_user_msg = prompt
 
-        # Handle Bootstrap conversation (new format from _handle_bootstrap)
-        if "What they just said:" in prompt:
-            # Extract what they said
-            match = re.search(r'What they just said: "([^"]+)"', prompt)
-            user_said = match.group(1) if match else ""
+        # Check for bootstrap intro stage
+        if "what would you like me to call you" in (system or "").lower():
+            return "Hey! I'm your Assist - think of me as a cognitive partner. What would you like me to call you?"
 
-            # Extract the question to lead into
-            next_q_match = re.search(r'Question to naturally lead into: "([^"]+)"', prompt)
-            next_question = next_q_match.group(1) if next_q_match else ""
+        # Check for bootstrap connect stage
+        if "two things you're really into" in last_user_msg.lower() or "favorite things" in (system or "").lower():
+            return "Nice to meet you! What are two things you're really into right now?"
 
-            # Extract hook if present
-            hook_match = re.search(r'Identity-affirming hook to incorporate: "([^"]+)"', prompt)
-            hook = hook_match.group(1) if hook_match else ""
+        # After bootstrap - normal conversation
+        if last_user_msg:
+            # Simple acknowledgment that shows we heard them
+            preview = last_user_msg[:50] + "..." if len(last_user_msg) > 50 else last_user_msg
+            return f"I hear you about '{preview}'. Tell me more about what's on your mind."
 
-            state["turn"] += 1
-
-            # Build natural response
-            if hook:
-                return f"{hook} {next_question}" if next_question else hook
-            elif next_question:
-                return f"I hear you. {next_question}"
-            else:
-                return "Thanks for sharing that. What else is on your mind?"
-
-        # Handle regular executor prompts
-        if "User message:" in prompt:
-            match = re.search(r'User message: (.+?)(?:\n|$)', prompt)
-            user_msg = match.group(1).strip() if match else ""
-            return f"I hear what you're saying about {user_msg[:40]}. Tell me more."
-
-        return "I'm listening. What's on your mind?"
+        return "What's on your mind?"
 
     return placeholder
 

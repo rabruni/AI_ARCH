@@ -15,11 +15,9 @@ class GateTransition:
     timestamp: datetime = field(default_factory=datetime.now)
 
     def to_dict(self) -> dict:
-        return {
-            "gate": self.gate, "from_stance": self.from_stance,
-            "to_stance": self.to_stance, "reason": self.reason,
-            "timestamp": self.timestamp.isoformat()
-        }
+        return {"gate": self.gate, "from_stance": self.from_stance,
+                "to_stance": self.to_stance, "reason": self.reason,
+                "timestamp": self.timestamp.isoformat()}
 
     @classmethod
     def from_dict(cls, data: dict) -> "GateTransition":
@@ -42,14 +40,12 @@ class History:
     def _load(self):
         if self._gates_file.exists():
             try:
-                data = json.loads(self._gates_file.read_text())
-                self._gate_transitions = [GateTransition.from_dict(g) for g in data]
+                self._gate_transitions = [GateTransition.from_dict(g) for g in json.loads(self._gates_file.read_text())]
             except:
                 self._gate_transitions = []
 
     def _save_gates(self):
-        data = [g.to_dict() for g in self._gate_transitions]
-        self._gates_file.write_text(json.dumps(data, indent=2))
+        self._gates_file.write_text(json.dumps([g.to_dict() for g in self._gate_transitions], indent=2))
 
     def add_gate_transition(self, transition: GateTransition):
         self._gate_transitions.append(transition)

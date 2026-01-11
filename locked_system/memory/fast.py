@@ -1,264 +1,181 @@
-"""Fast Memory - Non-Authoritative, Continuous, Decays.
+"""Fast Memory - Ephemeral state for fast loop.
 
-Contains:
-- Progress State (current stage, next actions, blockers)
-- Interaction Signals (per-turn metrics for continuous eval)
-- Interaction Preferences (accumulated user preferences)
-
-Can be written continuously but cannot override slow memory.
+Stores:
+- Progress state
+- Interaction signals
+- Session-level preferences
 """
-import json
-from dataclasses import dataclass, field, asdict
+from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Literal
+import json
 
 
 @dataclass
 class ProgressState:
-    """Current work progress (ephemeral, decays)."""
-    current_stage: str
-    next_actions: list[str]  # 1-5 items
-    blockers: list[str]  # 0-3 items
-    recent_wins: list[str]  # last 1-3 completed
-    momentum: str = "building"  # building, stalled, accelerating
-    milestones_completed: int = 0
+    """Current progress within commitment."""
+    milestones_completed: list[str] = field(default_factory=list)
     milestones_total: int = 0
-    staleness_clock: int = 10  # Turns until stale
-    updated_at: datetime = field(default_factory=datetime.now)
+    blockers: list[str] = field(default_factory=list)
+    momentum: Literal["accelerating", "steady", "stalled"] = "steady"
+    last_update: datetime = field(default_factory=datetime.now)
 
-    def decrement_staleness(self):
-        """Decrement staleness clock."""
-        self.staleness_clock = max(0, self.staleness_clock - 1)
+    def to_dict(self) -> dict:
+        return {
+            "milestones_completed": self.milestones_completed,
+            "milestones_total": self.milestones_total,
+            "blockers": self.blockers,
+            "momentum": self.momentum,
+            "last_update": self.last_update.isoformat()
+        }
 
-    def is_stale(self) -> bool:
-        """Check if progress is stale."""
-        return self.staleness_clock <= 0
-
-    def refresh(self, turns: int = 10):
-        """Refresh staleness clock."""
-        self.staleness_clock = turns
-        self.updated_at = datetime.now()
+    @classmethod
+    def from_dict(cls, data: dict) -> "ProgressState":
+        data = data.copy()
+        if "last_update" in data:
+            data["last_update"] = datetime.fromisoformat(data["last_update"])
+        return cls(**data)
 
 
 @dataclass
 class InteractionSignals:
-    """Per-turn interaction metrics (for continuous eval)."""
-    user_input_length: int
-    response_length: int
-    altitude_used: str
-    stance_used: str
-    had_commitment: bool
+    """Per-turn interaction signals."""
+    user_input_length: int = 0
+    response_length: int = 0
+    altitude_used: str = "L3"
+    stance_used: str = "sensemaking"
+    had_commitment: bool = False
     timestamp: datetime = field(default_factory=datetime.now)
 
+    def to_dict(self) -> dict:
+        return {
+            "user_input_length": self.user_input_length,
+            "response_length": self.response_length,
+            "altitude_used": self.altitude_used,
+            "stance_used": self.stance_used,
+            "had_commitment": self.had_commitment,
+            "timestamp": self.timestamp.isoformat()
+        }
 
-@dataclass
-class InteractionPreferences:
-    """Learned interaction preferences (non-authoritative)."""
-    user_preferences: list[str]  # brevity, structure, no code, etc.
-    friction_signals: list[str]  # overwhelm, impatience, confusion
-    effective_patterns: list[str]  # what worked
-    avoidances: list[str]  # what harms flow
-    updated_at: datetime = field(default_factory=datetime.now)
+    @classmethod
+    def from_dict(cls, data: dict) -> "InteractionSignals":
+        data = data.copy()
+        if "timestamp" in data:
+            data["timestamp"] = datetime.fromisoformat(data["timestamp"])
+        return cls(**data)
 
 
 class FastMemory:
     """
-    Fast memory manager.
+    Session-level fast memory.
 
-    Continuous writes allowed. Non-authoritative.
-    Cannot override slow memory. Decays naturally.
+    More freely writable than slow memory.
+    Resets between sessions unless explicitly persisted.
     """
 
     def __init__(self, memory_dir: Path):
-        self.memory_dir = memory_dir / "fast"
+        self.memory_dir = Path(memory_dir)
         self.memory_dir.mkdir(parents=True, exist_ok=True)
 
         self._progress_file = self.memory_dir / "progress.json"
-        self._signals_file = self.memory_dir / "signals.json"
-        self._preferences_file = self.memory_dir / "preferences.json"
+        self._interactions_file = self.memory_dir / "interactions.json"
 
-        self._progress: Optional[ProgressState] = None
-        self._recent_signals: list[InteractionSignals] = []
-        self._preferences: Optional[InteractionPreferences] = None
+        self._progress: ProgressState = ProgressState()
+        self._interactions: list[InteractionSignals] = []
 
         self._load()
 
     def _load(self):
         """Load state from disk."""
+        # Load progress
         if self._progress_file.exists():
             try:
                 data = json.loads(self._progress_file.read_text())
-                if data:
-                    data['updated_at'] = datetime.fromisoformat(data['updated_at'])
-                    self._progress = ProgressState(**data)
-            except (json.JSONDecodeError, KeyError, TypeError):
-                self._progress = None
+                self._progress = ProgressState.from_dict(data)
+            except (json.JSONDecodeError, TypeError):
+                self._progress = ProgressState()
 
-        if self._signals_file.exists():
+        # Load interactions
+        if self._interactions_file.exists():
             try:
-                data = json.loads(self._signals_file.read_text())
-                if data:
-                    self._recent_signals = []
-                    for item in data:
-                        item['timestamp'] = datetime.fromisoformat(item['timestamp'])
-                        self._recent_signals.append(InteractionSignals(**item))
-            except (json.JSONDecodeError, KeyError, TypeError):
-                self._recent_signals = []
-
-        if self._preferences_file.exists():
-            try:
-                data = json.loads(self._preferences_file.read_text())
-                if data:
-                    data['updated_at'] = datetime.fromisoformat(data['updated_at'])
-                    self._preferences = InteractionPreferences(**data)
-            except (json.JSONDecodeError, KeyError, TypeError):
-                self._preferences = None
+                data = json.loads(self._interactions_file.read_text())
+                self._interactions = [InteractionSignals.from_dict(i) for i in data]
+            except (json.JSONDecodeError, TypeError):
+                self._interactions = []
 
     def _save_progress(self):
         """Save progress to disk."""
-        if self._progress:
-            data = asdict(self._progress)
-            data['updated_at'] = data['updated_at'].isoformat()
-            self._progress_file.write_text(json.dumps(data, indent=2))
+        self._progress_file.write_text(json.dumps(self._progress.to_dict(), indent=2))
 
-    def _save_signals(self):
-        """Save recent signals to disk."""
-        data = []
-        for sig in self._recent_signals[-20:]:  # Keep last 20
-            item = asdict(sig)
-            item['timestamp'] = item['timestamp'].isoformat()
-            data.append(item)
-        self._signals_file.write_text(json.dumps(data, indent=2))
-
-    def _save_preferences(self):
-        """Save preferences to disk."""
-        if self._preferences:
-            data = asdict(self._preferences)
-            data['updated_at'] = data['updated_at'].isoformat()
-            self._preferences_file.write_text(json.dumps(data, indent=2))
+    def _save_interactions(self):
+        """Save interactions to disk."""
+        # Only keep last 100 interactions
+        recent = self._interactions[-100:]
+        data = [i.to_dict() for i in recent]
+        self._interactions_file.write_text(json.dumps(data, indent=2))
 
     # Progress methods
-
-    def get_progress(self) -> Optional[ProgressState]:
-        """Get current progress."""
+    def get_progress(self) -> ProgressState:
+        """Get current progress state."""
         return self._progress
 
-    def set_progress(self, progress: ProgressState):
-        """Set progress state."""
-        self._progress = progress
+    def update_progress(
+        self,
+        milestone_completed: Optional[str] = None,
+        blocker_added: Optional[str] = None,
+        blocker_removed: Optional[str] = None,
+        momentum: Optional[str] = None
+    ):
+        """Update progress state."""
+        if milestone_completed:
+            self._progress.milestones_completed.append(milestone_completed)
+
+        if blocker_added:
+            self._progress.blockers.append(blocker_added)
+
+        if blocker_removed and blocker_removed in self._progress.blockers:
+            self._progress.blockers.remove(blocker_removed)
+
+        if momentum:
+            self._progress.momentum = momentum
+
+        self._progress.last_update = datetime.now()
         self._save_progress()
 
-    def update_progress(self, **kwargs):
-        """Update progress fields."""
-        if self._progress:
-            for key, value in kwargs.items():
-                if hasattr(self._progress, key):
-                    setattr(self._progress, key, value)
-            self._progress.updated_at = datetime.now()
-            self._save_progress()
+    def reset_progress(self, total_milestones: int = 0):
+        """Reset progress for new commitment."""
+        self._progress = ProgressState(milestones_total=total_milestones)
+        self._save_progress()
 
-    def decrement_staleness(self):
-        """Decrement progress staleness."""
-        if self._progress:
-            self._progress.decrement_staleness()
-            self._save_progress()
-
-    def clear_progress(self):
-        """Clear progress state."""
-        self._progress = None
-        if self._progress_file.exists():
-            self._progress_file.unlink()
-
-    # Per-turn signal methods
-
+    # Interaction methods
     def record_interaction(self, signals: InteractionSignals):
-        """Record per-turn interaction signals."""
-        self._recent_signals.append(signals)
-        # Keep only last 20
-        if len(self._recent_signals) > 20:
-            self._recent_signals = self._recent_signals[-20:]
-        self._save_signals()
+        """Record interaction signals."""
+        self._interactions.append(signals)
+        self._save_interactions()
 
-    def get_recent_signals(self, n: int = 5) -> list[InteractionSignals]:
-        """Get recent interaction signals."""
-        return self._recent_signals[-n:]
+    def get_recent_interactions(self, n: int = 10) -> list[InteractionSignals]:
+        """Get n most recent interactions."""
+        return self._interactions[-n:]
 
-    def clear_signals(self):
-        """Clear interaction signals."""
-        self._recent_signals = []
-        if self._signals_file.exists():
-            self._signals_file.unlink()
+    def get_interaction_summary(self) -> dict:
+        """Get summary of recent interactions."""
+        recent = self._interactions[-20:]
+        if not recent:
+            return {
+                "count": 0,
+                "avg_input_length": 0,
+                "avg_response_length": 0,
+                "altitude_distribution": {}
+            }
 
-    # Preferences methods
+        altitudes = {}
+        for i in recent:
+            altitudes[i.altitude_used] = altitudes.get(i.altitude_used, 0) + 1
 
-    def get_preferences(self) -> Optional[InteractionPreferences]:
-        """Get interaction preferences."""
-        return self._preferences
-
-    def set_preferences(self, preferences: InteractionPreferences):
-        """Set interaction preferences."""
-        self._preferences = preferences
-        self._save_preferences()
-
-    def add_preference(self, preference: str):
-        """Add a user preference."""
-        if not self._preferences:
-            self._preferences = InteractionPreferences(
-                user_preferences=[],
-                friction_signals=[],
-                effective_patterns=[],
-                avoidances=[]
-            )
-        if preference not in self._preferences.user_preferences:
-            self._preferences.user_preferences.append(preference)
-            self._preferences.updated_at = datetime.now()
-            self._save_preferences()
-
-    def add_friction(self, signal: str):
-        """Add a friction signal."""
-        if not self._preferences:
-            self._preferences = InteractionPreferences(
-                user_preferences=[],
-                friction_signals=[],
-                effective_patterns=[],
-                avoidances=[]
-            )
-        if signal not in self._preferences.friction_signals:
-            self._preferences.friction_signals.append(signal)
-            self._preferences.updated_at = datetime.now()
-            self._save_preferences()
-
-    def add_effective_pattern(self, pattern: str):
-        """Add an effective pattern."""
-        if not self._preferences:
-            self._preferences = InteractionPreferences(
-                user_preferences=[],
-                friction_signals=[],
-                effective_patterns=[],
-                avoidances=[]
-            )
-        if pattern not in self._preferences.effective_patterns:
-            self._preferences.effective_patterns.append(pattern)
-            self._preferences.updated_at = datetime.now()
-            self._save_preferences()
-
-    def add_avoidance(self, avoidance: str):
-        """Add an avoidance pattern."""
-        if not self._preferences:
-            self._preferences = InteractionPreferences(
-                user_preferences=[],
-                friction_signals=[],
-                effective_patterns=[],
-                avoidances=[]
-            )
-        if avoidance not in self._preferences.avoidances:
-            self._preferences.avoidances.append(avoidance)
-            self._preferences.updated_at = datetime.now()
-            self._save_preferences()
-
-    def clear_preferences(self):
-        """Clear preferences."""
-        self._preferences = None
-        if self._preferences_file.exists():
-            self._preferences_file.unlink()
+        return {
+            "count": len(recent),
+            "avg_input_length": sum(i.user_input_length for i in recent) / len(recent),
+            "avg_response_length": sum(i.response_length for i in recent) / len(recent),
+            "altitude_distribution": altitudes
+        }

@@ -1,118 +1,96 @@
-"""Bridge Memory - Artifact Index.
+"""Bridge Memory - Cross-loop coordination.
 
-Index only, not content. Registered agents can write.
-Status-based decay: current → stale → review-needed
+Stores:
+- Proposals awaiting slow loop processing
+- Signals from fast loop to slow loop
 """
-import json
-from dataclasses import dataclass, field, asdict
+from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import Optional, Literal
+from typing import Optional
+import json
 
 
 @dataclass
-class Artifact:
-    """An indexed artifact (pointer only, not content)."""
-    name: str
-    type: Literal["doc", "spec", "code", "deck", "other"]
-    pointer: str  # path | link | id
-    status: Literal["draft", "review", "final", "deprecated", "stale", "review-needed"]
-    version: str
-    owner: str  # agent or human
-    dependencies: list[str] = field(default_factory=list)
-    created_at: datetime = field(default_factory=datetime.now)
-    updated_at: datetime = field(default_factory=datetime.now)
-    staleness_turns: int = 30  # Turns until status decays
+class BridgeSignal:
+    """Signal from fast loop to slow loop."""
+    signal_type: str  # "stance_proposal", "commitment_concern", "emergency_flag"
+    source: str       # Which component raised it
+    content: str
+    severity: str = "normal"  # "normal", "high", "emergency"
+    timestamp: datetime = field(default_factory=datetime.now)
 
-    def decay_status(self):
-        """Apply status decay."""
-        self.staleness_turns -= 1
-        if self.staleness_turns <= 0:
-            if self.status == "final":
-                self.status = "stale"
-                self.staleness_turns = 20
-            elif self.status == "stale":
-                self.status = "review-needed"
-            elif self.status in ["draft", "review"]:
-                self.status = "stale"
-                self.staleness_turns = 10
+    def to_dict(self) -> dict:
+        return {
+            "signal_type": self.signal_type,
+            "source": self.source,
+            "content": self.content,
+            "severity": self.severity,
+            "timestamp": self.timestamp.isoformat()
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict) -> "BridgeSignal":
+        data = data.copy()
+        if "timestamp" in data:
+            data["timestamp"] = datetime.fromisoformat(data["timestamp"])
+        return cls(**data)
 
 
 class BridgeMemory:
     """
-    Bridge memory manager.
+    Bridge between fast and slow loops.
 
-    Artifact index only. Registered agents can write.
+    Fast loop writes signals here.
+    Slow loop reads and clears them.
     """
 
     def __init__(self, memory_dir: Path):
-        self.memory_dir = memory_dir / "bridge"
+        self.memory_dir = Path(memory_dir)
         self.memory_dir.mkdir(parents=True, exist_ok=True)
 
-        self._artifacts_file = self.memory_dir / "artifacts.json"
-        self._artifacts: dict[str, Artifact] = {}
+        self._signals_file = self.memory_dir / "bridge_signals.json"
+        self._signals: list[BridgeSignal] = []
 
         self._load()
 
     def _load(self):
-        """Load artifacts from disk."""
-        if self._artifacts_file.exists():
+        """Load state from disk."""
+        if self._signals_file.exists():
             try:
-                data = json.loads(self._artifacts_file.read_text())
-                for name, artifact_data in data.items():
-                    artifact_data['created_at'] = datetime.fromisoformat(artifact_data['created_at'])
-                    artifact_data['updated_at'] = datetime.fromisoformat(artifact_data['updated_at'])
-                    self._artifacts[name] = Artifact(**artifact_data)
-            except (json.JSONDecodeError, KeyError):
-                self._artifacts = {}
+                data = json.loads(self._signals_file.read_text())
+                self._signals = [BridgeSignal.from_dict(s) for s in data]
+            except (json.JSONDecodeError, TypeError):
+                self._signals = []
 
     def _save(self):
-        """Save artifacts to disk."""
-        data = {}
-        for name, artifact in self._artifacts.items():
-            d = asdict(artifact)
-            d['created_at'] = d['created_at'].isoformat()
-            d['updated_at'] = d['updated_at'].isoformat()
-            data[name] = d
-        self._artifacts_file.write_text(json.dumps(data, indent=2))
+        """Save state to disk."""
+        data = [s.to_dict() for s in self._signals]
+        self._signals_file.write_text(json.dumps(data, indent=2))
 
-    def register(self, artifact: Artifact):
-        """Register a new artifact."""
-        self._artifacts[artifact.name] = artifact
+    def add_signal(self, signal: BridgeSignal):
+        """Add a signal from fast loop."""
+        self._signals.append(signal)
         self._save()
 
-    def get(self, name: str) -> Optional[Artifact]:
-        """Get artifact by name."""
-        return self._artifacts.get(name)
+    def get_pending_signals(self) -> list[BridgeSignal]:
+        """Get all pending signals."""
+        return self._signals.copy()
 
-    def update_status(self, name: str, status: str):
-        """Update artifact status."""
-        if name in self._artifacts:
-            self._artifacts[name].status = status
-            self._artifacts[name].updated_at = datetime.now()
-            self._artifacts[name].staleness_turns = 30  # Reset decay
-            self._save()
+    def get_signals_by_type(self, signal_type: str) -> list[BridgeSignal]:
+        """Get signals of a specific type."""
+        return [s for s in self._signals if s.signal_type == signal_type]
 
-    def list_by_status(self, status: str) -> list[Artifact]:
-        """List artifacts by status."""
-        return [a for a in self._artifacts.values() if a.status == status]
+    def has_emergency(self) -> bool:
+        """Check if there's an emergency signal."""
+        return any(s.severity == "emergency" for s in self._signals)
 
-    def list_by_owner(self, owner: str) -> list[Artifact]:
-        """List artifacts by owner."""
-        return [a for a in self._artifacts.values() if a.owner == owner]
-
-    def decay_all(self):
-        """Apply decay to all artifacts."""
-        for artifact in self._artifacts.values():
-            artifact.decay_status()
+    def clear_signals(self):
+        """Clear all processed signals."""
+        self._signals = []
         self._save()
 
-    def remove(self, name: str):
-        """Remove an artifact from index."""
-        if name in self._artifacts:
-            del self._artifacts[name]
-            self._save()
-
-    def list_all(self) -> list[Artifact]:
-        """List all artifacts."""
-        return list(self._artifacts.values())
+    def clear_signal(self, signal: BridgeSignal):
+        """Clear a specific signal."""
+        self._signals = [s for s in self._signals if s != signal]
+        self._save()

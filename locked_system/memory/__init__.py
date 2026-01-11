@@ -1,18 +1,19 @@
-"""Memory system for Locked System.
+"""Memory Module - State persistence for locked system."""
 
-Three tiers:
-- Slow: Authoritative, gate-written only (Commitment, Decisions, Principles)
-- Fast: Non-authoritative, continuous, decays (Progress, Signals)
-- Bridge: Artifact index (registered agents can write)
-"""
-from locked_system.memory.slow import SlowMemory, CommitmentLease, Decision
-from locked_system.memory.fast import FastMemory, ProgressState, InteractionSignals, InteractionPreferences
-from locked_system.memory.bridge import BridgeMemory, Artifact
-from locked_system.memory.history import History
+from locked_system.memory.slow import SlowMemory, CommitmentLease, Decision, BootstrapSnapshot
+from locked_system.memory.fast import FastMemory, ProgressState, InteractionSignals
+from locked_system.memory.bridge import BridgeMemory
+from locked_system.memory.history import History, GateTransition
 
 __all__ = [
-    'SlowMemory', 'CommitmentLease', 'Decision',
-    'FastMemory', 'ProgressState', 'InteractionSignals', 'InteractionPreferences',
-    'BridgeMemory', 'Artifact',
-    'History'
+    "SlowMemory",
+    "CommitmentLease",
+    "Decision",
+    "BootstrapSnapshot",
+    "FastMemory",
+    "ProgressState",
+    "InteractionSignals",
+    "BridgeMemory",
+    "History",
+    "GateTransition",
 ]

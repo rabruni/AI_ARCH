@@ -22,8 +22,8 @@ Failure happens when execution continues after framing should have changed.
 ┌─────────────────────────────────────────────────────────┐
 │  SLOW LOOP (Authority)                                  │
 │                                                         │
-│  Commitment Lease ──→ Stance ──→ Gate Evaluation        │
-│  (one active)        (exclusive)   (authority changes)  │
+│  Perception ──→ Commitment ──→ Stance ──→ Gates         │
+│  (sensor)       (what)         (how)      (transitions) │
 │                                                         │
 │  Emergency Evaluation Gate (escape hatch - costly)      │
 └───────────────────────────┬─────────────────────────────┘
@@ -407,6 +407,96 @@ Do not invent "multiple commitments" - use this pattern instead.
 
 ---
 
+## Perception & Contrast (Sensing Layer)
+
+Perception and Contrast are first-class, non-authoritative sensing mechanisms that preserve experiential adaptation while remaining fully compliant with Locked System principles.
+
+### Perception (Sensor, Not Agent)
+
+Perception is explicitly defined as a **sensor**, not an agent.
+
+**Purpose:**
+- Assess interaction state as data, not as participant
+- Provide structured situation awareness to Slow Loop
+- Preserve Chinese-wall separation between observation and execution
+
+**Perception does:**
+- Observe ✓
+- Analyze ✓
+- Recommend ✓
+
+**Perception cannot:**
+- Decide ✗
+- Write slow memory ✗
+- Alter commitments ✗
+- Trigger gates directly ✗
+- Act on the Fast Loop ✗
+
+**Perception Report** (proposal-only, one fresh-context call):
+
+| Field | Description |
+|-------|-------------|
+| `elevation_level` | L1-L4 current operating level |
+| `elevation_mismatch` | Is conversation at wrong level for topic? |
+| `trajectory` | converging / drifting / stuck |
+| `topic_saturation` | Topics being over-discussed |
+| `sentiment` | User state, frustration signals, trust signals |
+| `north_star_connection` | Alignment with declared user values |
+| `recommended_stance` | support / challenge / redirect / elevate / ground |
+
+All fields are observational or advisory only.
+
+### Contrast (Experience Alignment Signal)
+
+Contrast is a first-class evaluative artifact derived from Perception output.
+
+**Purpose:**
+- Make explicit the gap between inferred user need and observed assistant behavior
+- Prevent silent degradation of experience quality
+- Provide stable control surface for delivery adjustment
+
+**Contrast Report** (derived from Perception, same call):
+
+| Field | Description |
+|-------|-------------|
+| `inferred_user_need` | What the user appears to need |
+| `observed_assistant_mode` | What the assistant is doing |
+| `gap_type` | altitude / pacing / stance / verbosity / tangentiality |
+| `severity` | low / medium / high |
+| `confidence` | low / medium / high |
+| `recommended_correction` | Bounded, non-authoritative suggestion |
+
+**Contrast does not act. Contrast does not decide. Contrast does not mutate system state.**
+
+### Flow: Perception → Slow Loop
+
+```
+Fast Loop interaction
+        ↓
+Perception (fresh context, no authority)
+        ↓
+Perception Report + Contrast Report
+        ↓
+Proposal Buffer
+        ↓
+Slow Loop (commitment / stance / gates)
+        ↓
+Bounded Fast Loop execution
+```
+
+Perception and Contrast Reports are routed to the Slow Loop through the existing Proposal Buffer.
+
+The Slow Loop may:
+- Accept or ignore recommendations
+- Use them to validate stance
+- Use them to evaluate GateProposals
+- Use them to detect commitment drift
+- Use them to bound Fast Loop delivery
+
+No automatic transitions. Authority remains singular.
+
+---
+
 ## What This System Is Good At
 
 - Strategy
@@ -425,7 +515,7 @@ Do not invent "multiple commitments" - use this pattern instead.
 
 ## Relationship to Current HRM
 
-This architecture **replaces** the current `the_assist/hrm/` implementation:
+This architecture **replaces** the current `the_assist/hrm/` and `the_assist/core/` implementation:
 
 | Current | Becomes |
 |---------|---------|
@@ -436,6 +526,8 @@ This architecture **replaces** the current `the_assist/hrm/` implementation:
 | `altitude.py` | HRM depth control (subordinate to Slow Loop) |
 | `history.py` | Part of Memory (Progress State + History) |
 | `loop.py` | Rewrite to enforce two-loop model |
+| `perception_agent.py` | Perception sensor (input to Slow Loop, produces Perception + Contrast Reports) |
+| `hrm_agent.py` | Absorbed into Slow Loop decision logic |
 
 ---
 

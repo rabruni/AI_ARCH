@@ -11,22 +11,29 @@ Or import and use directly:
 """
 import argparse
 import json
+import os
 import sys
 from pathlib import Path
 from typing import Optional
+
+# Load .env file from project root (same as the_assist)
+try:
+    from dotenv import load_dotenv
+    PROJECT_ROOT = Path(__file__).parent.parent
+    load_dotenv(PROJECT_ROOT / ".env")
+except ImportError:
+    pass  # dotenv not installed, rely on environment variables
 
 from locked_system.config import Config
 from locked_system.loop import LockedLoop, LoopResult
 
 
-def create_llm(config: Config) -> callable:
+def create_llm(config: Config) -> tuple[callable, str]:
     """
     Create LLM callable - uses Claude if API key available, otherwise placeholder.
 
-    Same approach as the_assist - uses anthropic.Anthropic() with claude-sonnet.
+    Returns (llm_callable, status_message) for display.
     """
-    import os
-
     # Try to use Claude if API key is set
     if os.environ.get("ANTHROPIC_API_KEY"):
         try:
@@ -34,25 +41,33 @@ def create_llm(config: Config) -> callable:
             client = anthropic.Anthropic()
 
             def claude_llm(prompt: str) -> str:
-                """Call Claude API."""
-                response = client.messages.create(
-                    model=config.model,
-                    max_tokens=config.max_tokens,
-                    messages=[{"role": "user", "content": prompt}]
-                )
+                """Call Claude API with proper message format."""
+                # Split system instructions from user content if present
+                if "User message:" in prompt or "What they just said:" in prompt:
+                    # This is a structured prompt - use system message
+                    response = client.messages.create(
+                        model=config.model,
+                        max_tokens=config.max_tokens,
+                        system="You are a thoughtful, warm assistant. Be genuine and human.",
+                        messages=[{"role": "user", "content": prompt}]
+                    )
+                else:
+                    response = client.messages.create(
+                        model=config.model,
+                        max_tokens=config.max_tokens,
+                        messages=[{"role": "user", "content": prompt}]
+                    )
                 return response.content[0].text
 
-            print("[Using Claude API]")
-            return claude_llm
+            return claude_llm, f"Claude ({config.model.split('-')[1]})"
 
         except ImportError:
-            print("[Warning: anthropic package not installed, using placeholder]")
+            return _create_placeholder_llm(), "Placeholder (pip install anthropic for Claude)"
         except Exception as e:
-            print(f"[Warning: Claude API error ({e}), using placeholder]")
+            return _create_placeholder_llm(), f"Placeholder (API error: {e})"
 
     # Fallback to placeholder
-    print("[Using placeholder LLM - set ANTHROPIC_API_KEY for real responses]")
-    return _create_placeholder_llm()
+    return _create_placeholder_llm(), "Demo mode (set ANTHROPIC_API_KEY for real AI)"
 
 
 def _create_placeholder_llm() -> callable:
@@ -75,43 +90,52 @@ def _create_placeholder_llm() -> callable:
             else:
                 return "Hey. What's on your mind today?"
 
-        # Bootstrap-aware responses
-        prompt_lower = prompt.lower()
-        if "sensemaking" in prompt_lower:
-            state["turn"] += 1
-            if state["turn"] == 1:
-                return "I hear you. What's helping you stay where you are right now?"
-            elif state["turn"] == 2:
-                return "Those are real anchors. If you moved one step up, what would be different?"
-            elif state["turn"] == 3:
-                return "That sounds meaningful. What's one small thing that would help?"
-            elif state["turn"] == 4:
-                return "Would you like me to keep listening, or start offering structure?"
-            else:
-                return "Let's work on this together. Where should we start?"
+        # Handle Bootstrap conversation (new format from _handle_bootstrap)
+        if "What they just said:" in prompt:
+            # Extract what they said
+            match = re.search(r'What they just said: "([^"]+)"', prompt)
+            user_said = match.group(1) if match else ""
 
-        # Default
+            # Extract the question to lead into
+            next_q_match = re.search(r'Question to naturally lead into: "([^"]+)"', prompt)
+            next_question = next_q_match.group(1) if next_q_match else ""
+
+            # Extract hook if present
+            hook_match = re.search(r'Identity-affirming hook to incorporate: "([^"]+)"', prompt)
+            hook = hook_match.group(1) if hook_match else ""
+
+            state["turn"] += 1
+
+            # Build natural response
+            if hook:
+                return f"{hook} {next_question}" if next_question else hook
+            elif next_question:
+                return f"I hear you. {next_question}"
+            else:
+                return "Thanks for sharing that. What else is on your mind?"
+
+        # Handle regular executor prompts
         if "User message:" in prompt:
-            user_msg = prompt.split("User message:")[-1].strip().split("\n")[0]
-            return f"I'm with you. Tell me more about '{user_msg[:30]}'."
+            match = re.search(r'User message: (.+?)(?:\n|$)', prompt)
+            user_msg = match.group(1).strip() if match else ""
+            return f"I hear what you're saying about {user_msg[:40]}. Tell me more."
 
         return "I'm listening. What's on your mind?"
 
     return placeholder
 
 
-def run_interactive(loop: LockedLoop):
+def run_interactive(loop: LockedLoop, llm_status: str):
     """Run interactive REPL session."""
     print("\n=== Locked System ===")
-    print("Type 'quit' or 'exit' to end session")
-    print("Type 'state' to see current loop state")
-    print("Type 'commit <frame>' to create a commitment")
-    print("Type 'emergency <reason>' to trigger emergency gate")
+    print(f"AI: {llm_status}")
     print("-" * 40)
+    print("Commands: 'state' | 'commit <goal>' | 'quit'")
+    print("")
 
     # Generate natural greeting using the AI
     greeting = loop.generate_greeting()
-    print(f"\nAssistant: {greeting}")
+    print(f"Assistant: {greeting}")
 
     while True:
         try:
@@ -207,7 +231,7 @@ def main():
         config = Config()
 
     # Create loop with LLM (Claude if API key set, otherwise placeholder)
-    llm = create_llm(config)
+    llm, llm_status = create_llm(config)
     loop = LockedLoop(config, llm)
 
     # Run appropriate mode
@@ -227,7 +251,7 @@ def main():
         else:
             print(result.response)
     else:
-        run_interactive(loop)
+        run_interactive(loop, llm_status)
 
 
 if __name__ == "__main__":

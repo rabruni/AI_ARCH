@@ -138,6 +138,15 @@ fi
 # Change to project directory
 cd "$PROJECT_DIR"
 
+# Activate virtual environment if it exists
+if [[ -d "$PROJECT_DIR/venv" ]]; then
+    source "$PROJECT_DIR/venv/bin/activate"
+    [[ $VERBOSE == true ]] && log_info "Activated venv"
+elif [[ -d "$PROJECT_DIR/.venv" ]]; then
+    source "$PROJECT_DIR/.venv/bin/activate"
+    [[ $VERBOSE == true ]] && log_info "Activated .venv"
+fi
+
 # Build command based on mode
 case $MODE in
     interactive)

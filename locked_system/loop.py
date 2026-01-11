@@ -39,6 +39,9 @@ from locked_system.fast_loop.continuous_eval import ContinuousEvaluator
 from locked_system.sensing.perception import PerceptionSensor, PerceptionContext
 from locked_system.sensing.contrast import ContrastDetector, ContrastContext
 
+# Features
+from locked_system.notes import Notes, NoteType
+
 
 @dataclass
 class LoopResult:
@@ -104,6 +107,9 @@ class LockedLoop:
         self.perception = PerceptionSensor()
         self.contrast = ContrastDetector()
 
+        # Initialize features
+        self.notes = Notes(self.config.memory_dir / "notes")
+
         # State
         self._turn_count = 0
         self._conversation_history: list[dict] = []
@@ -116,6 +122,11 @@ class LockedLoop:
         """
         self._turn_count += 1
         gate_transitions = []
+
+        # Check for note-taking intent first
+        note_result = self._check_note_intent(user_input)
+        if note_result:
+            return note_result
 
         # Phase 1: Sensing
         perception_report = self._sense(user_input)
@@ -158,6 +169,40 @@ class LockedLoop:
         )
         return self.perception.sense(context)
 
+    def _check_note_intent(self, user_input: str) -> Optional[LoopResult]:
+        """Check if user wants to make a note and handle it."""
+        note_type = self.notes.detect_note_intent(user_input)
+        if not note_type:
+            return None
+
+        # Get context from last assistant message
+        context = ""
+        if self._conversation_history:
+            for msg in reversed(self._conversation_history):
+                if msg["role"] == "assistant":
+                    context = msg["content"]
+                    break
+
+        # Extract note content
+        content = self.notes.extract_note_content(user_input, context)
+
+        # Add the note
+        confirmation = self.notes.add_note(note_type, content)
+
+        # Update conversation history
+        self._conversation_history.append({"role": "user", "content": user_input})
+        self._conversation_history.append({"role": "assistant", "content": confirmation})
+
+        return LoopResult(
+            response=confirmation,
+            stance=self.stance.current.value,
+            altitude="L1",  # Quick action
+            bootstrap_active=self.bootstrap.is_active,
+            gate_transitions=[],
+            quality_health="healthy",
+            turn_number=self._turn_count
+        )
+
     def _handle_bootstrap(
         self,
         user_input: str,
@@ -170,19 +215,30 @@ class LockedLoop:
             # Bootstrap complete, transition to normal operation
             return None
 
-        # Build bootstrap response
-        response_parts = []
+        # Use LLM to generate natural Bootstrap response
+        hook = result.get("hook", "")
+        next_prompt = result.get("next_prompt", "")
+        stage = self.bootstrap.current_stage.value
 
-        if result.get("hook"):
-            response_parts.append(result["hook"])
+        bootstrap_llm_prompt = f"""You are having a supportive first conversation with someone.
 
-        if result.get("next_prompt"):
-            response_parts.append(result["next_prompt"])
+Current stage: {stage}
+What they just said: "{user_input}"
+{f'Identity-affirming hook to incorporate: "{hook}"' if hook else ''}
+{f'Question to naturally lead into: "{next_prompt}"' if next_prompt else ''}
 
-        if not response_parts:
-            response_parts.append("I'm here. What's on your mind?")
+Respond naturally and warmly:
+1. Acknowledge what they shared (briefly, genuinely)
+2. {f'Include the hook sentiment naturally' if hook else 'Be present with them'}
+3. {f'Lead into the next question conversationally' if next_prompt else 'Invite them to share more'}
 
-        response = "\n\n".join(response_parts)
+Keep it to 2-4 sentences. Be human, not clinical."""
+
+        response = self.executor._llm(bootstrap_llm_prompt)
+
+        # Update conversation history
+        self._conversation_history.append({"role": "user", "content": user_input})
+        self._conversation_history.append({"role": "assistant", "content": response})
 
         return LoopResult(
             response=response,

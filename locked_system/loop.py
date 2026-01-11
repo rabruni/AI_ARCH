@@ -62,6 +62,12 @@ class LockedLoop:
     Main orchestration loop.
 
     Coordinates slow and fast loops with proper authority hierarchy.
+
+    Hooks for extensibility:
+        on_bootstrap_complete: Called when bootstrap finishes (user_name: str)
+        on_gate_transition: Called on gate transitions (gate: str, from_stance: str, to_stance: str)
+        on_response_generated: Called after response generation (response: str, result: LoopResult)
+        prompt_enhancer: Callable to modify/enhance prompts before LLM call (prompt: str) -> str
     """
 
     # Proposal source priority
@@ -76,9 +82,20 @@ class LockedLoop:
     def __init__(
         self,
         config: Optional[Config] = None,
-        llm_callable: Optional[Callable[[str], str]] = None
+        llm_callable: Optional[Callable[[str], str]] = None,
+        # Extension hooks
+        on_bootstrap_complete: Optional[Callable[[str], None]] = None,
+        on_gate_transition: Optional[Callable[[str, str, str], None]] = None,
+        on_response_generated: Optional[Callable[[str, "LoopResult"], None]] = None,
+        prompt_enhancer: Optional[Callable[[str], str]] = None,
     ):
         self.config = config or Config()
+
+        # Store hooks
+        self._on_bootstrap_complete = on_bootstrap_complete
+        self._on_gate_transition = on_gate_transition
+        self._on_response_generated = on_response_generated
+        self._prompt_enhancer = prompt_enhancer
 
         # Initialize memory layers with proper subdirectories
         self.slow_memory = SlowMemory(self.config.memory_dir / "slow")
@@ -98,7 +115,11 @@ class LockedLoop:
             self.slow_memory,
             self.history
         )
-        self.bootstrap = Bootstrap(self.slow_memory)
+        self.bootstrap = Bootstrap(
+            self.slow_memory,
+            intro_greeting=self.config.bootstrap_greeting,
+            connect_prompt=self.config.bootstrap_connect_prompt
+        )
 
         # Initialize fast loop components
         self.hrm = HRM()
@@ -157,7 +178,7 @@ class LockedLoop:
         self._conversation_history.append({"role": "assistant", "content": response})
         self._save_conversation_history()
 
-        return LoopResult(
+        loop_result = LoopResult(
             response=response,
             stance=self.stance.current.value,
             altitude=altitude,
@@ -166,6 +187,12 @@ class LockedLoop:
             quality_health=quality_health,
             turn_number=self._turn_count
         )
+
+        # Call response generated hook if set
+        if self._on_response_generated:
+            self._on_response_generated(response, loop_result)
+
+        return loop_result
 
     def _sense(self, user_input: str) -> "PerceptionReport":
         """Phase 1: Perception sensing."""
@@ -223,6 +250,10 @@ class LockedLoop:
             # Bootstrap complete, transition to normal operation
             user_name = self.bootstrap.get_user_name()
 
+            # Call bootstrap complete hook if set
+            if self._on_bootstrap_complete:
+                self._on_bootstrap_complete(user_name)
+
             # Build messages with current input
             messages = list(self._conversation_history)
             messages.append({"role": "user", "content": user_input})
@@ -234,6 +265,10 @@ Give a brief, warm acknowledgment (1-2 sentences) that:
 2. Shows you're ready to be their cognitive partner
 3. Asks what they'd like to work on or talk about
 Be genuine and direct, not effusive."""
+
+            # Apply prompt enhancer if set
+            if self._prompt_enhancer:
+                system = self._prompt_enhancer(system)
 
             response = self.executor._llm(system=system, messages=messages)
 
@@ -269,6 +304,10 @@ Be genuine and direct, not effusive."""
 Respond naturally in 2-3 sentences:
 - Acknowledge what they shared warmly but briefly
 - Be genuine and direct"""
+
+        # Apply prompt enhancer if set
+        if self._prompt_enhancer:
+            system = self._prompt_enhancer(system)
 
         response = self.executor._llm(system=system, messages=messages)
 
@@ -318,6 +357,13 @@ Respond naturally in 2-3 sentences:
                     transitions.append(
                         f"{result.gate}: {result.from_stance.value} -> {result.to_stance.value}"
                     )
+                    # Call gate transition hook if set
+                    if self._on_gate_transition:
+                        self._on_gate_transition(
+                            result.gate,
+                            result.from_stance.value,
+                            result.to_stance.value
+                        )
 
             # Clear processed proposals
             self.proposal_buffer.clear()

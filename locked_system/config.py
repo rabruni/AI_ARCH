@@ -42,6 +42,18 @@ class Config:
             Creates subdirectories: slow/, fast/, bridge/, history/
             Default: "./memory"
 
+        system_prompt: Path to system prompt file or prompt string.
+            If Path, reads content from file. If str, uses directly.
+            Default: None (generic behavior)
+
+        bootstrap_greeting: Custom greeting for bootstrap intro stage.
+            If None, uses default generic greeting.
+            Default: None
+
+        bootstrap_connect_prompt: Custom prompt for bootstrap connect stage.
+            If None, uses default generic prompt.
+            Default: None
+
         slow_memory_path: Full path to slow memory file.
             Derived from memory_dir. Contains commitments, decisions.
 
@@ -73,6 +85,11 @@ class Config:
 
     # Memory paths
     memory_dir: Path = field(default_factory=lambda: Path("./memory"))
+
+    # Pluggable personality/prompt settings
+    system_prompt: Optional[Path | str] = None
+    bootstrap_greeting: Optional[str] = None
+    bootstrap_connect_prompt: Optional[str] = None
 
     # Bootstrap settings
     bootstrap_soft_timeout_turns: int = 10
@@ -116,6 +133,16 @@ class Config:
     def api_key(self) -> Optional[str]:
         """Anthropic API key from environment."""
         return os.environ.get("ANTHROPIC_API_KEY")
+
+    def get_system_prompt_content(self) -> Optional[str]:
+        """Get system prompt content (loads from file if Path)."""
+        if self.system_prompt is None:
+            return None
+        if isinstance(self.system_prompt, Path):
+            if self.system_prompt.exists():
+                return self.system_prompt.read_text()
+            return None
+        return self.system_prompt  # Already a string
 
     def __post_init__(self):
         """Initialize directories after dataclass creation."""
@@ -187,6 +214,9 @@ class Config:
             'perception_model': self.perception_model,
             'max_tokens': self.max_tokens,
             'memory_dir': str(self.memory_dir),
+            'system_prompt': str(self.system_prompt) if isinstance(self.system_prompt, Path) else self.system_prompt,
+            'bootstrap_greeting': self.bootstrap_greeting,
+            'bootstrap_connect_prompt': self.bootstrap_connect_prompt,
             'bootstrap_soft_timeout_turns': self.bootstrap_soft_timeout_turns,
             'emergency_cooldown_turns': self.emergency_cooldown_turns,
             'proposal_priority_order': self.proposal_priority_order,

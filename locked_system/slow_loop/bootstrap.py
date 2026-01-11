@@ -36,22 +36,35 @@ class Bootstrap:
     Bootstrap mode controller.
 
     Simple 2-stage first-contact protocol.
+
+    The intro_greeting and connect_prompt can be customized for different agent personalities.
     """
 
-    INTRO_GREETING = (
+    # Default greeting/prompts (can be overridden via constructor)
+    DEFAULT_INTRO_GREETING = (
         "Hey! I'm your Assist - think of me as a cognitive partner, not just a task manager. "
         "I'm here to help you think, remember what matters, and challenge you when needed. "
         "We'll build trust over time. First though - what would you like me to call you?"
     )
 
-    CONNECT_PROMPT = (
+    DEFAULT_CONNECT_PROMPT = (
         "What are two things you're really into right now? "
         "Could be projects, hobbies, ideas - whatever's got your attention."
     )
 
-    def __init__(self, slow_memory: SlowMemory):
+    def __init__(
+        self,
+        slow_memory: SlowMemory,
+        intro_greeting: Optional[str] = None,
+        connect_prompt: Optional[str] = None
+    ):
         self.memory = slow_memory
         self._state: Optional[BootstrapState] = None
+
+        # Use custom greetings if provided, otherwise defaults
+        self.INTRO_GREETING = intro_greeting or self.DEFAULT_INTRO_GREETING
+        self.CONNECT_PROMPT = connect_prompt or self.DEFAULT_CONNECT_PROMPT
+
         self._load_or_init()
 
     def _load_or_init(self):

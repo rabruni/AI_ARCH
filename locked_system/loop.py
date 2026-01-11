@@ -220,9 +220,21 @@ class LockedLoop:
         next_prompt = result.get("next_prompt", "")
         stage = self.bootstrap.current_stage.value
 
+        # Build conversation context
+        history_text = ""
+        if self._conversation_history:
+            recent = self._conversation_history[-6:]
+            history_lines = []
+            for turn in recent:
+                role = "User" if turn["role"] == "user" else "Assistant"
+                history_lines.append(f"{role}: {turn['content']}")
+            history_text = "\n".join(history_lines)
+
         bootstrap_llm_prompt = f"""You are having a supportive first conversation with someone.
 
 Current stage: {stage}
+{f"Previous conversation:{chr(10)}{history_text}" if history_text else ""}
+
 What they just said: "{user_input}"
 {f'Identity-affirming hook to incorporate: "{hook}"' if hook else ''}
 {f'Question to naturally lead into: "{next_prompt}"' if next_prompt else ''}
@@ -232,7 +244,7 @@ Respond naturally and warmly:
 2. {f'Include the hook sentiment naturally' if hook else 'Be present with them'}
 3. {f'Lead into the next question conversationally' if next_prompt else 'Invite them to share more'}
 
-Keep it to 2-4 sentences. Be human, not clinical."""
+Keep it to 2-4 sentences. Be human, not clinical. Maintain continuity with what was discussed before."""
 
         response = self.executor._llm(bootstrap_llm_prompt)
 

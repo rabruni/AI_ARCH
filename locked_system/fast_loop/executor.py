@@ -188,13 +188,24 @@ class Executor:
         context: ExecutionContext
     ) -> str:
         """Generate response using LLM."""
-        # Build full prompt
-        full_prompt = f"""
-{system_prompt}
+        # Build conversation context from history
+        history_text = ""
+        if context.conversation_history:
+            # Include recent conversation for context (last 10 turns)
+            recent = context.conversation_history[-10:]
+            history_lines = []
+            for turn in recent:
+                role = "User" if turn["role"] == "user" else "Assistant"
+                history_lines.append(f"{role}: {turn['content']}")
+            history_text = "\n".join(history_lines)
 
-User message: {context.user_input}
+        # Build full prompt with history
+        full_prompt = f"""{system_prompt}
 
-Respond according to the constraints above.
+{f"Previous conversation:{chr(10)}{history_text}{chr(10)}" if history_text else ""}
+Current user message: {context.user_input}
+
+Respond according to the constraints above, maintaining continuity with the conversation.
 """
         return self._llm(full_prompt)
 

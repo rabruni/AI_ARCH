@@ -30,14 +30,27 @@ def create_default_llm() -> callable:
         - OpenAI GPT
         - Local model
         """
-        # Extract user message from prompt
+        # Handle greeting generation
+        if "Generate a warm, natural welcome" in prompt:
+            if "Bootstrap" in prompt and "Stage prompt to incorporate" in prompt:
+                # Extract the stage prompt
+                import re
+                match = re.search(r'Stage prompt to incorporate: "([^"]+)"', prompt)
+                if match:
+                    stage_prompt = match.group(1)
+                    return f"Hey there. Before we dive in, I'm curious - {stage_prompt.lower()}"
+            elif "Active commitment" in prompt:
+                return "Good to see you again. Ready to pick up where we left off?"
+            else:
+                return "Hey. What's on your mind today?"
+
+        # Handle regular user messages
         if "User message:" in prompt:
             user_msg = prompt.split("User message:")[-1].strip()
             user_msg = user_msg.split("\n")[0]
-        else:
-            user_msg = "your message"
+            return f"I hear you. {user_msg[:50]}... Tell me more about that."
 
-        return f"I understand you're saying: {user_msg}. How can I help you with that?"
+        return "I'm listening. What would you like to explore?"
 
     return llm
 
@@ -51,15 +64,9 @@ def run_interactive(loop: LockedLoop):
     print("Type 'emergency <reason>' to trigger emergency gate")
     print("-" * 40)
 
-    # Initial greeting - if in Bootstrap, show first prompt
-    if loop.bootstrap.is_active:
-        initial_prompt = loop.bootstrap.get_current_prompt()
-        if initial_prompt:
-            print(f"\nAssistant: Welcome. {initial_prompt}")
-        else:
-            print("\nAssistant: Welcome. What's on your mind?")
-    else:
-        print("\nAssistant: Welcome. How can I help you today?")
+    # Generate natural greeting using the AI
+    greeting = loop.generate_greeting()
+    print(f"\nAssistant: {greeting}")
 
     while True:
         try:

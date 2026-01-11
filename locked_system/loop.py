@@ -348,3 +348,66 @@ class LockedLoop:
     def get_history(self) -> list[dict]:
         """Get conversation history."""
         return self._conversation_history.copy()
+
+    def generate_greeting(self) -> str:
+        """
+        Generate a natural greeting for session start.
+
+        Uses the LLM to create a context-aware welcome message
+        based on current state (Bootstrap, returning user, etc.).
+        """
+        # Build context for greeting generation
+        if self.bootstrap.is_active:
+            stage_prompt = self.bootstrap.get_current_prompt()
+            stage = self.bootstrap.current_stage.value
+
+            greeting_prompt = f"""You are starting a new conversation. You are a thoughtful assistant.
+
+Current mode: Bootstrap (first-contact protocol)
+Current stage: {stage}
+Stage prompt to incorporate: "{stage_prompt}"
+
+Generate a warm, natural welcome that:
+1. Greets the user briefly
+2. Naturally leads into the stage prompt question
+3. Feels conversational, not robotic
+4. Is 2-3 sentences maximum
+
+Do not use phrases like "I'm here to help" or "How can I assist you today".
+Just be genuine and lead into the question naturally."""
+
+        else:
+            # Check if returning user with existing commitment
+            commitment = self.commitment.get_current()
+            if commitment:
+                greeting_prompt = f"""You are resuming a conversation. You are a thoughtful assistant.
+
+Active commitment: {commitment.frame}
+Turns remaining: {commitment.turns_remaining}
+
+Generate a warm, natural welcome that:
+1. Acknowledges you're picking up where you left off
+2. Briefly references the ongoing work
+3. Invites them to continue
+4. Is 2-3 sentences maximum"""
+            else:
+                greeting_prompt = """You are starting a new conversation. You are a thoughtful assistant.
+
+Generate a warm, natural welcome that:
+1. Greets the user genuinely
+2. Opens space for them to share what's on their mind
+3. Feels conversational, not corporate
+4. Is 1-2 sentences maximum
+
+Do not use phrases like "I'm here to help" or "How can I assist you today"."""
+
+        # Use the executor's LLM to generate greeting
+        greeting = self.executor._llm(greeting_prompt)
+
+        # Store as assistant turn in history
+        self._conversation_history.append({
+            "role": "assistant",
+            "content": greeting
+        })
+
+        return greeting

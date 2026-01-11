@@ -80,12 +80,24 @@ from locked_system.config import Config
 from locked_system.loop import LockedLoop, LoopResult
 
 
+def load_system_prompt() -> str:
+    """Load system prompt from prompts/system.md."""
+    prompts_dir = Path(__file__).parent / "prompts"
+    system_file = prompts_dir / "system.md"
+    if system_file.exists():
+        return system_file.read_text()
+    # Fallback if file doesn't exist
+    return "You are a thoughtful, warm assistant. Be genuine and human."
+
+
 def create_llm(config: Config) -> tuple[callable, str]:
     """
     Create LLM callable - uses Claude if API key available, otherwise placeholder.
 
     Returns (llm_callable, status_message) for display.
     """
+    system_prompt = load_system_prompt()
+
     # Try to use Claude if API key is set
     if os.environ.get("ANTHROPIC_API_KEY"):
         try:
@@ -93,22 +105,13 @@ def create_llm(config: Config) -> tuple[callable, str]:
             client = anthropic.Anthropic()
 
             def claude_llm(prompt: str) -> str:
-                """Call Claude API with proper message format."""
-                # Split system instructions from user content if present
-                if "User message:" in prompt or "What they just said:" in prompt:
-                    # This is a structured prompt - use system message
-                    response = client.messages.create(
-                        model=config.model,
-                        max_tokens=config.max_tokens,
-                        system="You are a thoughtful, warm assistant. Be genuine and human.",
-                        messages=[{"role": "user", "content": prompt}]
-                    )
-                else:
-                    response = client.messages.create(
-                        model=config.model,
-                        max_tokens=config.max_tokens,
-                        messages=[{"role": "user", "content": prompt}]
-                    )
+                """Call Claude API with system prompt."""
+                response = client.messages.create(
+                    model=config.model,
+                    max_tokens=config.max_tokens,
+                    system=system_prompt,
+                    messages=[{"role": "user", "content": prompt}]
+                )
                 return response.content[0].text
 
             return claude_llm, f"Claude ({config.model.split('-')[1]})"

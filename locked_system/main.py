@@ -51,6 +51,16 @@ def run_interactive(loop: LockedLoop):
     print("Type 'emergency <reason>' to trigger emergency gate")
     print("-" * 40)
 
+    # Initial greeting - if in Bootstrap, show first prompt
+    if loop.bootstrap.is_active:
+        initial_prompt = loop.bootstrap.get_current_prompt()
+        if initial_prompt:
+            print(f"\nAssistant: Welcome. {initial_prompt}")
+        else:
+            print("\nAssistant: Welcome. What's on your mind?")
+    else:
+        print("\nAssistant: Welcome. How can I help you today?")
+
     while True:
         try:
             user_input = input("\nYou: ").strip()

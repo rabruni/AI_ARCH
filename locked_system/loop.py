@@ -76,10 +76,10 @@ class LockedLoop:
         self.config = config or Config()
 
         # Initialize memory layers
-        self.slow_memory = SlowMemory(self.config.slow_memory_path)
-        self.fast_memory = FastMemory()
-        self.bridge_memory = BridgeMemory()
-        self.history = History()
+        self.slow_memory = SlowMemory(self.config.memory_dir)
+        self.fast_memory = FastMemory(self.config.memory_dir)
+        self.bridge_memory = BridgeMemory(self.config.memory_dir)
+        self.history = History(self.config.memory_dir)
 
         # Initialize proposal buffer
         self.proposal_buffer = ProposalBuffer()

@@ -6,13 +6,13 @@ Three tiers:
 - Bridge: Artifact index (registered agents can write)
 """
 from locked_system.memory.slow import SlowMemory, CommitmentLease, Decision
-from locked_system.memory.fast import FastMemory, ProgressState, InteractionSignals
+from locked_system.memory.fast import FastMemory, ProgressState, InteractionSignals, InteractionPreferences
 from locked_system.memory.bridge import BridgeMemory, Artifact
 from locked_system.memory.history import History
 
 __all__ = [
     'SlowMemory', 'CommitmentLease', 'Decision',
-    'FastMemory', 'ProgressState', 'InteractionSignals',
+    'FastMemory', 'ProgressState', 'InteractionSignals', 'InteractionPreferences',
     'BridgeMemory', 'Artifact',
     'History'
 ]

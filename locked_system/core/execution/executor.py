@@ -159,6 +159,14 @@ class Executor:
         """
         parts = []
 
+        # Current date/time context - critical for temporal awareness
+        now = datetime.now()
+        parts.append("## Current Context")
+        parts.append(f"Current date: {now.strftime('%Y-%m-%d')}")
+        parts.append(f"Current time: {now.strftime('%H:%M')} (local)")
+        parts.append(f"Year: {now.year}")
+        parts.append("")
+
         # Constraints header
         parts.append("## Behavioral Constraints")
 

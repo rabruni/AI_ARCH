@@ -1,0 +1,8 @@
+{
+  "conversation_history": true,
+  "interaction_signals": true,
+  "learned_preferences": true,
+  "first_consent_at": "2026-01-11T21:35:26.825917",
+  "last_updated_at": "2026-01-11T21:35:26.825970",
+  "consent_version": 1
+}

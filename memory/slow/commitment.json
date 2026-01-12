@@ -1,0 +1,9 @@
+{
+  "frame": "<sales play>",
+  "horizon_authority": "mid",
+  "success_criteria": [],
+  "non_goals": [],
+  "lease_expiry": "20 turns",
+  "renewal_prompt": "Continue with this focus?",
+  "turns_remaining": 0
+}

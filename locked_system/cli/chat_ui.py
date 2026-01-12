@@ -162,7 +162,7 @@ class ChatUI:
         # Move cursor up to overwrite the "You: message" input line
         print(f"\033[A\033[K", end="")  # Move up, clear line
 
-        lines = self._wrap_text(message)
+        lines = self._wrap_text(message, bg_color=Colors.BG_BRIGHT_BLACK)
 
         # Calculate bubble width based on visible text length
         max_line_len = max(self._visible_len(line) for line in lines) if lines else 0
@@ -183,7 +183,7 @@ class ChatUI:
 
     def print_assistant_message(self, message: str, metadata: dict = None, signal_strip: str = None):
         """Print assistant message (right-aligned, blue bubble)."""
-        lines = self._wrap_text(message)
+        lines = self._wrap_text(message, bg_color=Colors.BG_BLUE)
 
         # Calculate bubble width for consistent appearance
         max_line_len = max(self._visible_len(line) for line in lines) if lines else 0
@@ -465,8 +465,13 @@ class ChatUI:
             result = re.sub(pattern, '', result)
         return result
 
-    def _wrap_text(self, text: str) -> list:
-        """Wrap text to fit in bubble."""
+    def _wrap_text(self, text: str, bg_color: str = None) -> list:
+        """Wrap text to fit in bubble.
+
+        Args:
+            text: Text to wrap
+            bg_color: Background color to restore after markdown (e.g., Colors.BG_BLUE)
+        """
         import re
 
         # Handle multi-line text - wrap BEFORE markdown processing
@@ -486,7 +491,7 @@ class ChatUI:
                 all_lines.append('')
 
         # Now apply markdown formatting to each line
-        all_lines = [self._process_markdown(line) for line in all_lines]
+        all_lines = [self._process_markdown(line, bg_color=bg_color) for line in all_lines]
 
         return all_lines if all_lines else ['']
 
@@ -496,40 +501,51 @@ class ChatUI:
         ansi_escape = re.compile(r'\x1b\[[0-9;]*m')
         return len(ansi_escape.sub('', text))
 
-    def _process_markdown(self, text: str) -> str:
-        """Convert markdown to terminal formatting."""
+    def _process_markdown(self, text: str, bg_color: str = None) -> str:
+        """Convert markdown to terminal formatting.
+
+        Args:
+            text: Text to process
+            bg_color: Background color to restore after each element (for bubbles)
+        """
         import re
+
+        # What to restore after formatting - include background for bubbles
+        if bg_color:
+            restore = f'{Colors.RESET}{bg_color}{Colors.WHITE}'
+        else:
+            restore = f'{Colors.RESET}{Colors.WHITE}'
 
         # Bold: **text** or __text__ -> BOLD text RESET
         text = re.sub(
             r'\*\*(.+?)\*\*',
-            f'{Colors.BOLD}\\1{Colors.RESET}{Colors.WHITE}',
+            f'{Colors.BOLD}\\1{restore}',
             text
         )
         text = re.sub(
             r'__(.+?)__',
-            f'{Colors.BOLD}\\1{Colors.RESET}{Colors.WHITE}',
+            f'{Colors.BOLD}\\1{restore}',
             text
         )
 
         # Italic: *text* or _text_ -> ITALIC text RESET (but not inside bold)
         text = re.sub(
             r'(?<!\*)\*([^*]+?)\*(?!\*)',
-            f'{Colors.ITALIC}\\1{Colors.RESET}{Colors.WHITE}',
+            f'{Colors.ITALIC}\\1{restore}',
             text
         )
 
         # Code: `text` -> DIM text RESET
         text = re.sub(
             r'`([^`]+?)`',
-            f'{Colors.DIM}\\1{Colors.RESET}{Colors.WHITE}',
+            f'{Colors.DIM}\\1{restore}',
             text
         )
 
         # Headers: remove # but make bold
         text = re.sub(
             r'^#+\s*(.+)$',
-            f'{Colors.BOLD}\\1{Colors.RESET}',
+            f'{Colors.BOLD}\\1{restore}',
             text,
             flags=re.MULTILINE
         )

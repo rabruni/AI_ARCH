@@ -46,21 +46,8 @@ class Config:
             If Path, reads content from file. If str, uses directly.
             Default: None (generic behavior)
 
-        bootstrap_greeting: Custom greeting for bootstrap intro stage.
-            If None, uses default generic greeting.
-            Default: None
-
-        bootstrap_connect_prompt: Custom prompt for bootstrap connect stage.
-            If None, uses default generic prompt.
-            Default: None
-
         slow_memory_path: Full path to slow memory file.
             Derived from memory_dir. Contains commitments, decisions.
-
-        bootstrap_soft_timeout_turns: Turns before re-offering handoff.
-            After this many turns in Bootstrap without transition,
-            system gently re-offers the permission prompt.
-            Default: 10
 
         emergency_cooldown_turns: Minimum turns between emergency gates.
             Prevents abuse of emergency escape hatch.
@@ -87,12 +74,10 @@ class Config:
     memory_dir: Path = field(default_factory=lambda: Path("./memory"))
 
     # Pluggable personality/prompt settings
-    system_prompt: Optional[Path | str] = None
-    bootstrap_greeting: Optional[str] = None
-    bootstrap_connect_prompt: Optional[str] = None
-
-    # Bootstrap settings
-    bootstrap_soft_timeout_turns: int = 10
+    # Default: use the locked_system data-plane prompt
+    system_prompt: Optional[Path | str] = field(
+        default_factory=lambda: Path(__file__).parent / "prompts" / "system.md"
+    )
 
     # Emergency settings
     emergency_cooldown_turns: int = 3
@@ -215,9 +200,6 @@ class Config:
             'max_tokens': self.max_tokens,
             'memory_dir': str(self.memory_dir),
             'system_prompt': str(self.system_prompt) if isinstance(self.system_prompt, Path) else self.system_prompt,
-            'bootstrap_greeting': self.bootstrap_greeting,
-            'bootstrap_connect_prompt': self.bootstrap_connect_prompt,
-            'bootstrap_soft_timeout_turns': self.bootstrap_soft_timeout_turns,
             'emergency_cooldown_turns': self.emergency_cooldown_turns,
             'proposal_priority_order': self.proposal_priority_order,
             'default_lease_turns': self.default_lease_turns,
@@ -242,9 +224,6 @@ class Config:
 
         if self.emergency_cooldown_turns < 1:
             errors.append("emergency_cooldown_turns must be positive")
-
-        if self.bootstrap_soft_timeout_turns < 1:
-            errors.append("bootstrap_soft_timeout_turns must be positive")
 
         if not self.proposal_priority_order:
             errors.append("proposal_priority_order cannot be empty")

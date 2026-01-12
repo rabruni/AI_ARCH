@@ -35,7 +35,6 @@ from the_assist.personality import (
     create_prompt_enhancer,
     PersonalityConfig,
 )
-from the_assist.personality.injector import get_personality_defaults
 from the_assist.adapters.intent_to_commitment import create_intent_context_for_prompt
 from the_assist.hrm.intent import IntentStore
 from the_assist.core.formatter import (
@@ -65,7 +64,6 @@ class TheAssist:
         self.personality_config = PersonalityConfig(
             system_prompt_path=self.prompts_dir / "system.md",
         )
-        defaults = get_personality_defaults()
 
         # Intent store (The Assist's unique authority layer)
         self.intent = IntentStore()
@@ -74,8 +72,6 @@ class TheAssist:
         config = Config(
             memory_dir=self.memory_dir,
             system_prompt=self.prompts_dir / "system.md",
-            bootstrap_greeting=defaults["intro_greeting"],
-            bootstrap_connect_prompt=defaults["connect_prompt"],
         )
 
         # Create LLM with personality
@@ -98,15 +94,10 @@ class TheAssist:
         self.loop = LockedLoop(
             config=config,
             llm_callable=llm,
-            on_bootstrap_complete=self._on_bootstrap_complete,
             on_gate_transition=self._on_gate_transition,
             on_response_generated=self._on_response_generated,
             prompt_enhancer=full_prompt_enhancer,
         )
-
-    def _on_bootstrap_complete(self, user_name: str):
-        """Called when bootstrap completes."""
-        pass
 
     def _on_gate_transition(self, gate: str, from_stance: str, to_stance: str):
         """Called on gate transitions."""
@@ -120,10 +111,6 @@ class TheAssist:
         """Process user input through The Assist."""
         result = self.loop.process(user_input)
         return result.response
-
-    def get_greeting(self) -> str:
-        """Get opening greeting."""
-        return self.loop.generate_greeting()
 
     def get_state(self) -> dict:
         """Get current state."""
@@ -200,15 +187,10 @@ def main():
     print(format_system_message(f"Stance: {intent['stance']} | North stars: {', '.join(intent['north_stars'][:2])}", "info"))
     print()
 
-    # Get greeting
-    greeting = assist.get_greeting()
-    print(format_assist_message(greeting))
-
     # Initialize logger
     logs_dir = assist.base_dir / "logs"
     logger = SessionLogger(logs_dir)
     logger.log_system(f"AI: {assist.llm_status}")
-    logger.log_assistant(greeting)
 
     try:
         while True:

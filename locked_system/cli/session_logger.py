@@ -42,8 +42,6 @@ class SessionLogger:
         """Log LoopResult metadata."""
         meta = f"Turn {result.turn_number} | Stance: {result.stance} | Altitude: {result.altitude} | Health: {result.quality_health}"
         self._write(f"  [{meta}]")
-        if result.bootstrap_active:
-            self._write("  [Bootstrap mode active]")
         if result.gate_transitions:
             self._write(f"  [Gate transitions: {', '.join(result.gate_transitions)}]")
 

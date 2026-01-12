@@ -8,6 +8,7 @@ Invariants:
 - Slow loop has authority over stance transitions
 - Fast loop operates within slow loop constraints
 - Proposals flow up, decisions flow down
+- Capabilities require explicit delegation
 """
 from typing import Optional, Callable
 from datetime import datetime
@@ -22,27 +23,31 @@ from locked_system.memory.slow import SlowMemory
 from locked_system.memory.fast import FastMemory, ProgressState
 from locked_system.memory.bridge import BridgeMemory
 from locked_system.memory.history import History
+from locked_system.memory.consent import ConsentManager
 
 # Proposals
-from locked_system.proposals.buffer import ProposalBuffer
+from locked_system.proposals.buffer import ProposalBuffer, GateProposal, Severity
 
-# Slow Loop
-from locked_system.slow_loop.stance import StanceMachine, Stance
-from locked_system.slow_loop.commitment import CommitmentManager
-from locked_system.slow_loop.gates import GateController
-from locked_system.slow_loop.bootstrap import Bootstrap, BootstrapStage
+# Governance (core)
+from locked_system.core.governance.stance import StanceMachine, Stance
+from locked_system.core.governance.commitment import CommitmentManager
+from locked_system.core.governance.gates import GateController
+from locked_system.core.governance.delegation import DelegationManager, DelegationLease
 
-# Fast Loop
-from locked_system.fast_loop.hrm import HRM
-from locked_system.fast_loop.executor import Executor, ExecutionContext
-from locked_system.fast_loop.continuous_eval import ContinuousEvaluator
+# Execution (core)
+from locked_system.core.execution.hrm import HRM
+from locked_system.core.execution.executor import Executor, ExecutionContext
+from locked_system.core.execution.continuous_eval import ContinuousEvaluator
 
 # Sensing
 from locked_system.sensing.perception import PerceptionSensor, PerceptionContext
 from locked_system.sensing.contrast import ContrastDetector, ContrastContext
 
-# Features
-from locked_system.notes import Notes, NoteType
+# Signals
+from locked_system.signals import SignalCollector, SignalComputer, SignalDisplay
+
+# Capabilities (gated)
+from locked_system.capabilities.note_capture import NoteCaptureCapability, NoteType
 
 
 @dataclass
@@ -51,7 +56,6 @@ class LoopResult:
     response: str
     stance: str
     altitude: str
-    bootstrap_active: bool
     gate_transitions: list[str]
     quality_health: str
     turn_number: int
@@ -64,7 +68,6 @@ class LockedLoop:
     Coordinates slow and fast loops with proper authority hierarchy.
 
     Hooks for extensibility:
-        on_bootstrap_complete: Called when bootstrap finishes (user_name: str)
         on_gate_transition: Called on gate transitions (gate: str, from_stance: str, to_stance: str)
         on_response_generated: Called after response generation (response: str, result: LoopResult)
         prompt_enhancer: Callable to modify/enhance prompts before LLM call (prompt: str) -> str
@@ -84,7 +87,6 @@ class LockedLoop:
         config: Optional[Config] = None,
         llm_callable: Optional[Callable[[str], str]] = None,
         # Extension hooks
-        on_bootstrap_complete: Optional[Callable[[str], None]] = None,
         on_gate_transition: Optional[Callable[[str, str, str], None]] = None,
         on_response_generated: Optional[Callable[[str, "LoopResult"], None]] = None,
         prompt_enhancer: Optional[Callable[[str], str]] = None,
@@ -92,7 +94,6 @@ class LockedLoop:
         self.config = config or Config()
 
         # Store hooks
-        self._on_bootstrap_complete = on_bootstrap_complete
         self._on_gate_transition = on_gate_transition
         self._on_response_generated = on_response_generated
         self._prompt_enhancer = prompt_enhancer
@@ -115,11 +116,6 @@ class LockedLoop:
             self.slow_memory,
             self.history
         )
-        self.bootstrap = Bootstrap(
-            self.slow_memory,
-            intro_greeting=self.config.bootstrap_greeting,
-            connect_prompt=self.config.bootstrap_connect_prompt
-        )
 
         # Initialize fast loop components
         self.hrm = HRM()
@@ -130,15 +126,29 @@ class LockedLoop:
         self.perception = PerceptionSensor()
         self.contrast = ContrastDetector()
 
-        # Initialize features
-        self.notes = Notes(self.config.memory_dir / "notes")
+        # Initialize delegation manager
+        self.delegation = DelegationManager()
+
+        # Initialize capabilities (gated)
+        self.note_capture = NoteCaptureCapability(
+            self.config.memory_dir / "notes",
+            authorization_check=self.delegation.check
+        )
+
+        # Initialize signals subsystem
+        self.signal_collector = SignalCollector()
+        self.signal_computer = SignalComputer(self.signal_collector)
+        self.signal_display = SignalDisplay()
+
+        # Initialize consent manager
+        self.consent = ConsentManager(self.config.memory_dir)
 
         # State
         self._turn_count = 0
         self._conversation_history: list[dict] = []
         self._conversation_file = self.config.memory_dir / "conversation.json"
 
-        # Load existing conversation history
+        # Load existing conversation history (if consent allows)
         self._load_conversation_history()
 
     def process(self, user_input: str) -> LoopResult:
@@ -150,6 +160,9 @@ class LockedLoop:
         self._turn_count += 1
         gate_transitions = []
 
+        # Record turn signal
+        self.signal_collector.record_turn(self._turn_count, "loop")
+
         # Check for note-taking intent first
         note_result = self._check_note_intent(user_input)
         if note_result:
@@ -158,31 +171,52 @@ class LockedLoop:
         # Phase 1: Sensing
         perception_report = self._sense(user_input)
 
-        # Phase 2: Bootstrap check
-        if self.bootstrap.is_active:
-            result = self._handle_bootstrap(user_input, perception_report)
-            if result:
-                return result
+        # Record sentiment from perception
+        if perception_report:
+            sentiment = getattr(perception_report, 'sentiment', 'neutral')
+            confidence = getattr(perception_report, 'confidence', 0.5)
+            self.signal_collector.record_sentiment(sentiment, confidence, "perception")
 
-        # Phase 3: Slow loop (authority decisions)
+        # Phase 2: Slow loop (authority decisions)
         gate_transitions = self._slow_loop_tick(user_input, perception_report)
 
-        # Phase 4: Fast loop (execution)
+        # Record stance signal
+        self.signal_collector.record_stance(self.stance.current.value, "stance_machine")
+
+        # Phase 3: Fast loop (execution)
         response, altitude = self._fast_loop_execute(user_input, perception_report)
 
-        # Phase 5: Continuous evaluation
+        # Record altitude signal
+        hrm_reason = getattr(self.hrm, '_last_reason', '')
+        self.signal_collector.record_altitude(altitude, hrm_reason, "hrm")
+
+        # Phase 4: Continuous evaluation
         quality_health = self._post_execution_eval(user_input, response)
+
+        # Record health signal
+        health_dims = self.continuous_eval.get_health_summary().get('dimension_averages', {})
+        self.signal_collector.record_health(quality_health, health_dims, "continuous_eval")
+
+        # Record progress signal
+        progress_state = self.fast_memory.get_progress()
+        if progress_state:
+            progress_score = getattr(progress_state, 'completion', 0.5)
+            direction = 'up' if progress_score > 0.5 else ('down' if progress_score < 0.3 else 'flat')
+            self.signal_collector.record_progress(direction, progress_score, "evaluator")
 
         # Update conversation history and persist
         self._conversation_history.append({"role": "user", "content": user_input})
         self._conversation_history.append({"role": "assistant", "content": response})
+
+        # Record write activity
+        self.signal_collector.record_write_start("conversation", "loop")
         self._save_conversation_history()
+        self.signal_collector.record_write_end("conversation", True, "loop")
 
         loop_result = LoopResult(
             response=response,
             stance=self.stance.current.value,
             altitude=altitude,
-            bootstrap_active=False,
             gate_transitions=gate_transitions,
             quality_health=quality_health,
             turn_number=self._turn_count
@@ -204,8 +238,13 @@ class LockedLoop:
         return self.perception.sense(context)
 
     def _check_note_intent(self, user_input: str) -> Optional[LoopResult]:
-        """Check if user wants to make a note and handle it."""
-        note_type = self.notes.detect_note_intent(user_input)
+        """
+        Check if user wants to make a note and handle it through proper gating.
+
+        Note capture is a capability that requires delegation.
+        If not authorized, proposes gate transition and returns guidance.
+        """
+        note_type = self.note_capture.detect_note_intent(user_input)
         if not note_type:
             return None
 
@@ -218,98 +257,58 @@ class LockedLoop:
                     break
 
         # Extract note content
-        content = self.notes.extract_note_content(user_input, context)
+        content = self.note_capture.extract_note_content(user_input, context)
 
-        # Add the note
-        confirmation = self.notes.add_note(note_type, content)
-
-        # Update conversation history and persist
-        self._conversation_history.append({"role": "user", "content": user_input})
-        self._conversation_history.append({"role": "assistant", "content": confirmation})
-        self._save_conversation_history()
-
-        return LoopResult(
-            response=confirmation,
-            stance=self.stance.current.value,
-            altitude="L1",  # Quick action
-            bootstrap_active=self.bootstrap.is_active,
-            gate_transitions=[],
-            quality_health="healthy",
-            turn_number=self._turn_count
+        # Attempt capture through gated capability
+        result = self.note_capture.capture(
+            note_type=note_type,
+            content=content,
+            grantee="agent",
+            source="conversation"
         )
 
-    def _handle_bootstrap(
-        self,
-        user_input: str,
-        perception: "PerceptionReport"
-    ) -> Optional[LoopResult]:
-        """Handle bootstrap mode interaction."""
-        result = self.bootstrap.process_input(user_input)
+        if result["success"]:
+            # Note captured successfully
+            response = (
+                f"Got it - added to your {note_type} notes.\n"
+                f"[Verified] Wrote to: {result.get('file', 'notes')}\n"
+                f"[Captured] \"{result.get('content_preview', content[:50])}\""
+            )
+        elif not result["authorized"]:
+            # Not authorized - propose gate transition for delegation
+            self.proposal_buffer.add_gate_proposal(GateProposal(
+                reason=f"Note capture requested but not authorized",
+                severity=Severity.LOW,
+                suggested_gate="framing",
+                source="note_capture"
+            ))
 
-        if result.get("transition_proposal"):
-            # Bootstrap complete, transition to normal operation
-            user_name = self.bootstrap.get_user_name()
+            # For now, grant temporary delegation and retry
+            # In full implementation, this would require explicit user/gate approval
+            self.delegation.grant(DelegationLease(
+                grantee="agent",
+                scope=["note_capture"],
+                expires_turns=5
+            ))
 
-            # Call bootstrap complete hook if set
-            if self._on_bootstrap_complete:
-                self._on_bootstrap_complete(user_name)
-
-            # Build messages with current input
-            messages = list(self._conversation_history)
-            messages.append({"role": "user", "content": user_input})
-
-            # Generate completion using proper multi-turn
-            system = f"""Bootstrap complete. User's name is: {user_name}
-Give a brief, warm acknowledgment (1-2 sentences) that:
-1. Thanks them for sharing
-2. Shows you're ready to be their cognitive partner
-3. Asks what they'd like to work on or talk about
-Be genuine and direct, not effusive."""
-
-            # Apply prompt enhancer if set
-            if self._prompt_enhancer:
-                system = self._prompt_enhancer(system)
-
-            response = self.executor._llm(system=system, messages=messages)
-
-            # Update conversation history and persist
-            self._conversation_history.append({"role": "user", "content": user_input})
-            self._conversation_history.append({"role": "assistant", "content": response})
-            self._save_conversation_history()
-
-            return LoopResult(
-                response=response,
-                stance="sensemaking",
-                altitude="L3",
-                bootstrap_active=False,
-                gate_transitions=["Bootstrap complete"],
-                quality_health="healthy",
-                turn_number=self._turn_count
+            # Retry capture
+            result = self.note_capture.capture(
+                note_type=note_type,
+                content=content,
+                grantee="agent",
+                source="conversation"
             )
 
-        # Still in bootstrap - generate response for current stage
-        next_prompt = result.get("next_prompt", "")
-        user_name = result.get("user_name", "")
-        stage = self.bootstrap.current_stage.value
-
-        # Build messages with current input
-        messages = list(self._conversation_history)
-        messages.append({"role": "user", "content": user_input})
-
-        # System prompt for this bootstrap stage
-        system = f"""You are introducing yourself to a new user. Stage: {stage}
-{f"User's name is: {user_name}" if user_name else ""}
-{f'Lead into this question naturally: "{next_prompt}"' if next_prompt else ''}
-
-Respond naturally in 2-3 sentences:
-- Acknowledge what they shared warmly but briefly
-- Be genuine and direct"""
-
-        # Apply prompt enhancer if set
-        if self._prompt_enhancer:
-            system = self._prompt_enhancer(system)
-
-        response = self.executor._llm(system=system, messages=messages)
+            if result["success"]:
+                response = (
+                    f"Got it - added to your {note_type} notes.\n"
+                    f"[Verified] Wrote to: {result.get('file', 'notes')}\n"
+                    f"[Captured] \"{result.get('content_preview', content[:50])}\""
+                )
+            else:
+                response = f"Could not capture note: {result.get('message', 'unknown error')}"
+        else:
+            response = f"Could not capture note: {result.get('message', 'unknown error')}"
 
         # Update conversation history and persist
         self._conversation_history.append({"role": "user", "content": user_input})
@@ -318,9 +317,8 @@ Respond naturally in 2-3 sentences:
 
         return LoopResult(
             response=response,
-            stance="sensemaking",
-            altitude="L3",
-            bootstrap_active=True,
+            stance=self.stance.current.value,
+            altitude="L1",  # Quick action
             gate_transitions=[],
             quality_health="healthy",
             turn_number=self._turn_count
@@ -331,7 +329,7 @@ Respond naturally in 2-3 sentences:
         user_input: str,
         perception: "PerceptionReport"
     ) -> list[str]:
-        """Phase 3: Slow loop authority decisions."""
+        """Phase 2: Slow loop authority decisions."""
         transitions = []
 
         # Check commitment expiry
@@ -345,6 +343,9 @@ Respond naturally in 2-3 sentences:
 
         # Tick gate controller (update cooldowns)
         self.gate_controller.tick()
+
+        # Tick delegation manager (expire leases)
+        self.delegation.tick()
 
         # Process proposals
         if self.proposal_buffer.has_proposals():
@@ -378,7 +379,7 @@ Respond naturally in 2-3 sentences:
         user_input: str,
         perception: "PerceptionReport"
     ) -> tuple[str, str]:
-        """Phase 4: Fast loop execution."""
+        """Phase 3: Fast loop execution."""
         # Get progress state
         progress = self.fast_memory.get_progress()
 
@@ -404,7 +405,7 @@ Respond naturally in 2-3 sentences:
         user_input: str,
         response: str
     ) -> str:
-        """Phase 5: Post-execution continuous evaluation."""
+        """Phase 4: Post-execution continuous evaluation."""
         execution_result = self.executor.get_last_result()
         if not execution_result:
             return "unknown"
@@ -479,57 +480,74 @@ Respond naturally in 2-3 sentences:
             "turn": self._turn_count,
             "stance": self.stance.current.value,
             "commitment": self.commitment.get_summary(),
-            "bootstrap_active": self.bootstrap.is_active,
             "gate_state": self.gate_controller.get_state(),
+            "delegation": self.delegation.get_summary(),
             "health": self.continuous_eval.get_health_summary()
         }
+
+    def get_signal_state(self):
+        """Get current signal state with computed values."""
+        return self.signal_computer.get_state()
+
+    def get_signal_display(self, compact: bool = True) -> str:
+        """Get formatted signal display string."""
+        state = self.signal_computer.get_state()
+        return self.signal_display.format_status_strip(state, compact=compact)
+
+    def get_trust_panel(self) -> str:
+        """Get formatted trust panel for :trust command."""
+        state = self.signal_computer.get_state()
+        events = self.signal_collector.get_trust_events()
+        return self.signal_display.format_trust_panel(state, events)
+
+    def get_learning_panel(self) -> str:
+        """Get formatted learning panel for :learn command."""
+        state = self.signal_computer.get_state()
+        return self.signal_display.format_learning_panel(state)
+
+    def get_signals_panel(self) -> str:
+        """Get full signals panel for inspection."""
+        state = self.signal_computer.get_state()
+        return self.signal_display.format_full_panel(state)
+
+    def record_trust_event(self, event: str):
+        """Record a trust-affecting event."""
+        self.signal_collector.record_trust_event(event, "user")
+
+    # Consent management
+
+    def needs_consent(self) -> bool:
+        """Check if consent prompt is needed."""
+        return self.consent.needs_consent()
+
+    def grant_consent(
+        self,
+        conversation_history: bool = True,
+        interaction_signals: bool = True,
+        learned_preferences: bool = False
+    ):
+        """Grant consent for memory persistence."""
+        self.consent.grant_consent(
+            conversation_history=conversation_history,
+            interaction_signals=interaction_signals,
+            learned_preferences=learned_preferences
+        )
+        # Record as trust event
+        self.signal_collector.record_trust_event('consent_granted', 'user')
+
+    def revoke_consent(self):
+        """Revoke all consent."""
+        self.consent.revoke_all()
+        # Record as trust event
+        self.signal_collector.record_trust_event('consent_revoked', 'user')
+
+    def get_consent_summary(self) -> dict:
+        """Get consent status summary."""
+        return self.consent.get_summary()
 
     def get_history(self) -> list[dict]:
         """Get conversation history."""
         return self._conversation_history.copy()
-
-    def generate_greeting(self) -> str:
-        """
-        Generate a natural greeting for session start.
-
-        Uses the LLM to create a context-aware welcome message
-        based on current state (Bootstrap, returning user, etc.).
-        """
-        # Build context for greeting generation
-        if self.bootstrap.is_active:
-            # For bootstrap, use the intro greeting directly
-            greeting = self.bootstrap.INTRO_GREETING
-        else:
-            # Check if returning user with existing commitment
-            commitment = self.commitment.get_current()
-            if commitment:
-                system = f"""You are resuming a conversation.
-Active commitment: {commitment.frame}
-Turns remaining: {commitment.turns_remaining}
-
-Generate a warm, natural welcome (2-3 sentences) that:
-1. Acknowledges you're picking up where you left off
-2. Briefly references the ongoing work
-3. Invites them to continue"""
-            else:
-                system = """Generate a warm, natural welcome (1-2 sentences) that:
-1. Greets the user genuinely
-2. Opens space for them to share what's on their mind
-3. Feels conversational, not corporate
-
-Do not use phrases like "I'm here to help" or "How can I assist you today"."""
-
-            # Use proper LLM call with system prompt
-            greeting = self.executor._llm(system=system, prompt="Generate greeting")
-
-        # Store as assistant turn in history
-        self._conversation_history.append({
-            "role": "assistant",
-            "content": greeting
-        })
-        self._save_conversation_history()
-
-        return greeting
 
     def _load_conversation_history(self):
         """Load conversation history from disk."""
@@ -543,7 +561,11 @@ Do not use phrases like "I'm here to help" or "How can I assist you today"."""
                 self._turn_count = 0
 
     def _save_conversation_history(self):
-        """Save conversation history to disk."""
+        """Save conversation history to disk (consent-gated)."""
+        # Check consent before persisting
+        if not self.consent.can_persist('conversation'):
+            return  # User has not consented to conversation persistence
+
         # Keep last 100 messages to avoid unbounded growth
         recent = self._conversation_history[-100:]
         data = {
@@ -559,5 +581,3 @@ Do not use phrases like "I'm here to help" or "How can I assist you today"."""
         self._turn_count = 0
         if self._conversation_file.exists():
             self._conversation_file.unlink()
-        # Also clear bootstrap to start fresh
-        self.slow_memory.clear_bootstrap()

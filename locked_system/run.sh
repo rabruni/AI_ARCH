@@ -4,9 +4,11 @@
 #
 # Usage:
 #   ./run.sh                     # Interactive mode
+#   ./run.sh -d, --debug         # Debug mode (shows system state)
 #   ./run.sh -m "message"        # Single message
 #   ./run.sh --setup             # Run setup/validation
 #   ./run.sh --test              # Run setup with tests
+#   ./run.sh --reset             # Clear all memory (fresh start)
 #   ./run.sh --help              # Show help
 #
 # Environment:
@@ -33,6 +35,7 @@ MESSAGE=""
 JSON_OUTPUT=false
 CONFIG_FILE=""
 VERBOSE=false
+DEBUG_MODE=false
 
 usage() {
     cat << EOF
@@ -42,9 +45,11 @@ Usage: $(basename "$0") [OPTIONS]
 
 Modes:
   (default)              Interactive chat mode
+  -d, --debug            Debug mode (shows full system state)
   -m, --message MSG      Process single message and exit
   -s, --setup            Run setup validation
   -t, --test             Run setup with full tests
+  -r, --reset            Clear all memory (fresh start)
 
 Options:
   -c, --config FILE      Use configuration file (YAML)
@@ -54,11 +59,13 @@ Options:
 
 Examples:
   $(basename "$0")                           # Start interactive session
+  $(basename "$0") -d                        # Start with debug panel
   $(basename "$0") -m "Hello"                # Process single message
   $(basename "$0") -m "Hello" --json         # Get JSON response
   $(basename "$0") --setup                   # Validate installation
   $(basename "$0") --test                    # Run full tests
   $(basename "$0") -c config.yaml            # Use custom config
+  $(basename "$0") --reset                   # Clear memory and start fresh
 
 Environment Variables:
   ANTHROPIC_API_KEY      API key for Claude models
@@ -86,6 +93,10 @@ log_error() {
 # Parse arguments
 while [[ $# -gt 0 ]]; do
     case $1 in
+        -d|--debug)
+            DEBUG_MODE=true
+            shift
+            ;;
         -m|--message)
             MODE="message"
             MESSAGE="$2"
@@ -97,6 +108,10 @@ while [[ $# -gt 0 ]]; do
             ;;
         -t|--test)
             MODE="test"
+            shift
+            ;;
+        -r|--reset)
+            MODE="reset"
             shift
             ;;
         -c|--config)
@@ -156,15 +171,10 @@ case $MODE in
             [[ -n "$ANTHROPIC_API_KEY" ]] && log_info "API key: set" || log_warn "API key: not set (using placeholder)"
         fi
 
-        echo ""
-        echo "╔══════════════════════════════════════════╗"
-        echo "║         LOCKED SYSTEM v0.1.0             ║"
-        echo "║   Two-Loop Cognitive Architecture        ║"
-        echo "╚══════════════════════════════════════════╝"
-        echo ""
-
+        # The chat UI handles its own header
         CMD="python3 -m locked_system.main"
         [[ -n "$CONFIG_FILE" ]] && CMD="$CMD --config $CONFIG_FILE"
+        [[ $DEBUG_MODE == true ]] && CMD="$CMD --debug"
         exec $CMD
         ;;
 
@@ -190,5 +200,28 @@ case $MODE in
     test)
         log_info "Running setup with full tests..."
         exec python3 -m locked_system.setup --test
+        ;;
+
+    reset)
+        MEMORY_DIR="${LOCKED_MEMORY_DIR:-./memory}"
+        log_warn "This will delete all memory in: $MEMORY_DIR"
+        read -p "Are you sure? (y/N) " -n 1 -r
+        echo
+        if [[ $REPLY =~ ^[Yy]$ ]]; then
+            if [[ -d "$MEMORY_DIR" ]]; then
+                rm -rf "$MEMORY_DIR"
+                log_success "Memory cleared: $MEMORY_DIR"
+            else
+                log_info "Memory directory does not exist: $MEMORY_DIR"
+            fi
+            # Also clear logs if they exist
+            if [[ -d "./logs" ]]; then
+                rm -rf "./logs"
+                log_success "Logs cleared: ./logs"
+            fi
+            log_success "Fresh start ready. Run ./run.sh to begin."
+        else
+            log_info "Reset cancelled."
+        fi
         ;;
 esac

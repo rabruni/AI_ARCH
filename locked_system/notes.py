@@ -112,7 +112,7 @@ class Notes:
         """
         Add a note to the appropriate file.
 
-        Returns confirmation message.
+        Returns confirmation message with validation.
         """
         if not content.strip():
             return "I didn't catch what to note. Could you say that again?"
@@ -133,7 +133,42 @@ class Notes:
         with open(file_path, "a") as f:
             f.write(entry)
 
-        return f"Got it - added to your {label}."
+        # Validate by reading back
+        verified_content = self._verify_note_written(file_path, timestamp, content)
+
+        if verified_content:
+            # Truncate for display if too long
+            display_content = content[:100] + "..." if len(content) > 100 else content
+            return (
+                f"Got it - added to your {label}.\n"
+                f"[Verified] Wrote to: {file_path.name}\n"
+                f"[Captured] \"{display_content}\""
+            )
+        else:
+            return (
+                f"Warning: Note may not have been saved correctly to {label}. "
+                f"Please check {file_path}"
+            )
+
+    def _verify_note_written(self, file_path: Path, timestamp: str, content: str) -> bool:
+        """
+        Verify that a note was written correctly by reading the file back.
+
+        Returns True if the note content is found in the file.
+        """
+        try:
+            if not file_path.exists():
+                return False
+
+            file_content = file_path.read_text()
+
+            # Check if both timestamp and content appear in the file
+            has_timestamp = timestamp in file_content
+            has_content = content in file_content
+
+            return has_timestamp and has_content
+        except Exception:
+            return False
 
     def get_recent_notes(self, note_type: str, n: int = 5) -> list[str]:
         """Get the most recent notes of a type."""

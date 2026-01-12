@@ -9,8 +9,8 @@ from dataclasses import dataclass
 from typing import Optional, Callable, Any
 from datetime import datetime
 
-from locked_system.slow_loop.stance import Stance
-from locked_system.fast_loop.hrm import HRMAssessment, Altitude
+from locked_system.core.governance.stance import Stance
+from locked_system.core.execution.hrm import HRMAssessment, Altitude
 from locked_system.memory.slow import CommitmentLease
 from locked_system.memory.fast import FastMemory, InteractionSignals
 

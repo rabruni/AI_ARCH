@@ -56,24 +56,3 @@ def create_prompt_enhancer(
         return f"{personality}\n\n---\n\n{base_prompt}"
 
     return enhance_prompt
-
-
-# Default greeting for The Assist (Donna/Pepper style)
-DEFAULT_INTRO_GREETING = (
-    "Hey! I'm your Assist - think of me as a cognitive partner, not just a task manager. "
-    "I'm here to help you think, remember what matters, and challenge you when needed. "
-    "We'll build trust over time. First though - what would you like me to call you?"
-)
-
-DEFAULT_CONNECT_PROMPT = (
-    "What are two things you're really into right now? "
-    "Could be projects, hobbies, ideas - whatever's got your attention."
-)
-
-
-def get_personality_defaults() -> dict:
-    """Get default personality configuration values."""
-    return {
-        "intro_greeting": DEFAULT_INTRO_GREETING,
-        "connect_prompt": DEFAULT_CONNECT_PROMPT,
-    }

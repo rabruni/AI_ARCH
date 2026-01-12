@@ -5,8 +5,9 @@ don't solve the wrong problem well, don't think forever and never deliver,
 and behave like trusted partners.
 
 Architecture:
-- Slow Loop: Authority (Perception → Commitment → Stance → Gates)
-- Fast Loop: Execution (HRM → Execute → Continuous Eval)
+- Core: Governance (stance, gates, commitment, delegation) + Execution (HRM, executor, eval)
+- Agents: Experience layers (style, domain, bootstrap)
+- Capabilities: Gated tools (note_capture, memory_write)
 - Memory: Durable state (Slow/Fast/Bridge tiers)
 
 Key invariant: Evaluators and sensors propose only. Never decide.
@@ -22,7 +23,7 @@ Usage:
     loop = LockedLoop(
         Config(system_prompt="path/to/prompt.md"),
         llm_callable=my_llm,
-        on_bootstrap_complete=lambda name: print(f"Welcome {name}"),
+        on_gate_transition=lambda g, f, t: print(f"{g}: {f} -> {t}"),
         prompt_enhancer=lambda p: f"Be helpful.\n\n{p}"
     )
 """
@@ -31,19 +32,31 @@ Usage:
 from locked_system.loop import LockedLoop, LoopResult
 from locked_system.config import Config
 
-# Slow loop components
-from locked_system.slow_loop.stance import StanceMachine, Stance
-from locked_system.slow_loop.commitment import CommitmentManager
-from locked_system.slow_loop.gates import GateController, GateResult
-from locked_system.slow_loop.bootstrap import Bootstrap, BootstrapStage
+# Governance (from core)
+from locked_system.core.governance.stance import StanceMachine, Stance
+from locked_system.core.governance.commitment import CommitmentManager
+from locked_system.core.governance.gates import GateController, GateResult
+from locked_system.core.governance.delegation import DelegationManager, DelegationLease
 
-# Fast loop components
-from locked_system.fast_loop.hrm import HRM, Altitude, HRMAssessment
-from locked_system.fast_loop.executor import Executor, ExecutionContext, ExecutionResult
-from locked_system.fast_loop.continuous_eval import ContinuousEvaluator
+# Execution (from core)
+from locked_system.core.execution.hrm import HRM, Altitude, HRMAssessment
+from locked_system.core.execution.executor import Executor, ExecutionContext, ExecutionResult
+from locked_system.core.execution.continuous_eval import ContinuousEvaluator
+from locked_system.core.execution.prompt_compiler import PromptCompiler, AgentContext
+
+# Agents
+from locked_system.agents import BaseAgent, DefaultAgent, load_agent
+
+# Capabilities
+from locked_system.capabilities import (
+    CAPABILITIES,
+    check_capability,
+    NoteCaptureCapability,
+    NoteType,
+)
 
 # Memory tiers
-from locked_system.memory.slow import SlowMemory, CommitmentLease, Decision, BootstrapSnapshot
+from locked_system.memory.slow import SlowMemory, CommitmentLease, Decision
 from locked_system.memory.fast import FastMemory, ProgressState, InteractionSignals
 from locked_system.memory.bridge import BridgeMemory, BridgeSignal
 from locked_system.memory.history import History, GateTransition
@@ -52,7 +65,6 @@ from locked_system.memory.history import History, GateTransition
 from locked_system.proposals.buffer import (
     ProposalBuffer,
     GateProposal,
-    BootstrapTransitionProposal
 )
 
 # Sensing
@@ -63,25 +75,33 @@ __all__ = [
     # Core
     'LockedLoop', 'LoopResult', 'Config',
 
-    # Slow loop
+    # Governance
     'StanceMachine', 'Stance',
     'CommitmentManager',
     'GateController', 'GateResult',
-    'Bootstrap', 'BootstrapStage',
+    'DelegationManager', 'DelegationLease',
 
-    # Fast loop
+    # Execution
     'HRM', 'Altitude', 'HRMAssessment',
     'Executor', 'ExecutionContext', 'ExecutionResult',
     'ContinuousEvaluator',
+    'PromptCompiler', 'AgentContext',
+
+    # Agents
+    'BaseAgent', 'DefaultAgent', 'load_agent',
+
+    # Capabilities
+    'CAPABILITIES', 'check_capability',
+    'NoteCaptureCapability', 'NoteType',
 
     # Memory
-    'SlowMemory', 'CommitmentLease', 'Decision', 'BootstrapSnapshot',
+    'SlowMemory', 'CommitmentLease', 'Decision',
     'FastMemory', 'ProgressState', 'InteractionSignals',
     'BridgeMemory', 'BridgeSignal',
     'History', 'GateTransition',
 
     # Proposals
-    'ProposalBuffer', 'GateProposal', 'BootstrapTransitionProposal',
+    'ProposalBuffer', 'GateProposal',
 
     # Sensing
     'PerceptionSensor', 'PerceptionContext', 'PerceptionReport',

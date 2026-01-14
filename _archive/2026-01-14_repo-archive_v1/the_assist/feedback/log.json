@@ -1,0 +1,25 @@
+{
+  "feedback": [
+    {
+      "timestamp": "2026-01-09T18:58:16.589535",
+      "type": "didnt_work",
+      "note": "- we need to find a way for you to know date and time for sure :).",
+      "context": "User: so when I say this weekend what do you know about that?\nAssist: I realize I'm making assumptions about \"this weekend\" that I shouldn't.\n\nFrom what you've told me:\n- Today is Friday\n- You mentioned Sunday patent work and Monday trip scheduling in our previous planning\n\nBut I don't actually know:\n- What day of the week Sunday/Monday fall on relative to today\n- Whether \"this weekend\" means Saturday-Sunday coming up, or some other timeframe\n- Your typical weekend structure/availability\n\n**Can you clarify what days we're talking about when you say \"this weekend\"?** \n\nI want to map the Mustang work and patent time accurately instead of guessing at your calendar.",
+      "tags": []
+    },
+    {
+      "timestamp": "2026-01-09T22:15:08.443022",
+      "type": "worked",
+      "note": "can you keep using this type of start or entry prompt?",
+      "context": "User: your entry statement is great, but I think you should cap it with an open ended question one that you feel is most important after looking across all memory and assessments. You may determine we need to improve something or you that you need more info to help drive better conversations etc.\nAssist: Looking across everything - your Q1 AWS timeline uncertainty is creating a cascade effect on multiple fronts: Austin trip timing, patent filing windows, and family balance. You're holding too many interdependent variables in your head while waiting for \"early next week\" clarity.\n\nThe Gaurav call Monday morning could unlock a lot of this, but I'm seeing a pattern where you're managing complexity through sheer cognitive load rather than explicit frameworks.\n\n**What's your actual decision tree for Monday's call with Gaurav?** What specific outcomes do you need to book Austin confidently, and what's your fallback if the AWS timeline stays murky?",
+      "tags": []
+    },
+    {
+      "timestamp": "2026-01-09T22:17:13.812185",
+      "type": "worked",
+      "note": "This worked well",
+      "context": "User: your entry statement is great, but I think you should cap it with an open ended question one that you feel is most important after looking across all memory and assessments. You may determine we need to improve something or you that you need more info to help drive better conversations etc.\nAssist: You're right - let me anchor on what matters most right now.\n\nLooking across everything, the AWS Q1 timeline decision early next week is the keystone that unlocks or blocks multiple fronts: Austin trip timing, patent work scheduling, and your broader exit strategy planning. But I'm seeing a pattern where big decisions get made in isolation when they're actually interconnected.\n\n**What's your decision framework for weighing AWS Q1 intensity against the patent filing momentum and family balance you've been building?**\n\nThe risk I see: you optimize for one piece (like AWS delivery) without accounting for the cascade effects on patent work and the family presence that's clearly important to you. Your North Stars suggest this needs to be a portfolio decision, not just a work decision.",
+      "tags": []
+    }
+  ]
+}

@@ -1,0 +1,228 @@
+{
+  "outcomes": [
+    {
+      "session": 4,
+      "timestamp": "2026-01-09T21:58:01.402103",
+      "effectiveness": "mixed",
+      "trust_trajectory": "eroding",
+      "avg_quality": 0.4,
+      "user_state": {
+        "session_quality": "productive",
+        "energy": "high",
+        "stress": "mild",
+        "corrections": 4
+      },
+      "pattern": "neutral"
+    },
+    {
+      "session": 5,
+      "timestamp": "2026-01-09T22:01:06.527014",
+      "effectiveness": "effective",
+      "trust_trajectory": "building",
+      "avg_quality": 0.78,
+      "user_state": {
+        "session_quality": "productive",
+        "energy": "high",
+        "stress": "none",
+        "corrections": 1
+      },
+      "pattern": "positive_reinforcement"
+    },
+    {
+      "session": 6,
+      "timestamp": "2026-01-09T22:08:38.503426",
+      "effectiveness": "mixed",
+      "trust_trajectory": "stable",
+      "avg_quality": 0.35,
+      "user_state": {
+        "session_quality": "productive",
+        "energy": "high",
+        "stress": "none",
+        "corrections": 3
+      },
+      "pattern": "neutral"
+    },
+    {
+      "session": 8,
+      "timestamp": "2026-01-09T22:15:42.289535",
+      "effectiveness": "ineffective",
+      "trust_trajectory": "eroding",
+      "avg_quality": 0.36,
+      "user_state": {
+        "session_quality": "productive",
+        "energy": "high",
+        "stress": "mild",
+        "corrections": 1
+      },
+      "pattern": "negative_spiral"
+    },
+    {
+      "session": 9,
+      "timestamp": "2026-01-09T22:17:37.855915",
+      "effectiveness": "ineffective",
+      "trust_trajectory": "eroding",
+      "avg_quality": 0.42,
+      "user_state": {
+        "session_quality": "productive",
+        "energy": "high",
+        "stress": "none",
+        "corrections": 1
+      },
+      "pattern": "negative_spiral"
+    },
+    {
+      "session": 10,
+      "timestamp": "2026-01-09T22:18:43.654072",
+      "effectiveness": "mixed",
+      "trust_trajectory": "eroding",
+      "avg_quality": 0.62,
+      "user_state": {
+        "session_quality": "productive",
+        "energy": "high",
+        "stress": "none",
+        "corrections": 1
+      },
+      "pattern": "neutral"
+    },
+    {
+      "session": 11,
+      "timestamp": "2026-01-09T22:35:18.643079",
+      "effectiveness": "ineffective",
+      "trust_trajectory": "eroding",
+      "avg_quality": 0.19,
+      "user_state": {
+        "session_quality": "stuck",
+        "energy": "low",
+        "stress": "elevated",
+        "corrections": 6
+      },
+      "pattern": "negative_spiral"
+    },
+    {
+      "session": 12,
+      "timestamp": "2026-01-09T22:54:57.953045",
+      "effectiveness": "ineffective",
+      "trust_trajectory": "eroding",
+      "avg_quality": 0.14,
+      "user_state": {
+        "session_quality": "stuck",
+        "energy": "high",
+        "stress": "elevated",
+        "corrections": 4
+      },
+      "pattern": "negative_spiral"
+    },
+    {
+      "session": 13,
+      "timestamp": "2026-01-09T23:32:49.422200",
+      "effectiveness": "ineffective",
+      "trust_trajectory": "eroding",
+      "avg_quality": 0.24,
+      "user_state": {
+        "session_quality": "scattered",
+        "energy": "high",
+        "stress": "elevated",
+        "corrections": 1
+      },
+      "pattern": "negative_spiral"
+    },
+    {
+      "session": 14,
+      "timestamp": "2026-01-10T01:14:54.503186",
+      "effectiveness": "mixed",
+      "trust_trajectory": "stable",
+      "avg_quality": 0.53,
+      "user_state": {
+        "session_quality": "productive",
+        "energy": "high",
+        "stress": "none",
+        "corrections": 3
+      },
+      "pattern": "neutral"
+    },
+    {
+      "session": 15,
+      "timestamp": "2026-01-10T01:33:21.950184",
+      "effectiveness": "mixed",
+      "trust_trajectory": "stable",
+      "avg_quality": 0.54,
+      "user_state": {
+        "session_quality": "productive",
+        "energy": "medium",
+        "stress": "mild",
+        "corrections": 1
+      },
+      "pattern": "neutral"
+    },
+    {
+      "session": 16,
+      "timestamp": "2026-01-10T01:38:39.591698",
+      "effectiveness": "mixed",
+      "trust_trajectory": "building",
+      "avg_quality": 0.65,
+      "user_state": {
+        "session_quality": "productive",
+        "energy": "low",
+        "stress": "none",
+        "corrections": 1
+      },
+      "pattern": "neutral"
+    },
+    {
+      "session": 12,
+      "timestamp": "2026-01-10T15:31:40.608014",
+      "effectiveness": "effective",
+      "trust_trajectory": "building",
+      "avg_quality": 0.81,
+      "user_state": {
+        "session_quality": "productive",
+        "energy": "high",
+        "stress": "none",
+        "corrections": 0
+      },
+      "pattern": "positive_reinforcement"
+    },
+    {
+      "session": 14,
+      "timestamp": "2026-01-10T16:01:57.026984",
+      "effectiveness": "ineffective",
+      "trust_trajectory": "eroding",
+      "avg_quality": 0.06,
+      "user_state": {
+        "session_quality": "scattered",
+        "energy": "low",
+        "stress": "none",
+        "corrections": 0
+      },
+      "pattern": "negative_spiral"
+    },
+    {
+      "session": 15,
+      "timestamp": "2026-01-10T20:56:57.968319",
+      "effectiveness": "mixed",
+      "trust_trajectory": "eroding",
+      "avg_quality": 0.64,
+      "user_state": {
+        "session_quality": "productive",
+        "energy": "high",
+        "stress": "mild",
+        "corrections": 4
+      },
+      "pattern": "neutral"
+    },
+    {
+      "session": 16,
+      "timestamp": "2026-01-11T14:50:04.124879",
+      "effectiveness": "mixed",
+      "trust_trajectory": "stable",
+      "avg_quality": 0.53,
+      "user_state": {
+        "session_quality": "productive",
+        "energy": "medium",
+        "stress": "none",
+        "corrections": 1
+      },
+      "pattern": "neutral"
+    }
+  ]
+}

@@ -1,0 +1,38 @@
+{
+  "original_repo_name": "AI_ARCH",
+  "original_remote": "https://github.com/rabruni/AI_ARCH.git",
+  "archive_date": "2026-01-14",
+  "git_commit_hash": "ae6b7cd3b4e8cd2d0ddd5e9d029f2071f1231c6a",
+  "archive_version": "v1",
+  "archived_items": {
+    "directories": [
+      ".claude",
+      ".github",
+      "CANON",
+      "GenAI Agent Asses",
+      "archive",
+      "code_derived_docs",
+      "configs",
+      "dev",
+      "docs",
+      "locked_system",
+      "logs",
+      "memory",
+      "scripts",
+      "the_assist"
+    ],
+    "files": [
+      ".env.example",
+      "CLAUDE.md",
+      "README.md",
+      "requirements.txt",
+      "review.py",
+      "run.sh",
+      "setup_assist.sh",
+      "setup_hrm.sh",
+      "test_l2_fastlane.py"
+    ]
+  },
+  "reason": "Clean re-initialization for improved architecture and project structure",
+  "notes": "This archive is read-only. See ARCHIVE_README.md for details."
+}

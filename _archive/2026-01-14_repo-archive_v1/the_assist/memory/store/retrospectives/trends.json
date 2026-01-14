@@ -1,0 +1,516 @@
+{
+  "sessions_analyzed": 18,
+  "correction_rates": [
+    0,
+    4,
+    4,
+    1,
+    3,
+    1,
+    1,
+    1,
+    6,
+    4,
+    1,
+    3,
+    1,
+    1,
+    0,
+    0,
+    4,
+    1
+  ],
+  "intuition_hits": [],
+  "mbti_shifts": [
+    {
+      "session": 3,
+      "shifts": {
+        "T_F": 0.2
+      },
+      "observed_type": "ENTP",
+      "timestamp": "2026-01-09T21:34:24.049730"
+    },
+    {
+      "session": 5,
+      "shifts": {
+        "N_S": 0.2
+      },
+      "observed_type": "ENTP",
+      "timestamp": "2026-01-09T22:00:53.745917"
+    },
+    {
+      "session": 6,
+      "shifts": {
+        "T_F": 0.2
+      },
+      "observed_type": "ENTP",
+      "timestamp": "2026-01-09T22:08:26.389775"
+    },
+    {
+      "session": 9,
+      "shifts": {
+        "N_S": 0.2
+      },
+      "observed_type": "ENTP",
+      "timestamp": "2026-01-09T22:17:26.014849"
+    },
+    {
+      "session": 10,
+      "shifts": {
+        "J_P": 0.2
+      },
+      "observed_type": "ENTP",
+      "timestamp": "2026-01-09T22:18:32.622344"
+    },
+    {
+      "session": 12,
+      "shifts": {
+        "T_F": -0.2,
+        "J_P": 0.2
+      },
+      "observed_type": "ENTP",
+      "timestamp": "2026-01-09T22:54:42.600522"
+    },
+    {
+      "session": 15,
+      "shifts": {
+        "N_S": 0.2
+      },
+      "observed_type": "ENTP",
+      "timestamp": "2026-01-10T01:33:09.863572"
+    },
+    {
+      "session": 15,
+      "shifts": {
+        "T_F": 0.2
+      },
+      "observed_type": "ENTP",
+      "timestamp": "2026-01-10T20:56:44.197040"
+    },
+    {
+      "session": 16,
+      "shifts": {
+        "T_F": 0.2
+      },
+      "observed_type": "ENTP",
+      "timestamp": "2026-01-11T14:49:52.245468"
+    }
+  ],
+  "big5_signals": [],
+  "recurring_topics": {
+    "Austin trip": 1,
+    "travel booking": 1,
+    "travel_planning": 1,
+    "work_pushback_strategy": 1,
+    "financial_optimization": 1,
+    "cognitive_partnership": 2,
+    "Austin_trip": 1,
+    "family_visits": 1,
+    "AWS_work": 1,
+    "Gaurav_situation": 1,
+    "Q1_planning": 1,
+    "schedule_sequence": 1,
+    "ai_testing": 1,
+    "AI partnership testing": 1,
+    "Monday schedule assumptions": 1,
+    "capacity vs constraints": 1,
+    "cognitive assistant development": 1,
+    "assistant_communication_optimization": 1,
+    "decision_frameworks": 3,
+    "complexity_management": 1,
+    "conversation_optimization": 1,
+    "interconnected_planning": 1,
+    "conversation_handoff_optimization": 1,
+    "open_ended_questioning": 1,
+    "memory_utilization": 1,
+    "session_opening_format": 1,
+    "strategic_vs_tactical_focus": 1,
+    "conversation_naturalness": 1,
+    "assistant_behavioral_patterns": 1,
+    "sales_play": 1,
+    "strategic_planning": 1,
+    "organizational_adoption": 1,
+    "timeline_management": 1,
+    "previous_session_failure": 1,
+    "system_coordination": 1,
+    "strategic priorities": 2,
+    "lifestyle business goals": 1,
+    "Austin sales play": 1,
+    "weekend planning": 1,
+    "investment strategy": 2,
+    "patent research": 1,
+    "AWS job tension": 1,
+    "DoPeJar assistant role": 1,
+    "information gaps": 1,
+    "context_recovery": 1,
+    "monday_planning": 1,
+    "session_wrap": 1,
+    "financial optimization": 1,
+    "storage unit": 1,
+    "subscriptions": 1,
+    "tech projects": 1,
+    "wealth building": 1,
+    "system_status": 1,
+    "pending_tasks": 1,
+    "project_prioritization": 1,
+    "customer_validation": 1,
+    "delivery_confidence": 1,
+    "AWS Q1 planning": 1,
+    "work scope": 1,
+    "strategic positioning": 1
+  },
+  "learnings": [
+    {
+      "session": 99,
+      "learning": "User responds well to timeline urgency (11 days out)",
+      "timestamp": "2026-01-09T21:12:14.690683"
+    },
+    {
+      "session": 99,
+      "learning": "User prefers immediate action suggestions when ready to commit",
+      "timestamp": "2026-01-09T21:12:14.690698"
+    },
+    {
+      "session": 3,
+      "learning": "User has 7 potential trips Jan-Apr (4 cheer locked, 3+ work negotiable)",
+      "timestamp": "2026-01-09T21:34:24.049680"
+    },
+    {
+      "session": 3,
+      "learning": "Goal is financial independence through patents/products/investing, not job optimization",
+      "timestamp": "2026-01-09T21:34:24.049701"
+    },
+    {
+      "session": 3,
+      "learning": "Wants cognitive partner like Donna/Pepper who knows priorities and operates from them",
+      "timestamp": "2026-01-09T21:34:24.049705"
+    },
+    {
+      "session": 3,
+      "learning": "Economics and ROI analysis needed for all decisions, not just scheduling",
+      "timestamp": "2026-01-09T21:34:24.049708"
+    },
+    {
+      "session": 3,
+      "learning": "Sunday session with Monica will map cheer logistics",
+      "timestamp": "2026-01-09T21:34:24.049711"
+    },
+    {
+      "session": 4,
+      "learning": "User lives in Alpine",
+      "timestamp": "2026-01-09T21:57:47.990473"
+    },
+    {
+      "session": 4,
+      "learning": "Visits parents/grandma monthly, feels it's not enough",
+      "timestamp": "2026-01-09T21:57:47.990497"
+    },
+    {
+      "session": 4,
+      "learning": "Runs GenAI/Data GTMs at AWS for SLG/EDU and edtech/govtech verticals",
+      "timestamp": "2026-01-09T21:57:47.990504"
+    },
+    {
+      "session": 4,
+      "learning": "Austin trip is to scale sales play created with Gaurav",
+      "timestamp": "2026-01-09T21:57:47.990508"
+    },
+    {
+      "session": 4,
+      "learning": "Q1 AWS planning has many moving pieces",
+      "timestamp": "2026-01-09T21:57:47.990513"
+    },
+    {
+      "session": 4,
+      "learning": "User is building this AI system as one of his tech projects",
+      "timestamp": "2026-01-09T21:57:47.990517"
+    },
+    {
+      "session": 4,
+      "learning": "Gaurav is a test case for the AI system",
+      "timestamp": "2026-01-09T21:57:47.990521"
+    },
+    {
+      "session": 5,
+      "learning": "User actively tests AI understanding of meta-context and project goals",
+      "timestamp": "2026-01-09T22:00:53.745885"
+    },
+    {
+      "session": 5,
+      "learning": "Recognition of the 'meta-game' (AI development project) is crucial for trust",
+      "timestamp": "2026-01-09T22:00:53.745899"
+    },
+    {
+      "session": 5,
+      "learning": "Schedule coordination is a key test case for cognitive partnership capabilities",
+      "timestamp": "2026-01-09T22:00:53.745904"
+    },
+    {
+      "session": 6,
+      "learning": "User has higher capacity than assistant assumes - don't project constraints",
+      "timestamp": "2026-01-09T22:08:26.389723"
+    },
+    {
+      "session": 6,
+      "learning": "Focus on full timeline context, not just single days",
+      "timestamp": "2026-01-09T22:08:26.389742"
+    },
+    {
+      "session": 6,
+      "learning": "User is actively testing partnership value, not making binary decisions",
+      "timestamp": "2026-01-09T22:08:26.389749"
+    },
+    {
+      "session": 6,
+      "learning": "Goal is building a Donna/Pepper-style cognitive partner",
+      "timestamp": "2026-01-09T22:08:26.389753"
+    },
+    {
+      "session": 6,
+      "learning": "User gives direct feedback when assistant misses the mark",
+      "timestamp": "2026-01-09T22:08:26.389757"
+    },
+    {
+      "session": 8,
+      "learning": "User wants assistant to proactively identify key decision points and ask strategic questions",
+      "timestamp": "2026-01-09T22:15:30.857748"
+    },
+    {
+      "session": 8,
+      "learning": "User recognizes pattern of managing complexity through cognitive load vs frameworks",
+      "timestamp": "2026-01-09T22:15:30.857763"
+    },
+    {
+      "session": 8,
+      "learning": "User values direct, actionable communication over passive summarization",
+      "timestamp": "2026-01-09T22:15:30.857775"
+    },
+    {
+      "session": 9,
+      "learning": "User wants entry statements capped with most important open-ended questions based on full context",
+      "timestamp": "2026-01-09T22:17:26.014818"
+    },
+    {
+      "session": 9,
+      "learning": "User recognizes pattern of making interconnected decisions in isolation",
+      "timestamp": "2026-01-09T22:17:26.014831"
+    },
+    {
+      "session": 9,
+      "learning": "AWS Q1 timeline is keystone decision affecting multiple life areas",
+      "timestamp": "2026-01-09T22:17:26.014836"
+    },
+    {
+      "session": 10,
+      "learning": "User values actionable handoffs with open-ended questions that synthesize memory and assessments",
+      "timestamp": "2026-01-09T22:18:32.622312"
+    },
+    {
+      "session": 10,
+      "learning": "Prefers entry statements that identify gaps and drive next steps rather than just summarizing",
+      "timestamp": "2026-01-09T22:18:32.622326"
+    },
+    {
+      "session": 10,
+      "learning": "Wants assistant to proactively identify what's most important across all context",
+      "timestamp": "2026-01-09T22:18:32.622331"
+    },
+    {
+      "session": 11,
+      "learning": "User has three north stars: tech products, family presence, financial independence",
+      "timestamp": "2026-01-09T22:35:06.575422"
+    },
+    {
+      "session": 11,
+      "learning": "Wants natural strategic conversations that organically reveal context, not clinical exchanges",
+      "timestamp": "2026-01-09T22:35:06.575442"
+    },
+    {
+      "session": 11,
+      "learning": "Gaurav is definitively NOT a bottleneck and should never be referenced as such",
+      "timestamp": "2026-01-09T22:35:06.575447"
+    },
+    {
+      "session": 11,
+      "learning": "Monday logistics are not important to user despite appearing urgent",
+      "timestamp": "2026-01-09T22:35:06.575450"
+    },
+    {
+      "session": 11,
+      "learning": "Assistant behavioral patterns matter more than specific content corrections",
+      "timestamp": "2026-01-09T22:35:06.575453"
+    },
+    {
+      "session": 12,
+      "learning": "User operates at strategic level connecting 1-year plans, north stars, and investment strategies",
+      "timestamp": "2026-01-09T22:54:42.600468"
+    },
+    {
+      "session": 12,
+      "learning": "Austin trip is confirmed - don't question execution decisions",
+      "timestamp": "2026-01-09T22:54:42.600489"
+    },
+    {
+      "session": 12,
+      "learning": "Sales play connects to variable salary goals and financial independence",
+      "timestamp": "2026-01-09T22:54:42.600495"
+    },
+    {
+      "session": 12,
+      "learning": "Context-gathering should happen before diving into tactical discussion",
+      "timestamp": "2026-01-09T22:54:42.600499"
+    },
+    {
+      "session": 12,
+      "learning": "User needs weekend/broader strategic framing before Monday execution",
+      "timestamp": "2026-01-09T22:54:42.600502"
+    },
+    {
+      "session": 13,
+      "learning": "Previous session had significant coordination failures with assistant ignoring explicit corrections",
+      "timestamp": "2026-01-09T23:32:38.316279"
+    },
+    {
+      "session": 13,
+      "learning": "System shutdown issues affecting session continuity",
+      "timestamp": "2026-01-09T23:32:38.316302"
+    },
+    {
+      "session": 13,
+      "learning": "User expects assistants to acknowledge and learn from previous mistakes",
+      "timestamp": "2026-01-09T23:32:38.316307"
+    },
+    {
+      "session": 14,
+      "learning": "Austin sales play is part of AWS job, not separate initiative - highest earning potential",
+      "timestamp": "2026-01-10T01:14:41.542397"
+    },
+    {
+      "session": 14,
+      "learning": "Financial independence goal is lifestyle business ownership, not retirement",
+      "timestamp": "2026-01-10T01:14:41.542422"
+    },
+    {
+      "session": 14,
+      "learning": "User wants to stay working but own what they work on",
+      "timestamp": "2026-01-10T01:14:41.542428"
+    },
+    {
+      "session": 14,
+      "learning": "Weekend has clear personal/family boundaries",
+      "timestamp": "2026-01-10T01:14:41.542433"
+    },
+    {
+      "session": 14,
+      "learning": "Patent interest specifically around genAI applications",
+      "timestamp": "2026-01-10T01:14:41.542436"
+    },
+    {
+      "session": 15,
+      "learning": "User wants assistant to be 'DoPeJar' - Donna Pepper Jarvis cognitive partner",
+      "timestamp": "2026-01-10T01:33:09.863539"
+    },
+    {
+      "session": 15,
+      "learning": "Austin work is separate from AWS - both are work contexts",
+      "timestamp": "2026-01-10T01:33:09.863552"
+    },
+    {
+      "session": 15,
+      "learning": "User recognizes assistant needs more context to be genuinely useful",
+      "timestamp": "2026-01-10T01:33:09.863556"
+    },
+    {
+      "session": 15,
+      "learning": "Building the assistant capability is itself a top priority for managing AWS undertow",
+      "timestamp": "2026-01-10T01:33:09.863559"
+    },
+    {
+      "session": 16,
+      "learning": "User wants clear boundaries on what gets discussed when",
+      "timestamp": "2026-01-10T01:38:28.261393"
+    },
+    {
+      "session": 16,
+      "learning": "Don't push into planning topics when user signals to stop",
+      "timestamp": "2026-01-10T01:38:28.261414"
+    },
+    {
+      "session": 16,
+      "learning": "User appreciates when assistant respects their timing preferences",
+      "timestamp": "2026-01-10T01:38:28.261419"
+    },
+    {
+      "session": 12,
+      "learning": "User has $1M net worth targeting $5-10M in 8-10 years as backup plan",
+      "timestamp": "2026-01-10T15:31:28.855864"
+    },
+    {
+      "session": 12,
+      "learning": "Primary wealth strategy is $2M/year cashflow from tech/patents in 5 years",
+      "timestamp": "2026-01-10T15:31:28.855881"
+    },
+    {
+      "session": 12,
+      "learning": "Currently in active cognitive load reduction phase - completing/removing distractions",
+      "timestamp": "2026-01-10T15:31:28.855886"
+    },
+    {
+      "session": 12,
+      "learning": "Monica health subscription $300+ requires delicate conversation",
+      "timestamp": "2026-01-10T15:31:28.855890"
+    },
+    {
+      "session": 12,
+      "learning": "Tax implications forcing investment decisions by end of February",
+      "timestamp": "2026-01-10T15:31:28.855893"
+    },
+    {
+      "session": 14,
+      "learning": "User may need different opening approach when showing low initial energy",
+      "timestamp": "2026-01-10T16:01:46.070173"
+    },
+    {
+      "session": 14,
+      "learning": "System continuity references acknowledged but didn't drive engagement",
+      "timestamp": "2026-01-10T16:01:46.070197"
+    },
+    {
+      "session": 15,
+      "learning": "User's avoidance is delivery confidence, not customer rejection fear",
+      "timestamp": "2026-01-10T20:56:44.197010"
+    },
+    {
+      "session": 15,
+      "learning": "User wants partnership in decision-making, not just pushing toward action",
+      "timestamp": "2026-01-10T20:56:44.197022"
+    },
+    {
+      "session": 15,
+      "learning": "User will call out incomplete frameworks and demand better analysis",
+      "timestamp": "2026-01-10T20:56:44.197026"
+    },
+    {
+      "session": 15,
+      "learning": "User appreciates direct feedback but wants thorough thinking behind it",
+      "timestamp": "2026-01-10T20:56:44.197029"
+    },
+    {
+      "session": 16,
+      "learning": "User values strategic scope analysis before tactical discussions",
+      "timestamp": "2026-01-11T14:49:52.245432"
+    },
+    {
+      "session": 16,
+      "learning": "Prefers being asked about influence/leverage before priorities",
+      "timestamp": "2026-01-11T14:49:52.245446"
+    },
+    {
+      "session": 16,
+      "learning": "Will directly correct approach when assistant gets sequence wrong",
+      "timestamp": "2026-01-11T14:49:52.245452"
+    }
+  ],
+  "preference_updates": [],
+  "last_updated": "2026-01-11T14:49:52.245487"
+}

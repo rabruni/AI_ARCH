@@ -1,0 +1,56 @@
+{
+  "session_quality": "scattered",
+  "mbti_signals": {
+    "observed_type": "ENTP",
+    "dimension_shifts": {
+      "E_I": 0.1,
+      "N_S": 0.0,
+      "T_F": -0.1,
+      "J_P": 0.0
+    },
+    "shift_explanation": "Direct confrontational approach shows T-leaning under stress, but still engaging openly (E)"
+  },
+  "big5_signals": {
+    "openness": "baseline",
+    "conscientiousness": "low",
+    "extraversion": "high",
+    "agreeableness": "low",
+    "neuroticism": "high",
+    "notable": "Strong negative opening indicates elevated stress/frustration from previous session failure"
+  },
+  "behavioral": {
+    "energy": "high",
+    "focus": "concentrated",
+    "decision_style": "quick",
+    "stress_signals": "elevated",
+    "communication_mode": "directive"
+  },
+  "session_dynamics": {
+    "corrections_given": 1,
+    "topics": [
+      "previous_session_failure",
+      "system_coordination"
+    ],
+    "progress_made": false,
+    "blockers_identified": [
+      "assistant_ignored_corrections_previously",
+      "session_continuity_broken"
+    ],
+    "decisions_made": []
+  },
+  "learnings": [
+    "Previous session had significant coordination failures with assistant ignoring explicit corrections",
+    "System shutdown issues affecting session continuity",
+    "User expects assistants to acknowledge and learn from previous mistakes"
+  ],
+  "meta_observations": {
+    "assistant_verbosity": "appropriate",
+    "intuition_accuracy": "good",
+    "trust_signals": "negative",
+    "what_worked": "Assistant acknowledged the failure and asked for clarification",
+    "what_didnt": "Previous session apparently had major listening/coordination failures"
+  },
+  "session_id": 13,
+  "timestamp": "2026-01-09T23:32:38.313604",
+  "turn_count": 2
+}

@@ -1,0 +1,62 @@
+{
+  "session_quality": "stuck",
+  "mbti_signals": {
+    "observed_type": "ENTP",
+    "dimension_shifts": {
+      "E_I": 0.1,
+      "N_S": 0.0,
+      "T_F": -0.2,
+      "J_P": 0.2
+    },
+    "shift_explanation": "More directive/demanding (T shift), more urgency-driven (J shift) when strategic vision wasn't matched"
+  },
+  "big5_signals": {
+    "openness": "high",
+    "conscientiousness": "high",
+    "extraversion": "high",
+    "agreeableness": "low",
+    "neuroticism": "elevated",
+    "notable": "Elevated stress when operating altitude wasn't matched, reduced agreeableness in corrections"
+  },
+  "behavioral": {
+    "energy": "high",
+    "focus": "concentrated",
+    "decision_style": "quick",
+    "stress_signals": "elevated",
+    "communication_mode": "directive"
+  },
+  "session_dynamics": {
+    "corrections_given": 4,
+    "topics": [
+      "sales_play",
+      "strategic_planning",
+      "organizational_adoption",
+      "timeline_management"
+    ],
+    "progress_made": false,
+    "blockers_identified": [
+      "assistant_operating_at_wrong_altitude",
+      "missing_strategic_context"
+    ],
+    "decisions_made": [
+      "restart_conversation_needed"
+    ]
+  },
+  "learnings": [
+    "User operates at strategic level connecting 1-year plans, north stars, and investment strategies",
+    "Austin trip is confirmed - don't question execution decisions",
+    "Sales play connects to variable salary goals and financial independence",
+    "Context-gathering should happen before diving into tactical discussion",
+    "User needs weekend/broader strategic framing before Monday execution"
+  ],
+  "meta_observations": {
+    "assistant_verbosity": "too_high",
+    "intuition_accuracy": "poor",
+    "trust_signals": "negative",
+    "what_worked": "Final recognition of operating at wrong level",
+    "what_didnt": "Task-level thinking instead of strategic context-gathering, continuing topics after correction signals"
+  },
+  "session_id": 12,
+  "timestamp": "2026-01-09T22:54:42.597934",
+  "turn_count": 12
+}

@@ -1,0 +1,58 @@
+{
+  "session_quality": "productive",
+  "mbti_signals": {
+    "observed_type": "ENTP",
+    "dimension_shifts": {
+      "E_I": 0.0,
+      "N_S": 0.1,
+      "T_F": 0.2,
+      "J_P": 0.0
+    },
+    "shift_explanation": "Slight N increase shown in strategic big-picture thinking, T increase in direct correction style"
+  },
+  "big5_signals": {
+    "openness": "high",
+    "conscientiousness": "baseline",
+    "extraversion": "baseline",
+    "agreeableness": "low",
+    "neuroticism": "baseline",
+    "notable": "Direct correction shows comfort with conflict and pushing back on authority"
+  },
+  "behavioral": {
+    "energy": "medium",
+    "focus": "concentrated",
+    "decision_style": "quick",
+    "stress_signals": "none",
+    "communication_mode": "directive"
+  },
+  "session_dynamics": {
+    "corrections_given": 1,
+    "topics": [
+      "AWS Q1 planning",
+      "work scope",
+      "strategic positioning"
+    ],
+    "progress_made": true,
+    "blockers_identified": [
+      "assistant jumping to tactics without understanding scope"
+    ],
+    "decisions_made": [
+      "need to map scope and influence first"
+    ]
+  },
+  "learnings": [
+    "User values strategic scope analysis before tactical discussions",
+    "Prefers being asked about influence/leverage before priorities",
+    "Will directly correct approach when assistant gets sequence wrong"
+  ],
+  "meta_observations": {
+    "assistant_verbosity": "appropriate",
+    "intuition_accuracy": "poor",
+    "trust_signals": "positive",
+    "what_worked": "Quick acknowledgment of correction and pivot to better framing",
+    "what_didnt": "Jumping to tactical details before understanding strategic position"
+  },
+  "session_id": 16,
+  "timestamp": "2026-01-11T14:49:52.242208",
+  "turn_count": 4
+}

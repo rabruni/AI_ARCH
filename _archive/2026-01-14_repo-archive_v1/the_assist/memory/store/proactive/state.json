@@ -1,0 +1,270 @@
+{
+  "intuition_history": [
+    {
+      "timestamp": "2026-01-09T20:19:17.781837",
+      "target": "gaurav_bottleneck:recurring_pattern_with_time_pressure",
+      "reaction": "confirmed"
+    },
+    {
+      "timestamp": "2026-01-09T20:25:32.161917",
+      "target": "austin_travel:urgent_booking_risk",
+      "reaction": "corrected"
+    },
+    {
+      "timestamp": "2026-01-09T20:50:35.954950",
+      "target": "monday_logistics:time_crunch_risk",
+      "reaction": "confirmed"
+    },
+    {
+      "timestamp": "2026-01-09T21:17:14.901514",
+      "target": "monday_logistics:overload_risk",
+      "reaction": "confirmed"
+    },
+    {
+      "timestamp": "2026-01-09T21:42:15.793005",
+      "target": "austin_trip:urgent_booking_slipping",
+      "reaction": "confirmed"
+    },
+    {
+      "timestamp": "2026-01-09T21:58:37.389983",
+      "target": "monday_logistics:time_pressure_cascade_risk",
+      "reaction": "corrected"
+    },
+    {
+      "timestamp": "2026-01-09T22:03:28.403140",
+      "target": "monday_coordination:multiple_time_sensitive_items_converging",
+      "reaction": "pivoted"
+    },
+    {
+      "timestamp": "2026-01-09T22:12:39.069188",
+      "target": "monday_coordination:multiple_dependencies_converging",
+      "reaction": "confirmed"
+    },
+    {
+      "timestamp": "2026-01-09T22:16:17.441096",
+      "target": "monday_logistics:timing_dependencies_creating_pressure",
+      "reaction": "pivoted"
+    },
+    {
+      "timestamp": "2026-01-09T22:17:54.314618",
+      "target": "monday_overload:time_crunch_with_dependencies",
+      "reaction": "corrected"
+    },
+    {
+      "timestamp": "2026-01-09T22:26:46.974783",
+      "target": "gaurav_bottleneck:recurring_pattern_blocking_multiple_initiatives",
+      "reaction": "corrected"
+    },
+    {
+      "timestamp": "2026-01-09T22:45:49.274647",
+      "target": "austin_urgency:testing_strategic_priority_vs_tactical_rush",
+      "reaction": "confirmed"
+    },
+    {
+      "timestamp": "2026-01-09T22:55:31.045154",
+      "target": "financial_modeling:central_to_exit_strategy_but_stalled",
+      "reaction": "ignored"
+    },
+    {
+      "timestamp": "2026-01-10T00:31:33.152319",
+      "target": "financial_modeling:decision_framework_missing_for_Q1_choices",
+      "reaction": "pivoted"
+    },
+    {
+      "timestamp": "2026-01-10T01:23:06.558266",
+      "target": "monday_cascade_dependencies:multiple_blockers_converging_with_sales_play_pressure",
+      "reaction": "ignored"
+    },
+    {
+      "timestamp": "2026-01-10T01:35:16.529033",
+      "target": "inflection_point:austin_sales_opportunity_vs_aws_safety",
+      "reaction": "ignored"
+    },
+    {
+      "timestamp": "2026-01-10T14:04:13.033161",
+      "target": "priority_framework:testing_real_world_conflict_resolution",
+      "reaction": "ignored"
+    },
+    {
+      "timestamp": "2026-01-10T15:45:42.275195",
+      "target": "tech_focus:avoidance_through_financial_tasks",
+      "reaction": "ignored"
+    },
+    {
+      "timestamp": "2026-01-10T16:00:11.168918",
+      "target": "patent_avoidance:blocking_primary_wealth_strategy",
+      "reaction": "ignored"
+    },
+    {
+      "timestamp": "2026-01-10T19:44:16.033703",
+      "target": "patent_avoidance:core_wealth_strategy_disconnect",
+      "reaction": "ignored"
+    },
+    {
+      "timestamp": "2026-01-10T22:39:57.305058",
+      "target": "validation_avoidance:research_substitution_pattern",
+      "reaction": "pivoted"
+    }
+  ],
+  "directness_level": 0,
+  "last_nudge": {
+    "timestamp": "2026-01-10T22:39:11.610768",
+    "target": "validation_avoidance:research_substitution_pattern",
+    "confidence": 0.8,
+    "resolved": true,
+    "reaction": "pivoted"
+  },
+  "consecutive_misses": 2,
+  "session_nudges": [
+    {
+      "timestamp": "2026-01-09T20:15:32.720062",
+      "target": "gaurav_bottleneck:time_sensitive_with_monday_collision",
+      "confidence": 0.8,
+      "resolved": false
+    },
+    {
+      "timestamp": "2026-01-09T20:18:19.458104",
+      "target": "gaurav_bottleneck:recurring_pattern_with_time_pressure",
+      "confidence": 0.8,
+      "resolved": false
+    },
+    {
+      "timestamp": "2026-01-09T20:22:46.492224",
+      "target": "austin_travel:urgent_booking_risk",
+      "confidence": 0.85,
+      "resolved": false
+    },
+    {
+      "timestamp": "2026-01-09T20:29:24.530433",
+      "target": "gaurav_bottleneck:recurring_pattern_with_time_pressure",
+      "confidence": 0.8,
+      "resolved": false
+    },
+    {
+      "timestamp": "2026-01-09T20:33:11.800513",
+      "target": "monday_overload:time_collision_risk",
+      "confidence": 0.8,
+      "resolved": false
+    },
+    {
+      "timestamp": "2026-01-09T20:49:29.146427",
+      "target": "monday_logistics:time_crunch_risk",
+      "confidence": 0.8,
+      "resolved": false
+    },
+    {
+      "timestamp": "2026-01-09T21:16:38.980583",
+      "target": "monday_logistics:overload_risk",
+      "confidence": 0.8,
+      "resolved": false
+    },
+    {
+      "timestamp": "2026-01-09T21:41:48.619297",
+      "target": "austin_trip:urgent_booking_slipping",
+      "confidence": 0.8,
+      "resolved": false
+    },
+    {
+      "timestamp": "2026-01-09T21:58:15.518636",
+      "target": "monday_logistics:time_pressure_cascade_risk",
+      "confidence": 0.8,
+      "resolved": false
+    },
+    {
+      "timestamp": "2026-01-09T22:01:19.519705",
+      "target": "monday_coordination:multiple_time_sensitive_items_converging",
+      "confidence": 0.8,
+      "resolved": false
+    },
+    {
+      "timestamp": "2026-01-09T22:11:11.012497",
+      "target": "monday_scheduling:timeline_dependencies_creating_pressure",
+      "confidence": 0.8,
+      "resolved": false
+    },
+    {
+      "timestamp": "2026-01-09T22:12:21.748965",
+      "target": "monday_coordination:multiple_dependencies_converging",
+      "confidence": 0.8,
+      "resolved": false
+    },
+    {
+      "timestamp": "2026-01-09T22:16:00.638397",
+      "target": "monday_logistics:timing_dependencies_creating_pressure",
+      "confidence": 0.8,
+      "resolved": false
+    },
+    {
+      "timestamp": "2026-01-09T22:17:48.674506",
+      "target": "monday_overload:time_crunch_with_dependencies",
+      "confidence": 0.8,
+      "resolved": false
+    },
+    {
+      "timestamp": "2026-01-09T22:24:19.280616",
+      "target": "gaurav_bottleneck:recurring_pattern_blocking_multiple_initiatives",
+      "confidence": 0.8,
+      "resolved": false
+    },
+    {
+      "timestamp": "2026-01-09T22:45:06.970692",
+      "target": "austin_urgency:testing_strategic_priority_vs_tactical_rush",
+      "confidence": 0.8,
+      "resolved": false
+    },
+    {
+      "timestamp": "2026-01-09T22:55:11.386969",
+      "target": "financial_modeling:central_to_exit_strategy_but_stalled",
+      "confidence": 0.8,
+      "resolved": false
+    },
+    {
+      "timestamp": "2026-01-10T00:31:19.164435",
+      "target": "financial_modeling:decision_framework_missing_for_Q1_choices",
+      "confidence": 0.8,
+      "resolved": false
+    },
+    {
+      "timestamp": "2026-01-10T01:22:25.928355",
+      "target": "monday_cascade_dependencies:multiple_blockers_converging_with_sales_play_pressure",
+      "confidence": 0.8,
+      "resolved": false
+    },
+    {
+      "timestamp": "2026-01-10T01:33:53.713908",
+      "target": "inflection_point:austin_sales_opportunity_vs_aws_safety",
+      "confidence": 0.8,
+      "resolved": false
+    },
+    {
+      "timestamp": "2026-01-10T14:02:47.253405",
+      "target": "priority_framework:testing_real_world_conflict_resolution",
+      "confidence": 0.8,
+      "resolved": false
+    },
+    {
+      "timestamp": "2026-01-10T15:45:13.443188",
+      "target": "tech_focus:avoidance_through_financial_tasks",
+      "confidence": 0.8,
+      "resolved": false
+    },
+    {
+      "timestamp": "2026-01-10T15:51:39.969074",
+      "target": "patent_avoidance:blocking_primary_wealth_strategy",
+      "confidence": 0.8,
+      "resolved": false
+    },
+    {
+      "timestamp": "2026-01-10T19:36:02.572844",
+      "target": "patent_avoidance:core_wealth_strategy_disconnect",
+      "confidence": 0.8,
+      "resolved": false
+    },
+    {
+      "timestamp": "2026-01-10T22:39:11.610768",
+      "target": "validation_avoidance:research_substitution_pattern",
+      "confidence": 0.8,
+      "resolved": false
+    }
+  ]
+}

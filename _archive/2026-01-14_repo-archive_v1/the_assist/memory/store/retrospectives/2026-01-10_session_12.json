@@ -1,0 +1,68 @@
+{
+  "session_quality": "productive",
+  "mbti_signals": {
+    "observed_type": "ENTP",
+    "dimension_shifts": {
+      "E_I": 0.0,
+      "N_S": 0.1,
+      "T_F": 0.0,
+      "J_P": -0.1
+    },
+    "shift_explanation": "Slight shift toward S with concrete financial calculations and J with structured planning sequence, but still clearly ENTP patterns"
+  },
+  "big5_signals": {
+    "openness": "high",
+    "conscientiousness": "high",
+    "extraversion": "baseline",
+    "agreeableness": "baseline",
+    "neuroticism": "low",
+    "notable": "Conscientiousness elevated above baseline - actively organizing and systematizing to reduce cognitive load"
+  },
+  "behavioral": {
+    "energy": "high",
+    "focus": "concentrated",
+    "decision_style": "quick",
+    "stress_signals": "none",
+    "communication_mode": "directive"
+  },
+  "session_dynamics": {
+    "corrections_given": 0,
+    "topics": [
+      "financial optimization",
+      "storage unit",
+      "subscriptions",
+      "investment strategy",
+      "tech projects",
+      "wealth building"
+    ],
+    "progress_made": true,
+    "blockers_identified": [
+      "cognitive load from unfinished financial tasks",
+      "relationship dynamics with Monica's subscription"
+    ],
+    "decisions_made": [
+      "Wednesday subscription audit",
+      "storage cleanout next weekend",
+      "investment reallocation by Feb",
+      "prioritize tech over investment optimization"
+    ],
+    "key_revelation": "Investment portfolio is backup plan, tech projects are primary $2M cashflow strategy"
+  },
+  "learnings": [
+    "User has $1M net worth targeting $5-10M in 8-10 years as backup plan",
+    "Primary wealth strategy is $2M/year cashflow from tech/patents in 5 years",
+    "Currently in active cognitive load reduction phase - completing/removing distractions",
+    "Monica health subscription $300+ requires delicate conversation",
+    "Tax implications forcing investment decisions by end of February"
+  ],
+  "meta_observations": {
+    "assistant_verbosity": "appropriate",
+    "intuition_accuracy": "good",
+    "trust_signals": "positive",
+    "what_worked": "ROI calculations per hour, structured sequencing, identifying real vs stated priorities",
+    "what_didnt": "Could have pushed earlier on the tech vs investment priority question"
+  },
+  "session_id": 12,
+  "timestamp": "2026-01-10T15:31:28.853444",
+  "turn_count": 34
+}

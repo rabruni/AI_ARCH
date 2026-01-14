@@ -1,0 +1,14 @@
+{
+  "timestamp": "2026-01-09_09-59-53",
+  "messages": [
+    {
+      "role": "user",
+      "content": "what are we covering?"
+    },
+    {
+      "role": "assistant",
+      "content": "Looking at your current state:\n\n**Tomorrow (Priority 1):** Get work coordination moving - 4 tasks, with Gaurav being the main risk factor we need to re-engage\n\n**Sunday:** Patent/prototype work session - either 2 hours OR complete workable plan with realistic schedule and cost estimates\n\n**Monday:** Family trip scheduling (has buffer built in)\n\n**Next weekend:** Storage sort & purge\n\nEverything else is mapped but these are your immediate focus points.\n\nWhat specifically do you want to dive into? The work coordination risk with Gaurav? The patent timeline planning? Or something else that's surfaced since we last talked?"
+    }
+  ],
+  "summary": null
+}

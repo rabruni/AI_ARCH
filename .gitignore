@@ -35,4 +35,14 @@ Thumbs.db
 # Local scratch
 ideas/*
 scratch/
-*.log 
+*.log
+
+# Temporary files and downloads
+Downloads/
+*.zip
+*.tar.gz
+
+# Cache directories
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/

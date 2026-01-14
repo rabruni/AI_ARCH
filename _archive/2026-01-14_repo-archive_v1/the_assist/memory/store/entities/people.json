@@ -1,0 +1,40 @@
+{
+  "people": {
+    "gaurav": {
+      "name": "Gaurav",
+      "first_mentioned": "2026-01-09T19:14:13.862692",
+      "details": {
+        "role": "work colleague",
+        "context": "dependency for work coordination, identified as potential bottleneck",
+        "status": "was sick on Friday Jan 9"
+      },
+      "mentions": 1
+    },
+    "stewart": {
+      "name": "Stewart",
+      "first_mentioned": "2026-01-09T19:14:13.863186",
+      "details": {
+        "role": "work colleague",
+        "context": "involved in dataset handoff task",
+        "last_interaction": "meeting completed Friday Jan 9"
+      },
+      "mentions": 1
+    },
+    "bella": {
+      "name": "Bella",
+      "first_mentioned": "2026-01-09T19:14:13.863651",
+      "details": {
+        "relationship": "daughter",
+        "activities": "cheer competitions",
+        "note": "had cheer competition Saturday Jan 10"
+      },
+      "mentions": 1
+    },
+    "donna": {
+      "name": "Donna",
+      "first_mentioned": "2026-01-09T19:28:04.629194",
+      "details": "Reference point for ideal assistant behavior - someone who sees around corners, anticipates needs, knows when to push and when to give space",
+      "mentions": 1
+    }
+  }
+}

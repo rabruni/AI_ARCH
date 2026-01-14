@@ -1,0 +1,42 @@
+{
+  "active_threads": [
+    "User is in planning/organization mode across multiple time horizons (weeks to years)",
+    "User is managing multiple overlapping commitments across work and personal life",
+    "User is at a point where individual tasks feel manageable but the combination could become overwhelming",
+    "Gaurav is identified as main risk factor/bottleneck for work coordination (mentioned 3+ times)",
+    "Stewart needs a dataset handoff task",
+    "User has meetings that need to be scheduled",
+    "User has patent/prototype project in progress requiring timeline and cost estimates",
+    "Family trip planning has built-in buffer time, scheduled for Monday",
+    "Storage decluttering project scheduled for next weekend",
+    "Bella is user's daughter with cheer competition Saturday",
+    "Monday schedule is very packed: eye appointment afternoon, visit parents/grandma evening",
+    "User has competing priorities on Sunday needing time allocation",
+    "Opening protocol established: day overview, pattern status, collision alerts, focus question",
+    "User expects continuity and better memory functionality from AI system",
+    "User prefers structured communication (numbers vs bullets, consistent format)",
+    "User wants proactive assistance and to be 'read' as a person beyond task management",
+    "User discovers forgotten commitments - mental calendar not synced with actual calendar",
+    "User wants AI to be like 'Donna' - anticipating needs and knowing when to push vs give space",
+    "User seeks authentic cognitive anchor relationship, not just surface task management",
+    "Follow-up question queued about 'what did I forget' evolution for next session"
+  ],
+  "pending_commits": [
+    "Sunday: Patent/prototype work session - either 2 hours OR complete workable plan with realistic schedule and cost estimates",
+    "Tomorrow (Saturday): Bella's cheer competition",
+    "Get work coordination moving (Gaurav is the risk)",
+    "Monday: Family trip scheduling (buffer exists if needed)",
+    "Monday: Eye appointment afternoon",
+    "Monday: Visit parents and grandma evening",
+    "Next weekend: Storage sort & purge",
+    "Run hybrid approach combining proactive behaviors: weekly rhythm nudges, pattern alerts, collision warnings",
+    "Begin Sunday weekly planning sessions"
+  ],
+  "open_questions": [],
+  "last_session": "2026-01-09T19:29:03.988458",
+  "archived_commits": [
+    "4 work coordination tasks tomorrow",
+    "Status check on Sunday",
+    "Begin this weekend by surfacing Sunday patent session vs Mustang work potential conflict"
+  ]
+}

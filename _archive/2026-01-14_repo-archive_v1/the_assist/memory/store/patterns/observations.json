@@ -1,0 +1,256 @@
+{
+  "observations": [
+    {
+      "timestamp": "2026-01-08T23:50:25.168949",
+      "type": "ai_observed",
+      "observation": "User appears to be in a reflective, strategic planning mindset",
+      "data": {}
+    },
+    {
+      "timestamp": "2026-01-08T23:50:25.170553",
+      "type": "ai_observed",
+      "observation": "User is considering both short-term and long-term planning needs",
+      "data": {}
+    },
+    {
+      "timestamp": "2026-01-09T00:09:52.696076",
+      "type": "ai_observed",
+      "observation": "User may be expecting persistent memory across conversations or sessions",
+      "data": {}
+    },
+    {
+      "timestamp": "2026-01-09T00:15:26.322448",
+      "type": "ai_observed",
+      "observation": "User tends to take on multiple commitments simultaneously",
+      "data": {}
+    },
+    {
+      "timestamp": "2026-01-09T00:15:26.323405",
+      "type": "ai_observed",
+      "observation": "User may need help with time management and contingency planning",
+      "data": {}
+    },
+    {
+      "timestamp": "2026-01-09T00:15:26.324058",
+      "type": "ai_observed",
+      "observation": "User responds well to structured breakdowns of their commitments",
+      "data": {}
+    },
+    {
+      "timestamp": "2026-01-09T00:16:52.548119",
+      "type": "ai_observed",
+      "observation": "User takes a realistic rather than pessimistic approach to planning",
+      "data": {}
+    },
+    {
+      "timestamp": "2026-01-09T00:16:52.549113",
+      "type": "ai_observed",
+      "observation": "User identifies specific risk factors and plans around them",
+      "data": {}
+    },
+    {
+      "timestamp": "2026-01-09T00:16:52.549872",
+      "type": "ai_observed",
+      "observation": "User builds buffers into their planning for unexpected issues",
+      "data": {}
+    },
+    {
+      "timestamp": "2026-01-09T00:18:15.862117",
+      "type": "ai_observed",
+      "observation": "Uses timeboxing strategy to prevent analysis paralysis",
+      "data": {}
+    },
+    {
+      "timestamp": "2026-01-09T00:18:15.862734",
+      "type": "ai_observed",
+      "observation": "Sets clear exit criteria for tasks (2 hours OR workable plan)",
+      "data": {}
+    },
+    {
+      "timestamp": "2026-01-09T00:18:15.863435",
+      "type": "ai_observed",
+      "observation": "Plans systematically with realistic scheduling",
+      "data": {}
+    },
+    {
+      "timestamp": "2026-01-09T00:18:15.864079",
+      "type": "ai_observed",
+      "observation": "Identifies and acknowledges potential risks/bottlenecks proactively",
+      "data": {}
+    },
+    {
+      "timestamp": "2026-01-09T00:20:44.899569",
+      "type": "ai_observed",
+      "observation": "User appears to have systematic approach to task prioritization",
+      "data": {}
+    },
+    {
+      "timestamp": "2026-01-09T00:20:44.900278",
+      "type": "ai_observed",
+      "observation": "User has multiple concurrent projects (work, patents, family, personal organization)",
+      "data": {}
+    },
+    {
+      "timestamp": "2026-01-09T00:20:44.901029",
+      "type": "ai_observed",
+      "observation": "User builds buffers into scheduling",
+      "data": {}
+    },
+    {
+      "timestamp": "2026-01-09T18:49:31.384491",
+      "type": "ai_observed",
+      "observation": "Juggles multiple time horizons simultaneously - immediate tasks, medium-term projects, and long-term life balance",
+      "data": {}
+    },
+    {
+      "timestamp": "2026-01-09T18:49:31.385492",
+      "type": "ai_observed",
+      "observation": "Patent work connects to meaningful technology north star",
+      "data": {}
+    },
+    {
+      "timestamp": "2026-01-09T18:49:31.386299",
+      "type": "ai_observed",
+      "observation": "Family activities serve the 'be present for family' value",
+      "data": {}
+    },
+    {
+      "timestamp": "2026-01-09T18:50:43.677824",
+      "type": "ai_observed",
+      "observation": "User seems to have difficulty remembering or tracking daily commitments/tasks",
+      "data": {}
+    },
+    {
+      "timestamp": "2026-01-09T18:50:43.680093",
+      "type": "ai_observed",
+      "observation": "User may be experiencing some uncertainty or anxiety about what they should be doing",
+      "data": {}
+    },
+    {
+      "timestamp": "2026-01-09T18:57:43.112862",
+      "type": "ai_observed",
+      "observation": "User checks my understanding of their schedule details rather than assuming I know",
+      "data": {}
+    },
+    {
+      "timestamp": "2026-01-09T18:57:43.114024",
+      "type": "ai_observed",
+      "observation": "Values accuracy in scheduling and time mapping",
+      "data": {}
+    },
+    {
+      "timestamp": "2026-01-09T19:06:41.221811",
+      "type": "ai_observed",
+      "observation": "User appreciates structured communication (prefers numbers over bullets)",
+      "data": {}
+    },
+    {
+      "timestamp": "2026-01-09T19:06:41.222630",
+      "type": "ai_observed",
+      "observation": "User is open to being pushed/managed proactively",
+      "data": {}
+    },
+    {
+      "timestamp": "2026-01-09T19:06:41.223393",
+      "type": "ai_observed",
+      "observation": "User has recurring bottlenecks (Gaurav mentioned multiple times)",
+      "data": {}
+    },
+    {
+      "timestamp": "2026-01-09T19:06:41.224171",
+      "type": "ai_observed",
+      "observation": "User tends to have scheduling conflicts between different types of work (patent work vs hands-on Mustang work)",
+      "data": {}
+    },
+    {
+      "timestamp": "2026-01-09T19:06:41.224940",
+      "type": "ai_observed",
+      "observation": "User may have memory/context tracking challenges based on 'today -1' reference",
+      "data": {}
+    },
+    {
+      "timestamp": "2026-01-09T19:08:29.976130",
+      "type": "ai_observed",
+      "observation": "User discovers commitments they had forgotten",
+      "data": {}
+    },
+    {
+      "timestamp": "2026-01-09T19:08:29.977247",
+      "type": "ai_observed",
+      "observation": "Mental calendar and actual calendar are not synced",
+      "data": {}
+    },
+    {
+      "timestamp": "2026-01-09T19:08:29.978005",
+      "type": "ai_observed",
+      "observation": "Tends to underestimate how packed schedule actually is",
+      "data": {}
+    },
+    {
+      "timestamp": "2026-01-09T19:08:29.978783",
+      "type": "ai_observed",
+      "observation": "May benefit from 'what did I forget?' daily check-ins",
+      "data": {}
+    },
+    {
+      "timestamp": "2026-01-09T19:18:33.605406",
+      "type": "ai_observed",
+      "observation": "User wants structured session openings with consistent format",
+      "data": {}
+    },
+    {
+      "timestamp": "2026-01-09T19:18:33.606894",
+      "type": "ai_observed",
+      "observation": "User is building systematic approach to productivity and memory management",
+      "data": {}
+    },
+    {
+      "timestamp": "2026-01-09T19:20:30.857629",
+      "type": "ai_observed",
+      "observation": "User has expectations for the AI to serve as a 'cognitive anchor'",
+      "data": {}
+    },
+    {
+      "timestamp": "2026-01-09T19:20:30.859203",
+      "type": "ai_observed",
+      "observation": "User provides direct feedback on system performance",
+      "data": {}
+    },
+    {
+      "timestamp": "2026-01-09T19:20:30.860343",
+      "type": "ai_observed",
+      "observation": "User seems to have been testing memory capabilities",
+      "data": {}
+    },
+    {
+      "timestamp": "2026-01-09T19:23:03.020811",
+      "type": "ai_observed",
+      "observation": "User seeks authentic engagement that goes beyond surface-level task management",
+      "data": {}
+    },
+    {
+      "timestamp": "2026-01-09T19:23:03.022286",
+      "type": "ai_observed",
+      "observation": "User appears to have a busy schedule ('everything loading up next week') and values support around balance and decision-making",
+      "data": {}
+    },
+    {
+      "timestamp": "2026-01-09T19:28:04.625758",
+      "type": "ai_observed",
+      "observation": "User values being understood on a personal level beyond just task completion",
+      "data": {}
+    },
+    {
+      "timestamp": "2026-01-09T19:28:04.626727",
+      "type": "ai_observed",
+      "observation": "User appreciates when I recognize their individual working style and mental patterns",
+      "data": {}
+    },
+    {
+      "timestamp": "2026-01-09T19:28:04.628057",
+      "type": "ai_observed",
+      "observation": "User sees value in AI that can anticipate and adapt rather than just execute",
+      "data": {}
+    }
+  ]
+}

@@ -29,6 +29,7 @@ classifier.py,the_assist/reasoning/,Reasoning,Input Classifier,Classifies input 
 strategies.py,the_assist/reasoning/,Reasoning,Strategy Definitions,Defines available reasoning strategies,To Build,0%,-,P1,"NEW: QUICK_ANSWER, DECOMPOSITION, VERIFICATION, etc."
 escalation.py,the_assist/reasoning/,Reasoning,Escalation Manager,Manages escalation/de-escalation,To Build,0%,classifier.py,P1,"NEW: 0.6 confidence threshold."
 proposals.py,the_assist/reasoning/,Reasoning,Agent Proposals,AgentBundleProposal generation,To Build,0%,strategies.py,P1,"NEW: Builds proposal with orchestration mode."
+action_selector.py,the_assist/reasoning/,Reasoning,Action Selector,Final stage - picks ONE action from candidates,To Build,0%,strategies.py,P0,"NEW: Priority signals (urgency/dependency/momentum/energy/alignment). Outputs SelectedAction to Focus."
 # ============================================================
 # FOCUS HRM (locked_system/) - GOVERNANCE/CONTROL
 # ============================================================

@@ -709,23 +709,86 @@ def generate_proposal(
 - test_verification_voting
 - test_exploration_parallel
 
-#### Step 4.6: Reasoning Router (Days 48-49)
+#### Step 4.6: Action Selector (Days 48-49)
+
+**Implement:** `the_assist/reasoning/action_selector.py`
+
+This is the **final stage** of Reasoning HRM. It picks exactly ONE action from candidates.
+
+```python
+class ActionSelector:
+    def select(
+        self,
+        candidates: list[CandidateAction],
+        context: HRMContext
+    ) -> SelectedAction:
+        """
+        Pick next best action using priority signals.
+        Returns exactly ONE action for Focus to govern.
+        """
+        ...
+
+    def should_use_voting(
+        self,
+        candidates: list[CandidateAction],
+        context: HRMContext
+    ) -> bool:
+        """
+        Voting ONLY when:
+        - High stakes AND
+        - Similar priority scores (within 0.1) AND
+        - Irreversible consequences
+        """
+        ...
+```
+
+**Priority Signals:**
+- urgency (time-sensitive?)
+- dependency (unblocks other work?)
+- momentum (continues current flow?)
+- energy_cost (cognitive load - lower = better)
+- alignment (matches commitment?)
+
+**Rules (MUST ENFORCE):**
+- NEVER override Focus stance/gates/leases
+- NEVER schedule work across turns
+- NEVER emit multiple unrelated actions as batch
+
+**Tests:**
+- test_select_highest_priority
+- test_includes_rationale
+- test_includes_fallback
+- test_momentum_breaks_ties
+- test_voting_only_high_stakes
+
+#### Step 4.7: Reasoning Router (Days 50-51)
 
 **Implement:** `the_assist/reasoning/router.py`
 
 ```python
 class ReasoningRouter:
+    """Two-phase Reasoning HRM."""
+
     def __init__(
         self,
         classifier: InputClassifier,
         selector: StrategySelector,
         escalation: EscalationManager,
+        action_selector: ActionSelector,  # NEW: Final selection stage
         learning_hrm: Optional[LearningHRM] = None
     ):
         ...
 
-    def route(self, input: TurnInput) -> RoutingDecision
-    def propose_agents(self, input: TurnInput) -> Optional[AgentBundleProposal]
+    def process(self, input: TurnInput) -> SelectedAction:
+        """Full pipeline. Returns ONE action for Focus."""
+        # Phase 1: Generate candidates
+        classification = self.classifier.classify(input)
+        patterns = self._query_learning(input)
+        strategy = self.selector.select(classification, patterns)
+        candidates = self._generate_candidates(input, strategy)
+
+        # Phase 2: Select next best action
+        return self.action_selector.select(candidates, context)
 ```
 
 **Flow:**
@@ -733,14 +796,17 @@ class ReasoningRouter:
 2. Query Learning HRM for patterns (if available)
 3. Select strategy
 4. Check escalation
-5. Generate proposal if needed
+5. Generate candidates (Phase 1)
+6. **Select ONE action via ActionSelector (Phase 2)**
+7. Return SelectedAction to Focus HRM
 
 **Tests:**
-- test_full_routing_flow
+- test_two_phase_flow
+- test_outputs_single_action
 - test_pattern_queries_learning
-- test_proposals_generated
+- test_fallback_included
 
-#### Step 4.7: Add Tracing (Day 50)
+#### Step 4.8: Add Tracing (Day 52)
 
 **Update:** All Reasoning HRM files
 
@@ -1037,7 +1103,8 @@ Verify:
 - [ ] the_assist/reasoning/strategies.py
 - [ ] the_assist/reasoning/escalation.py
 - [ ] the_assist/reasoning/proposals.py
-- [ ] the_assist/reasoning/router.py
+- [ ] the_assist/reasoning/action_selector.py (Final stage - picks ONE action)
+- [ ] the_assist/reasoning/router.py (Two-phase: generate + select)
 - [ ] Add tracing
 - [ ] tests/integration/test_m0_3.py
 

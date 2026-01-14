@@ -196,15 +196,55 @@ class AgentBundleProposal:
     fallback: Optional[str]          # Alternative if denied
 ```
 
+#### Action Selector (Final Stage)
+
+Reasoning HRM operates in two phases:
+
+```
+Phase 1: Generate                      Phase 2: Select
+─────────────────                      ───────────────
+Input → Classify → Strategy → [Generate Candidates] → ActionSelector → SelectedAction
+                                                              ↓
+                                                    ONE action to Focus HRM
+```
+
+**Purpose:** Ensures Reasoning HRM outputs exactly ONE primary action (or micro-batch of 2-3 max). Focus HRM governs the chosen action, not a bag of possibilities.
+
+**Priority Signals:**
+
+| Signal | Purpose | Range |
+|--------|---------|-------|
+| **Urgency** | Is this time-sensitive? | 0.0 - 1.0 |
+| **Dependency** | Does this unblock other work? | 0.0 - 1.0 |
+| **Momentum** | Does this continue the current flow? | 0.0 - 1.0 |
+| **Energy Cost** | Cognitive/resource cost | 0.0 - 1.0 (lower = better) |
+| **Alignment** | Does this match current commitment? | 0.0 - 1.0 |
+
+**Rules:**
+- ActionSelector DOES pick one action with rationale and fallback
+- ActionSelector NEVER overrides Focus stance, gates, or lease rules
+- ActionSelector NEVER schedules work across turns (Commitment Manager's job)
+- Voting mode ONLY when: high stakes + similar priority scores + irreversible
+
+```python
+@dataclass
+class SelectedAction:
+    primary: CandidateAction       # The chosen action
+    rationale: str                 # Why this one?
+    priority_score: float          # Computed from signals
+    fallback: Optional[CandidateAction]  # If Focus denies
+```
+
 #### Key Files (TO BE CREATED)
 
 | File | Purpose |
 |------|---------|
-| `router.py` | Main ReasoningRouter class |
+| `router.py` | Main ReasoningRouter class (two-phase) |
 | `classifier.py` | InputClassifier for signal detection |
 | `strategies.py` | Strategy definitions and selection logic |
 | `escalation.py` | Escalation/de-escalation management |
 | `proposals.py` | AgentBundleProposal generation |
+| `action_selector.py` | **NEW:** Final action selection with priority signals |
 
 ---
 

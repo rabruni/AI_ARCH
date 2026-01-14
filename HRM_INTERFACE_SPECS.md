@@ -499,6 +499,235 @@ class AgentBundleProposal:
     fallback: Optional[str]       # Alternative if denied
 ```
 
+### 3.6 ActionSelector (Next Best Action)
+
+```python
+class IActionSelector(Protocol):
+    """
+    Final stage of Reasoning HRM.
+
+    Selects exactly ONE primary action (or micro-batch of 2-3 max) from
+    candidates. This is NOT a separate layer - it's the final output of
+    Reasoning before Focus HRM governs.
+
+    Key principle: Focus HRM should govern the chosen action, not a bag
+    of possibilities. ActionSelector ensures Reasoning emits a single,
+    prioritized proposal.
+    """
+
+    def select(
+        self,
+        candidates: list[CandidateAction],
+        context: HRMContext
+    ) -> SelectedAction:
+        """
+        Pick the next best action from allowed candidates.
+
+        Uses priority signals:
+        - urgency: Time-sensitive? (0.0 - 1.0)
+        - dependency: Unblocks other work? (0.0 - 1.0)
+        - momentum: Continues current flow? (0.0 - 1.0)
+        - energy_cost: Cognitive/resource cost (0.0 - 1.0, lower = better)
+        - alignment: Matches current commitment? (0.0 - 1.0)
+
+        Returns exactly ONE primary action with rationale.
+        """
+        ...
+
+    def should_use_voting(
+        self,
+        candidates: list[CandidateAction],
+        context: HRMContext
+    ) -> bool:
+        """
+        Determine if voting mode is warranted.
+
+        Voting is ONLY used when:
+        1. High stakes (Stakes.HIGH) AND
+        2. Multiple candidates with similar priority scores (within 0.1) AND
+        3. Irreversible consequences
+
+        This prevents voting from becoming a default "committee" pattern.
+        """
+        ...
+
+@dataclass
+class CandidateAction:
+    """A potential action generated during strategy/proposal phase."""
+
+    id: str
+    action_type: str              # respond | execute | delegate | ask | wait
+    description: str
+
+    # Priority signals
+    urgency: float                # 0.0 - 1.0
+    dependency_score: float       # How much this unblocks
+    momentum_score: float         # How well this continues flow
+    energy_cost: float            # Cognitive/resource cost
+    alignment_score: float        # Match to current commitment
+
+    # If this action requires agents
+    agent_proposal: Optional[AgentBundleProposal]
+
+    # Metadata
+    source: str                   # What generated this candidate
+
+@dataclass
+class SelectedAction:
+    """The single action Reasoning HRM outputs to Focus HRM."""
+
+    # The chosen action
+    primary: CandidateAction
+
+    # Why this one?
+    rationale: str
+    priority_score: float         # Computed from signals
+
+    # Fallback if Focus denies
+    fallback: Optional[CandidateAction]
+
+    # Micro-batch (rare, max 2-3)
+    # Only when actions are atomic and tightly coupled
+    batch: Optional[list[CandidateAction]] = None
+
+    def is_batch(self) -> bool:
+        """Returns True if this is a micro-batch, not single action."""
+        return self.batch is not None and len(self.batch) > 1
+
+@dataclass
+class PrioritySignals:
+    """Signals used to compute action priority."""
+
+    urgency: float = 0.0          # Time-sensitive
+    dependency: float = 0.0       # Unblocks other work
+    momentum: float = 0.0         # Continues current flow
+    energy_cost: float = 0.5      # Resource cost (lower = better)
+    alignment: float = 1.0        # Matches commitment
+
+    def compute_score(self, weights: dict = None) -> float:
+        """
+        Compute weighted priority score.
+
+        Default weights favor momentum and alignment (exploitation),
+        but can be adjusted based on stance.
+        """
+        w = weights or {
+            "urgency": 0.2,
+            "dependency": 0.2,
+            "momentum": 0.25,
+            "energy_cost": 0.15,  # Inverted in calculation
+            "alignment": 0.2
+        }
+        return (
+            w["urgency"] * self.urgency +
+            w["dependency"] * self.dependency +
+            w["momentum"] * self.momentum +
+            w["energy_cost"] * (1 - self.energy_cost) +  # Invert: low cost = high score
+            w["alignment"] * self.alignment
+        )
+```
+
+#### ActionSelector Rules
+
+**What it DOES:**
+1. Produce exactly ONE primary action per turn (or micro-batch of 2-3 max)
+2. Include rationale explaining why this action was chosen
+3. Include fallback if primary is blocked by Focus
+4. Apply priority signals to break ties between allowed candidates
+5. Trigger voting mode ONLY under explicit high-stakes conditions
+
+**What it MUST NEVER do:**
+1. Override Focus stance, gates, or lease rules
+2. Schedule work across multiple turns (that's Commitment Manager's job)
+3. Create a second priority system conflicting with ProblemRegistry.priority
+4. Emit multiple unrelated actions as a "batch"
+
+#### Integration with ReasoningRouter
+
+The ReasoningRouter becomes explicitly two-phase:
+
+```python
+class ReasoningRouter:
+    """
+    Two-phase Reasoning HRM:
+    1. Generate phase: Classify input, select strategy, generate candidates
+    2. Select phase: Pick the next best action via ActionSelector
+    """
+
+    def __init__(
+        self,
+        classifier: IInputClassifier,
+        strategy_selector: IStrategySelector,
+        escalation_manager: IEscalationManager,
+        action_selector: IActionSelector,      # NEW: Final selection stage
+        learning_hrm: Optional[LearningHRM] = None
+    ):
+        ...
+
+    def process(self, input: TurnInput) -> SelectedAction:
+        """
+        Full reasoning pipeline. Returns exactly ONE action for Focus to govern.
+        """
+        # Phase 1: Generate candidates
+        classification = self.classifier.classify(input)
+        patterns = self._query_learning(input) if self.learning_hrm else []
+        strategy = self.strategy_selector.select(classification, patterns)
+
+        if self.escalation_manager.should_escalate(classification, strategy):
+            strategy = self.escalation_manager.escalate(strategy)
+
+        candidates = self._generate_candidates(input, strategy, classification)
+
+        # Phase 2: Select next best action
+        selected = self.action_selector.select(candidates, self._get_context())
+
+        return selected  # Single action (or micro-batch) for Focus HRM
+
+    def _generate_candidates(
+        self,
+        input: TurnInput,
+        strategy: StrategySelection,
+        classification: InputClassification
+    ) -> list[CandidateAction]:
+        """Generate candidate actions based on strategy."""
+        candidates = []
+
+        # Always include direct response option
+        candidates.append(CandidateAction(
+            id="respond_direct",
+            action_type="respond",
+            description="Answer directly without agents",
+            urgency=0.3,
+            momentum_score=0.8,
+            energy_cost=0.2,
+            ...
+        ))
+
+        # If strategy requires agents, add agent-based candidate
+        if strategy.requires_agents:
+            proposal = self._build_agent_proposal(strategy, classification)
+            candidates.append(CandidateAction(
+                id="delegate_agents",
+                action_type="delegate",
+                description=f"Delegate to agents: {proposal.agents}",
+                agent_proposal=proposal,
+                ...
+            ))
+
+        # If uncertain, add clarification option
+        if classification.uncertainty > 0.5:
+            candidates.append(CandidateAction(
+                id="ask_clarify",
+                action_type="ask",
+                description="Ask user for clarification",
+                urgency=0.1,
+                momentum_score=0.3,
+                ...
+            ))
+
+        return candidates
+```
+
 ---
 
 ## 4. Focus HRM Interfaces

@@ -516,6 +516,125 @@ class TestEscalationManager:
         strategy = StrategySelection(strategy="verification", ...)
 
         assert manager.should_deescalate(strategy, pattern_confidence=0.9)
+
+
+# tests/unit/reasoning/test_action_selector.py
+
+class TestActionSelector:
+    """
+    ActionSelector is the FINAL STAGE of Reasoning HRM.
+    It picks exactly ONE action for Focus to govern.
+    """
+
+    def test_select_returns_single_action(self):
+        """Selector always returns exactly ONE primary action."""
+        selector = ActionSelector()
+        candidates = [
+            create_candidate(id="a", priority_score=0.8),
+            create_candidate(id="b", priority_score=0.6),
+        ]
+
+        result = selector.select(candidates, context)
+
+        assert result.primary is not None
+        assert result.primary.id == "a"  # Highest priority
+
+    def test_includes_rationale(self):
+        """Selected action includes explanation."""
+        selector = ActionSelector()
+        candidates = [create_candidate(id="a")]
+
+        result = selector.select(candidates, context)
+
+        assert result.rationale is not None
+        assert len(result.rationale) > 0
+
+    def test_includes_fallback(self):
+        """Selected action includes fallback option."""
+        selector = ActionSelector()
+        candidates = [
+            create_candidate(id="a", priority_score=0.9),
+            create_candidate(id="b", priority_score=0.7),
+        ]
+
+        result = selector.select(candidates, context)
+
+        assert result.fallback is not None
+        assert result.fallback.id == "b"  # Second best
+
+    def test_momentum_breaks_ties(self):
+        """When priority scores are equal, momentum wins."""
+        selector = ActionSelector()
+        candidates = [
+            create_candidate(id="a", urgency=0.5, momentum=0.3),
+            create_candidate(id="b", urgency=0.5, momentum=0.8),  # Higher momentum
+        ]
+
+        result = selector.select(candidates, context)
+
+        assert result.primary.id == "b"
+
+    def test_alignment_with_commitment_prioritized(self):
+        """Actions matching current commitment score higher."""
+        selector = ActionSelector()
+        context = HRMContext(commitment_id="commit_1", ...)
+
+        candidates = [
+            create_candidate(id="a", alignment=0.3),  # Off-commitment
+            create_candidate(id="b", alignment=0.9),  # On-commitment
+        ]
+
+        result = selector.select(candidates, context)
+
+        assert result.primary.id == "b"
+
+    def test_voting_only_for_high_stakes_ties(self):
+        """Voting mode only when: high stakes + similar scores + irreversible."""
+        selector = ActionSelector()
+
+        # Low stakes - no voting
+        low_stakes_candidates = [
+            create_candidate(id="a", priority_score=0.5, stakes=Stakes.LOW),
+            create_candidate(id="b", priority_score=0.5, stakes=Stakes.LOW),
+        ]
+        assert not selector.should_use_voting(low_stakes_candidates, context)
+
+        # High stakes + similar scores + irreversible - voting
+        high_stakes_candidates = [
+            create_candidate(id="a", priority_score=0.7, stakes=Stakes.HIGH, irreversible=True),
+            create_candidate(id="b", priority_score=0.72, stakes=Stakes.HIGH, irreversible=True),
+        ]
+        assert selector.should_use_voting(high_stakes_candidates, context)
+
+    def test_never_emits_unrelated_batch(self):
+        """Batch only for tightly coupled atomic actions."""
+        selector = ActionSelector()
+        unrelated = [
+            create_candidate(id="a", action_type="respond"),
+            create_candidate(id="b", action_type="delegate"),  # Unrelated
+        ]
+
+        result = selector.select(unrelated, context)
+
+        # Should NOT be a batch - these are unrelated
+        assert not result.is_batch()
+
+    def test_priority_signals_computed_correctly(self):
+        """Priority score computed from weighted signals."""
+        signals = PrioritySignals(
+            urgency=0.8,
+            dependency=0.5,
+            momentum=0.6,
+            energy_cost=0.2,  # Low cost = good
+            alignment=0.9
+        )
+
+        score = signals.compute_score()
+
+        # Score should be reasonable (0-1 range)
+        assert 0.0 <= score <= 1.0
+        # High urgency + high alignment + low energy should yield high score
+        assert score > 0.6
 ```
 
 ### 3.3 Focus HRM Unit Tests

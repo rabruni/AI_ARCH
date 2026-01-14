@@ -1,0 +1,155 @@
+Capability,Location,HRM_Layer,Purpose,Function,Status,Percent,Depends_On,Priority,Notes
+# ============================================================
+# FOUNDATION (M0.0)
+# ============================================================
+bus.py,shared/memory/,Foundation,Memory Bus,Main memory bus class with 4 compartments,To Build,0%,-,P0,"NEW: Core memory abstraction. All HRMs use this."
+working_set.py,shared/memory/,Foundation,Working Set Store,Per-problem isolated memory with TTL,To Build,0%,bus.py,P0,"NEW: Problem isolation. Expires aggressively."
+shared_reference.py,shared/memory/,Foundation,Shared Reference Store,Versioned cross-problem facts,To Build,0%,bus.py,P0,"NEW: North stars, priorities. Citable."
+episodic_trace.py,shared/memory/,Foundation,Episodic Trace Store,Append-only audit logs,To Build,0%,bus.py,P0,"NEW: Never overwritten. Searchable by time/tags."
+semantic_synthesis.py,shared/memory/,Foundation,Semantic Synthesis Store,Evidence-linked patterns,To Build,0%,bus.py,P1,"NEW: Distilled conclusions with evidence chain."
+write_gate.py,shared/memory/,Foundation,Write Gate Policy,Signal-based write decisions,To Build,0%,bus.py,P0,"NEW: Blast radius, conflict, alignment checks."
+problem_registry.py,shared/memory/,Foundation,Problem Registry,Multi-problem management,To Build,0%,bus.py,P1,"NEW: Active/paused/background problem states."
+tracer.py,shared/tracing/,Foundation,Tracer,Observability singleton,To Build,0%,-,P1,"NEW: Trace events with parent/child correlation."
+viewer.py,shared/tracing/,Foundation,Trace Viewer,CLI trace viewer,To Build,0%,tracer.py,P2,"NEW: View/filter trace logs."
+compression.py,shared/memory/,Foundation,Compression,Token-efficient encoding,To Build,0%,-,P1,"Migrate from memory_v2.py PATTERN_CODES."
+# ============================================================
+# ALTITUDE HRM (the_assist/hrm/)
+# ============================================================
+altitude.py,the_assist/hrm/,Altitude,Altitude Governance,L4/L3/L2/L1 level detection and enforcement,Active,95%,-,P0,"Core altitude governor. Request type classification."
+loop.py,the_assist/hrm/,Altitude,HRM Loop,Orchestrates planner/evaluator/executor,Active,85%,altitude.py,P0,"Needs Focus HRM integration."
+planner.py,the_assist/hrm/,Altitude,Planning Layer,Generates plans at current altitude,Active,75%,altitude.py,P1,"Works standalone."
+evaluator.py,the_assist/hrm/,Altitude,Evaluation Layer,Assesses plans and results,Active,75%,altitude.py,P1,"Should integrate with continuous_eval."
+executor.py,the_assist/hrm/,Altitude,Execution Layer,Runs approved actions,Active,70%,altitude.py,P1,"Should delegate writes to Focus HRM."
+history.py,the_assist/hrm/,Altitude,Session History,Stores session summaries with search,Active,100%,-,P1,"Fully implemented. Lazy loading."
+# ============================================================
+# REASONING HRM (the_assist/reasoning/) - TO BUILD
+# ============================================================
+router.py,the_assist/reasoning/,Reasoning,Reasoning Router,Main strategy selection and agent proposal,To Build,0%,classifier.py,P1,"NEW: Core of Reasoning HRM. Proposes AgentBundleProposal."
+classifier.py,the_assist/reasoning/,Reasoning,Input Classifier,Classifies input complexity/uncertainty/stakes,To Build,0%,-,P1,"NEW: Returns InputClassification."
+strategies.py,the_assist/reasoning/,Reasoning,Strategy Definitions,Defines available reasoning strategies,To Build,0%,-,P1,"NEW: QUICK_ANSWER, DECOMPOSITION, VERIFICATION, etc."
+escalation.py,the_assist/reasoning/,Reasoning,Escalation Manager,Manages escalation/de-escalation,To Build,0%,classifier.py,P1,"NEW: 0.6 confidence threshold."
+proposals.py,the_assist/reasoning/,Reasoning,Agent Proposals,AgentBundleProposal generation,To Build,0%,strategies.py,P1,"NEW: Builds proposal with orchestration mode."
+# ============================================================
+# FOCUS HRM (locked_system/) - GOVERNANCE/CONTROL
+# ============================================================
+stance.py,locked_system/slow_loop/,Focus,Stance Machine,4-state exclusive stance machine,Active,90%,-,P0,"SENSEMAKING/DISCOVERY/EXECUTION/EVALUATION."
+gates.py,locked_system/slow_loop/,Focus,Gate Controller,Enforces checkpoints for state changes,Active,90%,stance.py,P0,"Framing/Commitment/Evaluation/Emergency gates."
+commitment.py,locked_system/slow_loop/,Focus,Commitment Manager,Lease-based focus with TTL,Active,85%,-,P0,"Tracks commitments with turns remaining."
+agent.py,locked_system/front_door/,Focus,HRM Router,Signal detection and bundle proposals,Active,85%,signals.py,P0,"Routes user input to agents. NOT a duplicate."
+signals.py,locked_system/front_door/,Focus,Signal Detector,Detects intent signals from input,Active,85%,-,P0,"FORMAL_WORK, INTERRUPT, URGENCY, etc."
+bundles.py,locked_system/front_door/,Focus,Bundle Definitions,Defines agent bundles,Active,90%,-,P1,"Writer/finance/monitor bundles."
+emotional.py,locked_system/front_door/,Focus,Emotional Telemetry,Bounded emotional state tracking,Active,90%,-,P1,"Energy/focus/stress states."
+runtime.py,locked_system/agents/,Focus,Agent Runtime,Executes approved agent bundles,Active,80%,firewall.py,P0,"NEW: 4 orchestration modes (pipeline/parallel/voting/hierarchical)."
+orchestrator.py,locked_system/agents/,Focus,Agent Orchestrator,Multi-agent orchestration modes,Active,75%,runtime.py,P1,"Needs update for 4 modes."
+firewall.py,locked_system/agents/,Focus,Packet Firewall,Validates agent outputs,Active,85%,-,P0,"Security critical. Blocks unauthorized proposals."
+loader.py,locked_system/agents/,Focus,Agent Loader,Loads agent definitions from YAML,Active,85%,-,P1,"Works."
+models.py,locked_system/agents/,Focus,Agent Models,Data classes for agents,Active,90%,-,P2,"Stable."
+store.py,locked_system/lanes/,Focus,Lane Store,Persists lane state,Active,85%,-,P1,"Works."
+gates.py,locked_system/lanes/,Focus,Lane Gates,WorkDeclaration and LaneSwitch gates,Active,85%,store.py,P1,"Works."
+models.py,locked_system/lanes/,Focus,Lane Models,Data classes for lanes,Active,90%,-,P2,"From spec."
+gates.py,locked_system/executor/,Focus,Executor Gates,WriteApprovalGate,Active,85%,-,P0,"Consent enforcement."
+pipeline.py,locked_system/executor/,Focus,Execution Pipeline,Full turn execution flow,Active,80%,-,P1,"Works."
+agent_approval.py,locked_system/slow_loop/,Focus,Agent Approval Gate,Validates agent bundle proposals,To Build,0%,gates.py,P0,"NEW: Checks stance/commitment alignment before agent activation."
+# ============================================================
+# LEARNING HRM (the_assist/learning/) - TO BUILD
+# ============================================================
+patterns.py,the_assist/learning/,Learning,Pattern Store,Stores synthesized patterns with evidence,To Build,0%,semantic_synthesis.py,P1,"NEW: Evidence-linked patterns."
+feedback_loop.py,the_assist/learning/,Learning,Feedback Loop,Session analysis and pattern updates,To Build,0%,patterns.py,P1,"NEW: Capture signal->routing->outcome tuples."
+generalizer.py,the_assist/learning/,Learning,Generalizer,Merges similar patterns,To Build,0%,patterns.py,P2,"NEW: Abstract patterns from specific cases."
+# ============================================================
+# EXPERIENCE LAYER (the_assist/core/)
+# ============================================================
+orchestrator.py,the_assist/core/,Experience,Experience Orchestrator,Multi-agent coordinator with Perception+HRM,Active,90%,-,P0,"NOT legacy. Main chat layer. Uses v2 memory."
+memory_v2.py,the_assist/core/,Experience,Compressed Memory,Token-efficient memory with pattern codes,Active,70%,-,P1,"Migrate to Memory Bus. Keep PATTERN_CODES."
+memory.py,the_assist/core/,Experience,Original Memory,v1 prose-based memory,Active,85%,-,P3,"Legacy. Will be replaced by Memory Bus."
+curator.py,the_assist/core/,Experience,Memory Curator,Memory lifecycle and pruning,Active,80%,-,P2,"Good implementation."
+feedback.py,the_assist/core/,Experience,Feedback Collection,Logs what works/doesn't work,Active,95%,-,P1,"Works well. Extend to all HRMs."
+retrospective.py,the_assist/core/,Experience,Session Retrospective,End-of-session analysis (MBTI/Big5),Active,65%,-,P2,"Works but not wired to HRM loop."
+integrity.py,the_assist/core/,Experience,System Integrity,Boot/shutdown with hash verification,Active,100%,-,P0,"Should be shared across layers."
+proactive.py,the_assist/core/,Experience,Proactive Suggestions,Generates unprompted suggestions,Active,60%,-,P2,"Basic implementation."
+perception_agent.py,the_assist/core/,Experience,Perception Agent,Senses context and state,Active,40%,-,P2,"Partial."
+hrm_agent.py,the_assist/core/,Experience,HRM Agent Wrapper,Wraps HRM for orchestrator,Active,50%,-,P2,"Bridge code."
+ai_reflection.py,the_assist/core/,Experience,AI Self-Reflection,Meta-cognition about responses,Active,50%,-,P3,"Experimental."
+# ============================================================
+# TOOLS & CONNECTORS (locked_system/tools/)
+# ============================================================
+runtime.py,locked_system/tools/,Tools,Tool Runtime (PEP),Executes approved tool calls,Active,85%,-,P0,"Security critical."
+decision.py,locked_system/tools/,Tools,Decision Pipeline (PDP),Evaluates allow/deny,Active,85%,-,P0,"Security critical."
+registry.py,locked_system/tools/,Tools,Tool Registry,Loads and manages tool specs,Active,85%,-,P1,"Works."
+local_fs.py,locked_system/tools/connectors/,Tools,Filesystem Connector,Implements file operations,Active,85%,-,P1,"Sandboxed access."
+models.py,locked_system/tools/,Tools,Tool Models,Data classes for tools,Active,90%,-,P2,"Stable."
+base.py,locked_system/tools/connectors/,Tools,Connector Base,Abstract connector interface,Active,90%,-,P2,"Clean interface."
+# ============================================================
+# MEMORY (locked_system/memory/) - TO BE MIGRATED TO BUS
+# ============================================================
+slow.py,locked_system/memory/,Memory,Slow Memory,Long-term memory storage,Active,80%,-,P1,"Migrate to Shared Reference."
+fast.py,locked_system/memory/,Memory,Fast Memory,Short-term working memory,Active,75%,-,P1,"Migrate to Working Set."
+bridge.py,locked_system/memory/,Memory,Memory Bridge,Connects fast and slow memory,Active,70%,-,P1,"Replace with Memory Bus."
+consent.py,locked_system/memory/,Memory,Consent Tracking,Tracks user consent for writes,Active,80%,-,P1,"Integrate into Write Gate."
+history.py,locked_system/memory/,Memory,Memory History,History tracking,Active,65%,-,P1,"Migrate to Episodic Trace."
+# ============================================================
+# SIGNALS (locked_system/signals/)
+# ============================================================
+state.py,locked_system/signals/,Signals,Signal State,Tracks signal state,Active,70%,-,P2,"Works."
+collector.py,locked_system/signals/,Signals,Signal Collector,Collects signals for processing,Active,70%,-,P2,"Works."
+display.py,locked_system/signals/,Signals,Signal Display,Displays signal state,Active,70%,-,P3,"Move to UI module."
+computer.py,locked_system/signals/,Signals,Signal Computer,Computes derived signals,Active,60%,-,P2,"Partial."
+# ============================================================
+# SENSING (locked_system/sensing/)
+# ============================================================
+perception.py,locked_system/sensing/,Sensing,Perception Sensing,Senses environment state,Active,60%,-,P2,"Partial."
+contrast.py,locked_system/sensing/,Sensing,Contrast Detection,Detects contradictions/changes,Active,50%,-,P3,"Experimental."
+# ============================================================
+# CLI & UI
+# ============================================================
+main.py,locked_system/cli/,CLI,CLI Entry,Command-line interface,Active,85%,-,P1,"Works."
+chat_ui.py,locked_system/cli/,CLI,Chat UI,Terminal chat interface,Active,70%,-,P2,"Move to the_assist/ui/."
+session_logger.py,locked_system/cli/,CLI,Session Logging,Logs sessions to files,Active,80%,-,P2,"Good for audit."
+formatter.py,the_assist/core/,UI,Output Formatter,Formats responses for display,Active,80%,-,P2,"Move to the_assist/ui/."
+# ============================================================
+# CONFIG & ENTRY POINTS
+# ============================================================
+main_hrm.py,the_assist/,Entry,HRM Entry Point,Initializes altitude governance,Active,90%,-,P0,"Main entry. Needs Focus HRM wiring."
+main.py,the_assist/,Entry,Legacy Entry,Calls main_hrm or original orchestrator,Active,60%,-,P2,"Merge into main_hrm."
+main_locked.py,the_assist/,Entry,Locked Integration,Runs assist with locked_system,Active,40%,-,P2,"Integration incomplete."
+main.py,locked_system/,Entry,Locked Main,Primary locked_system entry,Active,85%,-,P1,"Works."
+settings.py,the_assist/config/,Config,Configuration,App settings and paths,Active,90%,-,P2,"Works."
+config.py,locked_system/,Config,Locked Config,Governance settings,Active,90%,-,P2,"Works."
+run.sh,AI_ARCH/,Entry,Root Launcher,Dispatches to experiences,Active,90%,-,P2,"Works."
+# ============================================================
+# TESTS
+# ============================================================
+test_lanes.py,locked_system/tests/,Tests,Lane Tests,Unit tests for lanes,Active,90%,-,P1,"Good coverage."
+test_tools.py,locked_system/tests/,Tests,Tool Tests,Unit tests for tools,Active,90%,-,P1,"Good coverage."
+test_agents.py,locked_system/tests/,Tests,Agent Tests,Unit tests for agents,Active,85%,-,P1,"Good coverage."
+test_executor.py,locked_system/tests/,Tests,Executor Tests,Unit tests for executor,Active,80%,-,P1,"Good coverage."
+test_front_door.py,locked_system/tests/,Tests,Front-door Tests,Unit tests for HRM router,Active,85%,-,P1,"Good coverage."
+test_l2_fastlane.py,AI_ARCH/,Tests,L2 Fastlane Tests,Tests L2 atomic fast lane,Active,100%,-,P1,"New test file."
+# ============================================================
+# ADAPTERS
+# ============================================================
+intent_to_commitment.py,the_assist/adapters/,Adapters,Intent Adapter,Converts intents to commitments,Active,60%,-,P2,"Bridge to locked_system."
+llm.py,the_assist/adapters/,Adapters,LLM Adapter,LLM provider abstraction,Missing,0%,-,P0,"NEEDS CREATION. Claude/OpenAI adapters."
+# ============================================================
+# DUPLICATES TO MERGE
+# ============================================================
+stance.py,locked_system/core/governance/,Duplicate,Core Stance,Duplicate of slow_loop/stance.py,Duplicate,50%,-,P3,"Merge with slow_loop."
+commitment.py,locked_system/core/governance/,Duplicate,Core Commitment,Duplicate of slow_loop/commitment.py,Duplicate,50%,-,P3,"Merge with slow_loop."
+gates.py,locked_system/core/governance/,Duplicate,Core Gates,Duplicate of slow_loop/gates.py,Duplicate,50%,-,P3,"Merge with slow_loop."
+executor.py,locked_system/core/execution/,Duplicate,Core Executor,Duplicate of fast_loop/executor.py,Duplicate,50%,-,P3,"Merge with fast_loop."
+hrm.py,locked_system/core/execution/,Duplicate,Core HRM,Duplicate of fast_loop/hrm.py,Duplicate,50%,-,P3,"Merge with fast_loop."
+continuous_eval.py,locked_system/core/execution/,Duplicate,Core Eval,Duplicate of fast_loop/continuous_eval.py,Duplicate,50%,-,P3,"Merge with fast_loop."
+# ============================================================
+# CAPABILITIES (locked_system/capabilities/) - GATED
+# ============================================================
+registry.py,locked_system/capabilities/,Capabilities,Capability Registry,Registers gated capabilities,New,40%,-,P1,"Stub. Needs capability definitions."
+tool.py,locked_system/capabilities/note_capture/,Capabilities,Note Capture Tool,Gated note writing,New,30%,-,P1,"Replace ungated notes.py."
+notes.py,locked_system/,Capabilities,Note Capture (ungated),Writes notes without governance,Risk,85%,-,P0,"RISK: Bypasses governance. Replace with gated tool."
+# ============================================================
+# BOOTSTRAP & MISC
+# ============================================================
+bootstrap.py,locked_system/slow_loop/,Bootstrap,Bootstrap Protocol,2-stage first-contact,Active,90%,-,P2,"Fully implemented but orphaned. Needs integration."
+prompt_compiler.py,locked_system/core/execution/,Prompts,Prompt Compiler,Enforces prompt precedence,New,90%,-,P0,"Laws LAST. Agent context sandboxed."
+delegation.py,locked_system/core/governance/,Governance,Delegation Leases,Explicit scoped time-bounded grants,New,30%,-,P1,"Stub. Key for capability gating."
+injector.py,the_assist/personality/,Personality,Personality Injector,Injects personality traits,Active,70%,-,P3,"Not used by HRM loop."
+demo_front_door.py,locked_system/,Demo,Front-door Demo,Demo with agent routing,Active,70%,-,P3,"Move to the_assist."

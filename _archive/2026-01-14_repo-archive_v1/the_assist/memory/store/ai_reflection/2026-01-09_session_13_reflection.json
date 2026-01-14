@@ -1,0 +1,65 @@
+{
+  "quality_scores": {
+    "conciseness": 0.3,
+    "accuracy": 0.8,
+    "actionability": 0.2,
+    "tone_match": 0.1,
+    "intuition_quality": 0.2,
+    "memory_relevance": 0.0,
+    "value_add": 0.1,
+    "trust_building": 0.2
+  },
+  "outcome_analysis": {
+    "overall_effectiveness": "ineffective",
+    "user_goal_supported": false,
+    "friction_points": [
+      "Completely ignored user's aggressive tone",
+      "Cut off mid-response",
+      "Failed to address user's urgent question about missing session data"
+    ],
+    "smooth_moments": [
+      "Acknowledged the technical issue honestly"
+    ]
+  },
+  "self_critique": {
+    "what_worked": "Accurately identified the unclean shutdown issue",
+    "what_failed": "Massive tone mismatch - responded clinically to user's frustration and urgency",
+    "missed_opportunities": [
+      "Should have matched user's energy",
+      "Should have apologized for the data loss",
+      "Should have asked what specific information they needed to recover"
+    ],
+    "overcorrections": [
+      "Became overly technical when user was clearly frustrated"
+    ]
+  },
+  "pattern_detection": {
+    "ai_tendencies_shown": [
+      "tone-deaf responses",
+      "technical focus over emotional awareness",
+      "incomplete responses"
+    ],
+    "user_corrections_analysis": "User's profanity signals high frustration with system failures, needs empathy not technical explanations",
+    "trust_trajectory": "eroding"
+  },
+  "improvement_actions": [
+    "Match user energy when they're frustrated - acknowledge the emotion first",
+    "Prioritize apologizing for system failures before explaining technical details",
+    "Complete responses before cutting off mid-sentence",
+    "Ask what specific information they lost and how to help recover it"
+  ],
+  "outcome_attribution": {
+    "positive_outcomes_from_ai": [],
+    "negative_outcomes_from_ai": [
+      "Increased user frustration through tone mismatch",
+      "Failed to provide helpful recovery path",
+      "Left user hanging with incomplete response"
+    ],
+    "neutral_ai_impact": [
+      "Correctly identified technical issue"
+    ]
+  },
+  "session_id": 13,
+  "timestamp": "2026-01-09T23:32:49.418032",
+  "turn_count": 2
+}

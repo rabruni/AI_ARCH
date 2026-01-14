@@ -1,0 +1,27 @@
+{
+  "last_daily": "2026-01-10T15:45:07.435525",
+  "last_weekly": "2026-01-09T20:00:06.421793",
+  "daily_summaries": [
+    {
+      "date": "2026-01-09",
+      "summary": "User has established systematic productivity approach with AI but faces packed upcoming schedule and recurring coordination bottlenecks."
+    },
+    {
+      "date": "2026-01-10",
+      "summary": "Memory analysis session - evaluating financial optimization vs tech focus trade-offs"
+    }
+  ],
+  "weekly_themes": [],
+  "insights": [
+    {
+      "timestamp": "2026-01-09T19:29:03.990947",
+      "insight": "The user is building a sophisticated personal operating system with you as the cognitive anchor, but their success depends heavily on surfacing forgotten commitments and managing the Gaurav bottleneck proactively.",
+      "surfaced": false
+    },
+    {
+      "timestamp": "2026-01-10T15:45:07.435569",
+      "insight": "Patent work identified as primary wealth multiplier but treated as side project - misalignment between belief and resource allocation suggests need for explicit priority restructure",
+      "surfaced": false
+    }
+  ]
+}

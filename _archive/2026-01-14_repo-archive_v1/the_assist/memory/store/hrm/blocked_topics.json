@@ -1,0 +1,55 @@
+{
+  "blocked": [
+    {
+      "topic": "monday_schedule",
+      "strength": "demand",
+      "added": "2026-01-09T23:35:32.495322"
+    },
+    {
+      "topic": "priority_framework",
+      "strength": "demand",
+      "added": "2026-01-10T00:56:46.684019"
+    },
+    {
+      "topic": "priority_clarification",
+      "strength": "request",
+      "added": "2026-01-10T01:10:01.138687"
+    },
+    {
+      "topic": "strategic_deep_dive",
+      "strength": "request",
+      "added": "2026-01-10T01:10:01.140286"
+    },
+    {
+      "topic": "monday_cascade",
+      "strength": "demand",
+      "added": "2026-01-10T01:11:50.324266"
+    },
+    {
+      "topic": "gaurav call no",
+      "strength": "demand",
+      "added": "2026-01-10T01:36:15.103970"
+    },
+    {
+      "topic": "aws_q1_planning",
+      "strength": "demand",
+      "added": "2026-01-10T01:36:20.735116"
+    },
+    {
+      "topic": "gaurav_call",
+      "strength": "demand",
+      "added": "2026-01-10T01:37:34.917784"
+    },
+    {
+      "topic": "conversation_continuation",
+      "strength": "demand",
+      "added": "2026-01-10T20:55:33.445124"
+    }
+  ],
+  "cooldowns": {
+    "project_validation": {
+      "remaining": 2,
+      "added": "2026-01-10T20:55:33.446016"
+    }
+  }
+}

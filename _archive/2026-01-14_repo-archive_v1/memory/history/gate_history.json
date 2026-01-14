@@ -1,0 +1,107 @@
+[
+  {
+    "gate": "framing",
+    "from_stance": "sensemaking",
+    "to_stance": "sensemaking",
+    "reason": "Note capture requested but not authorized",
+    "timestamp": "2026-01-11T20:06:51.353957"
+  },
+  {
+    "gate": "commitment",
+    "from_stance": "sensemaking",
+    "to_stance": "execution",
+    "reason": "Committing to: <sales play>",
+    "timestamp": "2026-01-11T20:12:12.625582"
+  },
+  {
+    "gate": "evaluation",
+    "from_stance": "sensemaking",
+    "to_stance": "evaluation",
+    "reason": "Commitment expired: <sales play>",
+    "timestamp": "2026-01-11T20:35:45.215095"
+  },
+  {
+    "gate": "framing",
+    "from_stance": "evaluation",
+    "to_stance": "sensemaking",
+    "reason": "Note capture requested but not authorized",
+    "timestamp": "2026-01-11T20:47:58.628132"
+  },
+  {
+    "gate": "evaluation",
+    "from_stance": "sensemaking",
+    "to_stance": "evaluation",
+    "reason": "Commitment expired: <sales play>",
+    "timestamp": "2026-01-11T20:48:26.755518"
+  },
+  {
+    "gate": "evaluation",
+    "from_stance": "sensemaking",
+    "to_stance": "evaluation",
+    "reason": "Commitment expired: <sales play>",
+    "timestamp": "2026-01-11T21:05:36.087384"
+  },
+  {
+    "gate": "evaluation",
+    "from_stance": "sensemaking",
+    "to_stance": "evaluation",
+    "reason": "Commitment expired: <sales play>",
+    "timestamp": "2026-01-11T21:15:24.242731"
+  },
+  {
+    "gate": "evaluation",
+    "from_stance": "sensemaking",
+    "to_stance": "evaluation",
+    "reason": "Commitment expired: <sales play>",
+    "timestamp": "2026-01-11T21:28:34.270366"
+  },
+  {
+    "gate": "evaluation",
+    "from_stance": "sensemaking",
+    "to_stance": "evaluation",
+    "reason": "Commitment expired: <sales play>",
+    "timestamp": "2026-01-11T21:35:58.825145"
+  },
+  {
+    "gate": "evaluation",
+    "from_stance": "sensemaking",
+    "to_stance": "evaluation",
+    "reason": "Commitment expired: <sales play>",
+    "timestamp": "2026-01-11T22:10:30.656326"
+  },
+  {
+    "gate": "evaluation",
+    "from_stance": "sensemaking",
+    "to_stance": "evaluation",
+    "reason": "Commitment expired: <sales play>",
+    "timestamp": "2026-01-11T22:29:50.890500"
+  },
+  {
+    "gate": "framing",
+    "from_stance": "evaluation",
+    "to_stance": "sensemaking",
+    "reason": "Note capture requested but not authorized",
+    "timestamp": "2026-01-11T22:49:46.526011"
+  },
+  {
+    "gate": "evaluation",
+    "from_stance": "sensemaking",
+    "to_stance": "evaluation",
+    "reason": "Commitment expired: <sales play>",
+    "timestamp": "2026-01-11T22:50:25.121946"
+  },
+  {
+    "gate": "evaluation",
+    "from_stance": "sensemaking",
+    "to_stance": "evaluation",
+    "reason": "Commitment expired: <sales play>",
+    "timestamp": "2026-01-12T00:53:53.205544"
+  },
+  {
+    "gate": "evaluation",
+    "from_stance": "sensemaking",
+    "to_stance": "evaluation",
+    "reason": "Commitment expired: <sales play>",
+    "timestamp": "2026-01-12T00:58:13.060207"
+  }
+]

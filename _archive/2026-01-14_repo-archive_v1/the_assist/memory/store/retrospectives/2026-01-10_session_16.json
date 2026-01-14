@@ -1,0 +1,57 @@
+{
+  "session_quality": "productive",
+  "mbti_signals": {
+    "observed_type": "ENTP",
+    "dimension_shifts": {
+      "E_I": -0.1,
+      "N_S": 0.0,
+      "T_F": 0.0,
+      "J_P": 0.0
+    },
+    "shift_explanation": "Slightly more introverted energy due to late hour (1:36 AM) and wanting to wrap up rather than dive into topics"
+  },
+  "big5_signals": {
+    "openness": "baseline",
+    "conscientiousness": "low",
+    "extraversion": "low",
+    "agreeableness": "baseline",
+    "neuroticism": "baseline",
+    "notable": "Clear boundary-setting behavior and lower energy consistent with late night timing"
+  },
+  "behavioral": {
+    "energy": "low",
+    "focus": "concentrated",
+    "decision_style": "quick",
+    "stress_signals": "none",
+    "communication_mode": "directive"
+  },
+  "session_dynamics": {
+    "corrections_given": 1,
+    "topics": [
+      "context_recovery",
+      "monday_planning",
+      "session_wrap"
+    ],
+    "progress_made": true,
+    "blockers_identified": [],
+    "decisions_made": [
+      "drop Gaurav call discussion",
+      "defer planning to tomorrow"
+    ]
+  },
+  "learnings": [
+    "User wants clear boundaries on what gets discussed when",
+    "Don't push into planning topics when user signals to stop",
+    "User appreciates when assistant respects their timing preferences"
+  ],
+  "meta_observations": {
+    "assistant_verbosity": "appropriate",
+    "intuition_accuracy": "good",
+    "trust_signals": "positive",
+    "what_worked": "Quick context recovery and immediate compliance with boundary request",
+    "what_didnt": "Nothing significant - brief session ended on positive note"
+  },
+  "session_id": 16,
+  "timestamp": "2026-01-10T01:38:28.258891",
+  "turn_count": 6
+}

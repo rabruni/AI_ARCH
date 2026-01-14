@@ -1,0 +1,61 @@
+{
+  "session_quality": "productive",
+  "mbti_signals": {
+    "observed_type": "ENTP",
+    "dimension_shifts": {
+      "E_I": 0.1,
+      "N_S": 0.0,
+      "T_F": 0.2,
+      "J_P": -0.1
+    },
+    "shift_explanation": "Showed more T than usual when demanding informed decision-making and analytical rigor. Slight J shift when insisting on proper framework before proceeding."
+  },
+  "big5_signals": {
+    "openness": "high",
+    "conscientiousness": "high",
+    "extraversion": "high",
+    "agreeableness": "baseline",
+    "neuroticism": "low",
+    "notable": "Higher conscientiousness than baseline - wanted thorough analysis before decisions"
+  },
+  "behavioral": {
+    "energy": "high",
+    "focus": "concentrated",
+    "decision_style": "deliberate",
+    "stress_signals": "mild",
+    "communication_mode": "directive"
+  },
+  "session_dynamics": {
+    "corrections_given": 4,
+    "topics": [
+      "project_prioritization",
+      "customer_validation",
+      "delivery_confidence",
+      "decision_frameworks"
+    ],
+    "progress_made": true,
+    "blockers_identified": [
+      "delivery_confidence_issues",
+      "incomplete_decision_framework"
+    ],
+    "decisions_made": [
+      "focus_on_informed_decisions_not_just_fast_ones"
+    ]
+  },
+  "learnings": [
+    "User's avoidance is delivery confidence, not customer rejection fear",
+    "User wants partnership in decision-making, not just pushing toward action",
+    "User will call out incomplete frameworks and demand better analysis",
+    "User appreciates direct feedback but wants thorough thinking behind it"
+  ],
+  "meta_observations": {
+    "assistant_verbosity": "appropriate",
+    "intuition_accuracy": "mixed",
+    "trust_signals": "positive",
+    "what_worked": "Direct challenging of avoidance patterns, identifying delivery confidence issue",
+    "what_didnt": "Avoiding readiness analysis, pushing for speed over informed decisions"
+  },
+  "session_id": 15,
+  "timestamp": "2026-01-10T20:56:44.192837",
+  "turn_count": 22
+}

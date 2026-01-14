@@ -1,0 +1,54 @@
+{
+  "session_quality": "scattered",
+  "mbti_signals": {
+    "observed_type": "ENTP",
+    "dimension_shifts": {
+      "E_I": -0.1,
+      "N_S": 0.0,
+      "T_F": 0.0,
+      "J_P": 0.0
+    },
+    "shift_explanation": "Minimal verbal engagement suggests slightly lower extraversion than baseline, though sample size is too small for confident assessment"
+  },
+  "big5_signals": {
+    "openness": "baseline",
+    "conscientiousness": "baseline",
+    "extraversion": "low",
+    "agreeableness": "baseline",
+    "neuroticism": "baseline",
+    "notable": "Single word greeting suggests low energy state or distraction rather than personality shift"
+  },
+  "behavioral": {
+    "energy": "low",
+    "focus": "scattered",
+    "decision_style": "avoidant",
+    "stress_signals": "none",
+    "communication_mode": "exploratory"
+  },
+  "session_dynamics": {
+    "corrections_given": 0,
+    "topics": [
+      "system_status",
+      "pending_tasks"
+    ],
+    "progress_made": false,
+    "blockers_identified": [
+      "low_engagement"
+    ],
+    "decisions_made": []
+  },
+  "learnings": [
+    "User may need different opening approach when showing low initial energy",
+    "System continuity references acknowledged but didn't drive engagement"
+  ],
+  "meta_observations": {
+    "assistant_verbosity": "too_high",
+    "intuition_accuracy": "mixed",
+    "trust_signals": "neutral",
+    "what_worked": "Acknowledging system state and providing context",
+    "what_didnt": "Information dump approach failed to match user's minimal energy input"
+  },
+  "session_id": 14,
+  "timestamp": "2026-01-10T16:01:46.066810",
+  "turn_count": 2
+}

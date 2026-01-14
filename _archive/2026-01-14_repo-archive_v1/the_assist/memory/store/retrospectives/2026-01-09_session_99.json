@@ -1,0 +1,54 @@
+{
+  "session_quality": "productive",
+  "mbti_signals": {
+    "observed_type": "ENTP",
+    "dimension_shifts": {
+      "E_I": 0.0,
+      "N_S": 0.0,
+      "T_F": 0.0,
+      "J_P": -0.1
+    },
+    "shift_explanation": "Slight shift toward J with immediate acknowledgment of need to book and willingness to act on it today"
+  },
+  "big5_signals": {
+    "openness": "baseline",
+    "conscientiousness": "high",
+    "extraversion": "baseline",
+    "agreeableness": "baseline",
+    "neuroticism": "baseline",
+    "notable": "Conscientiousness elevated - showing good planning awareness and follow-through intention"
+  },
+  "behavioral": {
+    "energy": "medium",
+    "focus": "concentrated",
+    "decision_style": "quick",
+    "stress_signals": "none",
+    "communication_mode": "directive"
+  },
+  "session_dynamics": {
+    "corrections_given": 0,
+    "topics": [
+      "Austin trip",
+      "travel booking"
+    ],
+    "progress_made": true,
+    "blockers_identified": [],
+    "decisions_made": [
+      "book flights and hotel today"
+    ]
+  },
+  "learnings": [
+    "User responds well to timeline urgency (11 days out)",
+    "User prefers immediate action suggestions when ready to commit"
+  ],
+  "meta_observations": {
+    "assistant_verbosity": "appropriate",
+    "intuition_accuracy": "good",
+    "trust_signals": "positive",
+    "what_worked": "Clear timeline context and direct offer to help tackle the task",
+    "what_didnt": "Nothing notable - very brief but effective interaction"
+  },
+  "session_id": 99,
+  "timestamp": "2026-01-09T21:12:14.689576",
+  "turn_count": 4
+}

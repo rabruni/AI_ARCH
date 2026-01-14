@@ -1,0 +1,178 @@
+{
+  "north_stars": [
+    "tech_products",
+    "family_present",
+    "fin_indep"
+  ],
+  "priorities": [
+    "patent_file",
+    "work_balance",
+    "family_balance"
+  ],
+  "active": [
+    "reboot:pending:user preparing system restart",
+    "wealth_paradigms:analyzing:control_vs_leverage_tension",
+    "patent_commercialization:blocked:avoidance_pattern_identified",
+    "ai_project:building:next iteration of AI assistant",
+    "genai:deprioritized:unknown_customers",
+    "hvac_patent:deprioritized:longer_timeline",
+    "project_validation:needs_customer_calls:no_actual_customer_validation_yet",
+    "sim_racing:validation_avoidance:spinning into planning when pushed toward customer contact",
+    "business_validation:market_sizing_phase:user questioned approach, agreed to proper validation sequence",
+    "delivery_confidence:exploring:fear of execution ability not customer rejection",
+    "decision_framework:established:informed_quick_decisions",
+    "market_research:pending:2hr_weekend_analysis",
+    "product_decision:needs_readiness_analysis:sim_racing_vs_AI_assistant_vs_HVAC_patent",
+    "work_discussion:initiated:user_wants_to_talk_about_current_work_situation",
+    "Q1_planning:exploring_scope:user_has_influence_questions"
+  ],
+  "commits": [
+    "audit_streaming_services:wednesday_evening:separate_easy_cuts_from_discussion_items",
+    "subscription_audit:wed_evening:$600_savings",
+    "storage_cleanout:next_1-2_weekends:$3600_annual",
+    "investment_reallocation:end_feb:tax_timing",
+    "distraction_elimination:last_month:complete/reorganize/remove distracting items",
+    "kill_genai_hvac_projects:immediate:focus_sim_racing_cashflow",
+    "call_10_sim_racing_people_for_paid_preorders:this_weekend:validate_demand_with_real_money",
+    "market_size_analysis_one_project:this_weekend:2_hours_research_if_market_big_enough_for_2M_annually",
+    "market_analysis:this_weekend:2hrs_one_project",
+    "structure_research:this_weekend:decision_focused_not_rabbitholes"
+  ],
+  "people": {
+    "gaurav": {
+      "r": "wk",
+      "t": [
+        "q1_planning"
+      ],
+      "n": 2
+    },
+    "stewart": {
+      "r": "wk",
+      "t": [
+        "done",
+        "no_reference"
+      ],
+      "n": 3
+    },
+    "bella": {
+      "r": "fam",
+      "t": [
+        "competition_winner"
+      ],
+      "n": 2
+    },
+    "parents": {
+      "r": "fam",
+      "t": [
+        "visits_monthly",
+        "not_enough_contact"
+      ],
+      "n": 2
+    },
+    "grandma": {
+      "r": "fam",
+      "t": [
+        "visits_monthly",
+        "not_enough_contact"
+      ],
+      "n": 2
+    },
+    "claude": {
+      "r": "ai_",
+      "t": [
+        "pepper_potts_style"
+      ],
+      "n": 1
+    },
+    "monica": {
+      "r": "fam",
+      "t": [
+        "health_subscription"
+      ],
+      "n": 2
+    },
+    "donna": {
+      "r": "ass",
+      "t": [
+        "cognitive_partner"
+      ],
+      "n": 3
+    },
+    "pepper": {
+      "r": "ass",
+      "t": [
+        "cognitive_partner"
+      ],
+      "n": 3
+    },
+    "user": {
+      "r": "ent",
+      "t": [
+        "building_tech_products",
+        "seeking_financial_independence",
+        "AWS_employee"
+      ],
+      "n": 1
+    },
+    "dopejar": {
+      "r": "ai_",
+      "t": [
+        "cognitive_partner",
+        "strategic_boundary_enforcement"
+      ],
+      "n": 1
+    },
+    "austin": {
+      "r": "wk",
+      "t": [
+        "sales",
+        "high_earning"
+      ],
+      "n": 1
+    },
+    "zoi": {
+      "r": "fam",
+      "t": [
+        "birthday_party_overnight"
+      ],
+      "n": 2
+    }
+  },
+  "patterns": {
+    "timeboxing": 1.0,
+    "exit_criteria": 1.0,
+    "buffer_planning": 1.0,
+    "risk_id": 1.0,
+    "forgot_commit": 1.0,
+    "calendar_desync": 0.8999999999999999,
+    "multi_horizon": 1.0,
+    "struct_prefer": 1.0,
+    "numbers_not_bullets": 1.0,
+    "proactive_ok": 1.0,
+    "direct_feedback": 1.0,
+    "multi_project": 1.0,
+    "bottleneck_recurring": 1.0,
+    "schedule_underest": 1.0,
+    "fast_context_switch": 1.0
+  },
+  "last_update": "2026-01-10T22:41:16.856651",
+  "session_count": 0,
+  "preferences": {
+    "no_ai_self_awareness": "Avoid AI meta-commentary like \"my pattern tracking\" - erodes trust",
+    "concise_responses": "Avoid over-explaining, be direct"
+  },
+  "coaching": {
+    "ask_impact": 1.0,
+    "strategic_questions": 1.0,
+    "connect_layers": 1.0,
+    "surface_why": 1.0,
+    "more_concise": 1.0,
+    "challenge_alignment": 1.0,
+    "anticipate_conflicts": 0.6,
+    "less_questions": 1.0,
+    "match_altitude": 1.0,
+    "cap_with_question": 1.0,
+    "spot_overload": 0.7,
+    "push_harder": 1.0
+  }
+}

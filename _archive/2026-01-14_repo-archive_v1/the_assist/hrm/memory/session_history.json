@@ -1,0 +1,74 @@
+{
+  "sessions": [
+    {
+      "index": 1,
+      "date": "2026-01-10",
+      "time": "01:43",
+      "summary": "Tested session history feature",
+      "topics": [
+        "test_topic",
+        "hrm",
+        "session_history"
+      ],
+      "duration_exchanges": 2
+    },
+    {
+      "index": 2,
+      "date": "2026-01-13",
+      "time": "23:22",
+      "summary": "Discussed: core, ingestion, \"maybe, days, thinking",
+      "topics": [
+        "core",
+        "ingestion",
+        "\"maybe",
+        "days",
+        "thinking",
+        "test",
+        "specific",
+        "real",
+        "stream-of-consciousness",
+        "testing"
+      ],
+      "duration_exchanges": 4
+    },
+    {
+      "index": 3,
+      "date": "2026-01-13",
+      "time": "23:34",
+      "summary": "Discussed: memory, ongoing, hrms, plan, kind",
+      "topics": [
+        "memory",
+        "ongoing",
+        "hrms",
+        "plan",
+        "kind",
+        "context",
+        "core",
+        "entire",
+        "start",
+        "that"
+      ],
+      "duration_exchanges": 6
+    },
+    {
+      "index": 4,
+      "date": "2026-01-13",
+      "time": "23:43",
+      "summary": "Discussed: emotional, tone, human, \"destroyed, \"testing",
+      "topics": [
+        "emotional",
+        "tone",
+        "human",
+        "\"destroyed",
+        "\"testing",
+        "training",
+        "assumptions",
+        "ability",
+        "previous",
+        "patterns"
+      ],
+      "duration_exchanges": 7
+    }
+  ],
+  "next_index": 5
+}

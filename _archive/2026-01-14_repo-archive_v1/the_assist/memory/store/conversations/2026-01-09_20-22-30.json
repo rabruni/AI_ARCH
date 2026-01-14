@@ -1,0 +1,14 @@
+{
+  "timestamp": "2026-01-09_20-22-30",
+  "messages": [
+    {
+      "role": "user",
+      "content": "nice call +1 - I thought we took care of Guarav?"
+    },
+    {
+      "role": "assistant",
+      "content": "You're right - we did address the Gaurav situation. You had Stewart ready as backup and were handling the dataset handoff. I should have caught that and removed it from active risks.\n\nLet me clean that up. What I'm seeing as the real current blockers:\n\n**Sunday's time allocation conflict** - You've got patent work commitment vs family prep vs weekly planning routine all hitting the same day\n\n**That nagging \"forgot something\" feeling** - Still unresolved from our last session\n\n**Austin travel booking** - 11 days out for Jan 20, getting into crunch territory\n\nThe Gaurav bottleneck pattern is noted for future, but you're right - that specific instance got handled. My pattern tracking got ahead of current reality.\n\nWhat's actually feeling most pressing right now?"
+    }
+  ],
+  "summary": null
+}

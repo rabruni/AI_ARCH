@@ -1,0 +1,32 @@
+{
+  "mbti": {
+    "type": "ENTP",
+    "dimensions": {
+      "E_I": 0.7,
+      "N_S": 0.8,
+      "T_F": 0.6,
+      "J_P": 0.3
+    }
+  },
+  "big5": {
+    "openness": 0.85,
+    "conscientiousness": 0.5,
+    "extraversion": 0.7,
+    "agreeableness": 0.6,
+    "neuroticism": 0.4
+  },
+  "behavioral": {
+    "energy_typical": "high",
+    "focus_pattern": "multi-threaded",
+    "decision_style": "quick_iterate",
+    "communication": "direct_exploratory",
+    "stress_response": "action_oriented"
+  },
+  "preferences": {
+    "no_ai_self_awareness": true,
+    "numbers_over_bullets": true,
+    "proactive_nudges": true,
+    "concise_responses": true
+  },
+  "last_updated": "2026-01-09T21:12:06.008992"
+}

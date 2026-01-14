@@ -1,0 +1,58 @@
+{
+  "session_quality": "productive",
+  "mbti_signals": {
+    "observed_type": "ENTP",
+    "dimension_shifts": {
+      "E_I": 0.0,
+      "N_S": 0.0,
+      "T_F": 0.1,
+      "J_P": 0.2
+    },
+    "shift_explanation": "Slight T->F shift showing concern for better collaboration. Slight P->J shift requesting more structured handoffs and actionable next steps."
+  },
+  "big5_signals": {
+    "openness": "high",
+    "conscientiousness": "high",
+    "extraversion": "baseline",
+    "agreeableness": "high",
+    "neuroticism": "low",
+    "notable": "Conscientiousness elevated above baseline - focused on process improvement and structured communication"
+  },
+  "behavioral": {
+    "energy": "high",
+    "focus": "concentrated",
+    "decision_style": "quick",
+    "stress_signals": "none",
+    "communication_mode": "directive"
+  },
+  "session_dynamics": {
+    "corrections_given": 1,
+    "topics": [
+      "conversation_handoff_optimization",
+      "open_ended_questioning",
+      "memory_utilization"
+    ],
+    "progress_made": true,
+    "blockers_identified": [
+      "incomplete_handoff_process"
+    ],
+    "decisions_made": [
+      "add_open_ended_question_to_entry_statements"
+    ]
+  },
+  "learnings": [
+    "User values actionable handoffs with open-ended questions that synthesize memory and assessments",
+    "Prefers entry statements that identify gaps and drive next steps rather than just summarizing",
+    "Wants assistant to proactively identify what's most important across all context"
+  ],
+  "meta_observations": {
+    "assistant_verbosity": "appropriate",
+    "intuition_accuracy": "good",
+    "trust_signals": "positive",
+    "what_worked": "Assistant immediately understood and implemented the feedback about capping with questions",
+    "what_didnt": "Response was cut off mid-sentence, suggesting need for more concise delivery"
+  },
+  "session_id": 10,
+  "timestamp": "2026-01-09T22:18:32.621391",
+  "turn_count": 2
+}

@@ -1,46 +1,37 @@
-# The Assist
+# AI_ARCH
 
-Cognitive anchor for a fast-moving mind.
+A cognitive anchor system for AI agents implementing structured reasoning and memory.
 
-## Quick Start
+---
 
-```bash
-# Install dependencies
-pip install -r requirements.txt
+**This repository was re-initialized from scratch on 2026-01-14.**
 
-# Set API key
-export ANTHROPIC_API_KEY="your-key-here"
+Previous work has been preserved in the archive for reference and traceability.
+See: [`/_archive/2026-01-14_repo-archive_v1/`](./_archive/2026-01-14_repo-archive_v1/)
 
-# Run
-python the_assist/main.py
+---
+
+## Repository Structure
+
+```
+/
+├── _archive/           # Historical snapshots (read-only)
+├── docs/               # Documentation and design specs
+├── prompts/            # LLM prompts and templates
+├── src/                # Source code
+├── tests/              # Test suites
+├── scripts/            # Utility scripts
+├── config/             # Configuration files
+├── README.md           # This file
+├── HOWTO_USE.md        # Getting started guide
+├── REPO_MANIFEST.json  # Repository metadata
+└── VERSION             # Current version
 ```
 
-## What Is This?
+## Status
 
-Not a task manager. Not a chatbot. A cognitive partner that:
-- Grounds you when context-switching
-- Remembers what you can't hold
-- Challenges when needed (not just when wanted)
-- Learns what works for YOU
+This repository is in **clean-init** state. Core implementation has not yet begun.
 
-## Commands
+## License
 
-- `quit` / `exit` - End session and save
-- `save` - Save current conversation and continue
-- Just talk - It handles messy input
-
-## First Run
-
-Just talk. Tell it what's on your mind. It will:
-1. Parse your messy input
-2. Reflect back what it understood
-3. Ask clarifying questions if needed
-4. Start learning your patterns
-
-Over time, it gets better. Day 1 is calibration.
-
-## Philosophy
-
-See [SPEC.md](SPEC.md) for full design principles.
-
-The short version: Trust AI to be intelligent, verify it's actually helping.
+See project documentation for license details.

@@ -1,0 +1,16 @@
+{
+  "timestamp": "2026-01-10T21:02:41.354632Z",
+  "session": 12,
+  "agent": "orchestrator",
+  "preflight_status": "warning",
+  "state_hash": "521551e2d327ec2e4e85bbb145a03605",
+  "verified_files": [
+    "the_assist/core/orchestrator.py",
+    "the_assist/core/memory_v2.py",
+    "the_assist/prompts/system.md",
+    "the_assist/config/settings.py"
+  ],
+  "warnings": [
+    "Memory state changed outside of session (external modification or corruption)"
+  ]
+}

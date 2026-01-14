@@ -1,0 +1,63 @@
+{
+  "session_quality": "productive",
+  "mbti_signals": {
+    "observed_type": "ENTP",
+    "dimension_shifts": {
+      "E_I": 0.1,
+      "N_S": 0.0,
+      "T_F": 0.2,
+      "J_P": 0.0
+    },
+    "shift_explanation": "Showing more directive/structured thinking (T) when correcting assistant approach, slight E increase through teaching mode"
+  },
+  "big5_signals": {
+    "openness": "high",
+    "conscientiousness": "high",
+    "extraversion": "high",
+    "agreeableness": "baseline",
+    "neuroticism": "low",
+    "notable": "Elevated conscientiousness through systematic correction of assistant's approach"
+  },
+  "behavioral": {
+    "energy": "high",
+    "focus": "concentrated",
+    "decision_style": "quick",
+    "stress_signals": "none",
+    "communication_mode": "directive"
+  },
+  "session_dynamics": {
+    "corrections_given": 4,
+    "topics": [
+      "travel_planning",
+      "work_pushback_strategy",
+      "financial_optimization",
+      "cognitive_partnership"
+    ],
+    "progress_made": true,
+    "blockers_identified": [
+      "assistant_asking_wrong_questions",
+      "reactive_vs_strategic_thinking"
+    ],
+    "decisions_made": [
+      "sunday_family_planning_with_monica",
+      "need_economic_impact_analysis"
+    ]
+  },
+  "learnings": [
+    "User has 7 potential trips Jan-Apr (4 cheer locked, 3+ work negotiable)",
+    "Goal is financial independence through patents/products/investing, not job optimization",
+    "Wants cognitive partner like Donna/Pepper who knows priorities and operates from them",
+    "Economics and ROI analysis needed for all decisions, not just scheduling",
+    "Sunday session with Monica will map cheer logistics"
+  ],
+  "meta_observations": {
+    "assistant_verbosity": "appropriate",
+    "intuition_accuracy": "poor",
+    "trust_signals": "positive",
+    "what_worked": "User acknowledged improvement when assistant started connecting decisions to north stars",
+    "what_didnt": "Kept asking for more data instead of operating from established priorities and values"
+  },
+  "session_id": 3,
+  "timestamp": "2026-01-09T21:34:24.047454",
+  "turn_count": 26
+}

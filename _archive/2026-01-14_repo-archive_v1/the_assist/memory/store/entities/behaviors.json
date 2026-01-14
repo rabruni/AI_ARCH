@@ -1,0 +1,97 @@
+{
+  "observed": [
+    {
+      "timestamp": "2026-01-09T19:20:30.861225",
+      "observation": "Provides direct, honest feedback about system performance",
+      "category": "communication",
+      "validated": false
+    },
+    {
+      "timestamp": "2026-01-09T19:20:30.861853",
+      "observation": "Has specific expectations for AI continuity and memory",
+      "category": "work",
+      "validated": false
+    },
+    {
+      "timestamp": "2026-01-09T19:20:30.862384",
+      "observation": "Uses rating system (-1) to evaluate performance",
+      "category": "communication",
+      "validated": false
+    },
+    {
+      "timestamp": "2026-01-09T19:21:21.031798",
+      "observation": "User expects and prefers structured, proactive communication format over open-ended questions",
+      "category": "communication",
+      "validated": false
+    },
+    {
+      "timestamp": "2026-01-09T19:21:21.033293",
+      "observation": "User has established specific expectations for how conversations should begin with organized overview format",
+      "category": "communication",
+      "validated": false
+    },
+    {
+      "timestamp": "2026-01-09T19:23:03.023504",
+      "observation": "Values genuine curiosity and personal interest over mechanical task tracking",
+      "category": "communication",
+      "validated": false
+    },
+    {
+      "timestamp": "2026-01-09T19:23:03.024079",
+      "observation": "Prefers questions that explore feelings and decision-making process rather than just task collection",
+      "category": "communication",
+      "validated": false
+    },
+    {
+      "timestamp": "2026-01-09T19:23:03.024604",
+      "observation": "Appreciates when assistant shows interest in their experience and well-being",
+      "category": "personal",
+      "validated": false
+    },
+    {
+      "timestamp": "2026-01-09T19:28:04.630227",
+      "observation": "User confirmed they want me to focus on understanding their personal patterns and decision-making style",
+      "category": "communication",
+      "validated": false
+    },
+    {
+      "timestamp": "2026-01-09T19:28:04.630977",
+      "observation": "User values assistants who can read context and adapt their approach accordingly",
+      "category": "work",
+      "validated": false
+    }
+  ],
+  "validated": [
+    {
+      "timestamp": "2026-01-09T19:14:13.864099",
+      "pattern": "Uses timeboxing strategy to prevent analysis paralysis",
+      "category": "planning"
+    },
+    {
+      "timestamp": "2026-01-09T19:14:13.864530",
+      "pattern": "Sets clear exit criteria for tasks (e.g., 2 hours OR workable plan)",
+      "category": "planning"
+    },
+    {
+      "timestamp": "2026-01-09T19:14:13.864982",
+      "pattern": "Tends to underestimate how packed schedule actually is",
+      "category": "scheduling"
+    },
+    {
+      "timestamp": "2026-01-09T19:14:13.865482",
+      "pattern": "Mental calendar and actual calendar are often not synced",
+      "category": "scheduling"
+    },
+    {
+      "timestamp": "2026-01-09T19:14:13.866027",
+      "pattern": "Responds well to structured breakdowns of commitments",
+      "category": "communication"
+    },
+    {
+      "timestamp": "2026-01-09T19:14:13.866488",
+      "pattern": "Prefers numbers over bullets in lists",
+      "category": "communication"
+    }
+  ],
+  "preferences": {}
+}

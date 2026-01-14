@@ -1,0 +1,65 @@
+{
+  "quality_scores": {
+    "conciseness": 0.7,
+    "accuracy": 0.8,
+    "actionability": 0.9,
+    "tone_match": 0.8,
+    "intuition_quality": 0.8,
+    "memory_relevance": 0.9,
+    "value_add": 0.8,
+    "trust_building": 0.8
+  },
+  "outcome_analysis": {
+    "overall_effectiveness": "effective",
+    "user_goal_supported": true,
+    "friction_points": [
+      "Cut off responses mid-sentence multiple times without completing thoughts"
+    ],
+    "smooth_moments": [
+      "Identified cognitive load insight that resonated with user",
+      "Maintained execution roadmap coherently",
+      "Pivoted appropriately when user revealed true wealth strategy"
+    ]
+  },
+  "self_critique": {
+    "what_worked": "Strong insight about cognitive load coming FROM not doing investment work rather than from doing it - this clearly resonated",
+    "what_failed": "Multiple incomplete responses that cut off mid-sentence, leaving thoughts hanging",
+    "missed_opportunities": [
+      "Could have probed deeper into which specific tech/patent projects have highest probability",
+      "Should have asked about current investment allocation before February deadline"
+    ],
+    "overcorrections": [
+      "Brief responses were good but cutting off mid-sentence was jarring"
+    ]
+  },
+  "pattern_detection": {
+    "ai_tendencies_shown": [
+      "incomplete_responses",
+      "good_insight_generation",
+      "appropriate_brevity"
+    ],
+    "user_corrections_analysis": "No explicit corrections given, user seemed satisfied with direction and insights",
+    "trust_trajectory": "building"
+  },
+  "improvement_actions": [
+    "Complete all sentences and thoughts before ending responses",
+    "When giving brief responses, make them complete thoughts rather than fragments",
+    "Continue the strong insight generation but package it in complete responses"
+  ],
+  "outcome_attribution": {
+    "positive_outcomes_from_ai": [
+      "Clear execution roadmap established",
+      "Key insight about cognitive load of undone tasks",
+      "Proper prioritization of wealth strategies"
+    ],
+    "negative_outcomes_from_ai": [
+      "Incomplete responses created communication friction"
+    ],
+    "neutral_ai_impact": [
+      "Investment strategy details - deferred to next session as appropriate"
+    ]
+  },
+  "session_id": 12,
+  "timestamp": "2026-01-10T15:31:40.604322",
+  "turn_count": 34
+}

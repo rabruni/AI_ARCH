@@ -17,7 +17,7 @@ Request Types:
 - high_stakes: Requires verification (finance, irreversible actions)
 
 Usage by any agent:
-    from hrm.altitude import AltitudeGovernor, AltitudePolicy
+    from the_assist.hrm.altitude import AltitudeGovernor, AltitudePolicy
 
     # Use default policy
     governor = AltitudeGovernor()
@@ -35,10 +35,18 @@ Usage by any agent:
 
     # Classify request type
     req_type = governor.classify_request("What's on my calendar?")  # -> atomic
+
+    # With trace integration (optional)
+    from locked_system.core import EpisodicTrace
+    trace = EpisodicTrace()
+    governor = AltitudeGovernor(trace=trace)
 """
 from dataclasses import dataclass, field
-from typing import Optional
+from typing import Optional, TYPE_CHECKING
 from enum import Enum
+
+if TYPE_CHECKING:
+    from locked_system.core.trace import EpisodicTrace
 
 
 class Level(Enum):
@@ -227,9 +235,14 @@ class AltitudeGovernor:
     Reusable across any HRM-based system.
     """
 
-    def __init__(self, policy: Optional[AltitudePolicy] = None):
+    def __init__(
+        self,
+        policy: Optional[AltitudePolicy] = None,
+        trace: Optional["EpisodicTrace"] = None
+    ):
         self.policy = policy or AltitudePolicy.default()
         self.context = AltitudeContext()
+        self.trace = trace
 
     def get_level(self, level_str: str) -> Level:
         """Parse level string to enum."""
@@ -395,15 +408,24 @@ class AltitudeGovernor:
         """Validate a transition to target level from current."""
         return self.can_descend(self.context.current_level, target_level, text)
 
-    def record_transition(self, new_level: str):
+    def record_transition(self, new_level: str, reason: str = ""):
         """Record a level transition."""
+        from_level = self.context.current_level
         self.context.level_history.append({
-            "from": self.context.current_level,
+            "from": from_level,
             "to": new_level,
             "time_at_previous": self.context.time_at_current
         })
         self.context.current_level = new_level
         self.context.time_at_current = 0
+
+        # Log to trace if available
+        if self.trace:
+            self.trace.log_altitude_transition(
+                from_level=from_level,
+                to_level=new_level,
+                reason=reason
+            )
 
     def record_exchange(self):
         """Record an exchange at current level."""
@@ -433,12 +455,23 @@ class AltitudeGovernor:
         Friction = user asked for L2 but was redirected upward without satisfying L2.
         """
         if was_blocked and requested_level == "L2":
-            self.context.friction_events.append({
+            event = {
                 "requested": requested_level,
                 "actual": actual_level,
                 "blocked": was_blocked
-            })
+            }
+            self.context.friction_events.append(event)
             self.context.total_friction_score += 1
+
+            # Log to trace if available
+            if self.trace:
+                self.trace.log(
+                    event_type="altitude_friction",
+                    payload={
+                        **event,
+                        "total_friction": self.context.total_friction_score
+                    }
+                )
 
     def get_friction_score(self) -> int:
         """Get cumulative friction score for this session."""

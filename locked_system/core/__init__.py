@@ -70,6 +70,31 @@ from locked_system.core.orchestrator import (
     run_voting,
 )
 
+from locked_system.core.reasoning import (
+    InputClassifier,
+    ActionSelector,
+    ActionRouter,
+    ActionType,
+    ActionPlan,
+    RouteDecision,
+    ClassificationResult,
+    classify_input,
+    route_input,
+)
+
+from locked_system.core.learning import (
+    LearningHRM,
+    PatternStore,
+    FeedbackLoop,
+    PatternMatcher,
+    Pattern,
+    PatternMatch,
+    PatternType,
+    Feedback,
+    FeedbackType,
+    create_learning_hrm,
+)
+
 # ─────────────────────────────────────────────────────────────
 # Legacy imports (backward compatibility)
 # ─────────────────────────────────────────────────────────────
@@ -103,4 +128,12 @@ __all__ = [
     'Orchestrator', 'ExecutionContext', 'OrchestratorResult',
     'Reducer', 'PassThroughReducer', 'MergeReducer', 'VotingReducer',
     'get_reducer', 'run_pipeline', 'run_parallel', 'run_voting',
+    # Reasoning
+    'InputClassifier', 'ActionSelector', 'ActionRouter',
+    'ActionType', 'ActionPlan', 'RouteDecision', 'ClassificationResult',
+    'classify_input', 'route_input',
+    # Learning
+    'LearningHRM', 'PatternStore', 'FeedbackLoop', 'PatternMatcher',
+    'Pattern', 'PatternMatch', 'PatternType',
+    'Feedback', 'FeedbackType', 'create_learning_hrm',
 ]

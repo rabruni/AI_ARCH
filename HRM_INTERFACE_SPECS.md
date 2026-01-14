@@ -37,11 +37,12 @@ class GateType(Enum):
     WRITE_APPROVAL = "write_approval"
     AGENT_APPROVAL = "agent_approval"
 
-class OrchestrationMode(Enum):
-    PIPELINE = "pipeline"         # Serial execution
-    PARALLEL = "parallel"         # Async with aggregation
-    VOTING = "voting"             # Consensus with threshold
-    HIERARCHICAL = "hierarchical" # Lead + delegates
+class ReducerType(Enum):
+    """Reducer strategies for MapReduce orchestration."""
+    PASS_THROUGH = "pass_through"   # Pipeline: pass output to next
+    MERGE = "merge"                 # Parallel: combine all outputs
+    VOTE = "vote"                   # Voting: tally and select winner
+    SYNTHESIZE = "synthesize"       # Hierarchical: lead synthesizes delegate outputs
 
 class Complexity(Enum):
     SIMPLE = "simple"
@@ -110,48 +111,28 @@ class TurnInput:
 
 ## 2. Altitude HRM Interfaces
 
+**Simplification:** No Protocol interfaces. Plain classes with typed methods.
+
 ### 2.1 AltitudeGovernor
 
 ```python
-class IAltitudeGovernor(Protocol):
-    """Main interface for Altitude HRM."""
+class AltitudeGovernor:
+    """Main class for Altitude HRM. No Protocol needed - single implementation."""
 
-    def classify_input(
-        self,
-        input: TurnInput
-    ) -> AltitudeClassification:
-        """
-        Determine the altitude level for this input.
+    def __init__(self, config: 'HRMConfig'):
+        self.config = config
+        self.current_level = config.altitude_default_level
 
-        Returns:
-            AltitudeClassification with level and confidence
-        """
+    def classify_input(self, input: TurnInput) -> AltitudeClassification:
+        """Determine the altitude level for this input."""
         ...
 
-    def validate_action(
-        self,
-        action: dict,
-        current_level: AltitudeLevel
-    ) -> ValidationResult:
-        """
-        Check if an action is appropriate for current altitude.
-
-        Returns:
-            ValidationResult with allowed/denied and reason
-        """
+    def validate_action(self, action: dict, current_level: AltitudeLevel) -> bool:
+        """Check if action is appropriate for current altitude. Returns True/False."""
         ...
 
-    def transition(
-        self,
-        to_level: AltitudeLevel,
-        reason: str
-    ) -> TransitionResult:
-        """
-        Attempt to change altitude level.
-
-        Returns:
-            TransitionResult with success/failure and new state
-        """
+    def transition(self, to_level: AltitudeLevel, reason: str) -> bool:
+        """Attempt to change altitude level. Returns success."""
         ...
 
 @dataclass
@@ -161,45 +142,23 @@ class AltitudeClassification:
     signals: list[str]          # What triggered this classification
     suggested_stance: Optional[Stance]
     allows_agents: bool
-
-@dataclass
-class ValidationResult:
-    allowed: bool
-    reason: str
-    suggested_level: Optional[AltitudeLevel]
-
-@dataclass
-class TransitionResult:
-    success: bool
-    from_level: AltitudeLevel
-    to_level: AltitudeLevel
-    reason: str
 ```
+
+**Note:** ValidationResult and TransitionResult removed. Methods return bool for simple pass/fail.
+Use Event logging for audit trail of transitions.
 
 ### 2.2 Altitude Planner
 
 ```python
-class IAltitudePlanner(Protocol):
+class AltitudePlanner:
     """Planning layer within Altitude HRM."""
 
-    def generate_plan(
-        self,
-        input: TurnInput,
-        classification: AltitudeClassification
-    ) -> Plan:
-        """
-        Generate a plan appropriate for current altitude.
-        """
+    def generate_plan(self, input: TurnInput, classification: AltitudeClassification) -> Plan:
+        """Generate a plan appropriate for current altitude."""
         ...
 
-    def validate_plan(
-        self,
-        plan: Plan,
-        stance: Stance
-    ) -> PlanValidation:
-        """
-        Check if plan is allowed by current stance.
-        """
+    def validate_plan(self, plan: Plan, stance: Stance) -> bool:
+        """Check if plan is allowed by current stance. Returns True/False."""
         ...
 
 @dataclass
@@ -216,38 +175,22 @@ class PlanStep:
     description: str
     action_type: str              # research | execute | validate | ask
     dependencies: list[int]       # Step IDs this depends on
-
-@dataclass
-class PlanValidation:
-    valid: bool
-    violations: list[str]
-    suggested_modifications: list[dict]
 ```
+
+**Note:** PlanValidation removed. validate_plan() returns bool. Log violations as Events.
 
 ### 2.3 Altitude Evaluator
 
 ```python
-class IAltitudeEvaluator(Protocol):
+class AltitudeEvaluator:
     """Evaluation layer within Altitude HRM."""
 
-    def evaluate_result(
-        self,
-        result: ExecutionResult,
-        plan: Plan
-    ) -> Evaluation:
-        """
-        Assess execution result against plan.
-        """
+    def evaluate_result(self, result: 'ExecutionResult', plan: Plan) -> Evaluation:
+        """Assess execution result against plan."""
         ...
 
-    def should_transition(
-        self,
-        evaluation: Evaluation,
-        current_level: AltitudeLevel
-    ) -> Optional[AltitudeLevel]:
-        """
-        Determine if altitude should change based on evaluation.
-        """
+    def should_transition(self, evaluation: Evaluation, current_level: AltitudeLevel) -> Optional[AltitudeLevel]:
+        """Determine if altitude should change based on evaluation. Returns new level or None."""
         ...
 
 @dataclass
@@ -262,26 +205,15 @@ class Evaluation:
 ### 2.4 Altitude Executor
 
 ```python
-class IAltitudeExecutor(Protocol):
+class AltitudeExecutor:
     """Execution layer within Altitude HRM."""
 
-    def execute(
-        self,
-        plan: Plan,
-        context: HRMContext
-    ) -> ExecutionResult:
-        """
-        Execute a plan. All writes go through Focus HRM gates.
-        """
+    def execute(self, plan: Plan, context: HRMContext) -> 'ExecutionResult':
+        """Execute a plan. All writes go through Focus HRM gates."""
         ...
 
-    def request_write_approval(
-        self,
-        write_request: WriteRequest
-    ) -> WriteDecision:
-        """
-        Request approval from Focus HRM for a write operation.
-        """
+    def request_write_approval(self, write_request: 'WriteRequest') -> bool:
+        """Request approval from Focus HRM for a write. Returns True if approved."""
         ...
 
 @dataclass
@@ -305,43 +237,24 @@ class WriteRequest:
 
 ## 3. Reasoning HRM Interfaces
 
+**Simplification:** No Protocol interfaces. Plain classes with typed methods.
+
 ### 3.1 ReasoningRouter
 
 ```python
-class IReasoningRouter(Protocol):
-    """Main interface for Reasoning HRM."""
+class ReasoningRouter:
+    """Main class for Reasoning HRM."""
 
-    def route(
-        self,
-        input: TurnInput
-    ) -> RoutingDecision:
-        """
-        Determine how to handle this input.
-
-        Returns:
-            RoutingDecision with strategy and optional agent proposal
-        """
+    def route(self, input: TurnInput) -> RoutingDecision:
+        """Determine how to handle this input."""
         ...
 
-    def propose_agents(
-        self,
-        input: TurnInput
-    ) -> Optional[AgentBundleProposal]:
-        """
-        If agents are needed, propose which ones and how.
-
-        Returns:
-            AgentBundleProposal or None if no agents needed
-        """
+    def propose_agents(self, input: TurnInput) -> Optional['AgentBundleProposal']:
+        """If agents are needed, propose which ones. Returns None if no agents needed."""
         ...
 
-    def query_patterns(
-        self,
-        input_signature: dict
-    ) -> list[PatternMatch]:
-        """
-        Query Learning HRM for matching patterns.
-        """
+    def query_patterns(self, input_signature: dict) -> list[PatternMatch]:
+        """Query for matching patterns from trace/learning."""
         ...
 
 @dataclass
@@ -363,16 +276,11 @@ class PatternMatch:
 ### 3.2 InputClassifier
 
 ```python
-class IInputClassifier(Protocol):
+class InputClassifier:
     """Classifies input for strategy selection."""
 
-    def classify(
-        self,
-        input: TurnInput
-    ) -> InputClassification:
-        """
-        Analyze input across multiple dimensions.
-        """
+    def classify(self, input: TurnInput) -> InputClassification:
+        """Analyze input across multiple dimensions."""
         ...
 
 @dataclass
@@ -398,17 +306,11 @@ class InputClassification:
 ### 3.3 StrategySelector
 
 ```python
-class IStrategySelector(Protocol):
+class StrategySelector:
     """Selects reasoning strategy based on classification."""
 
-    def select(
-        self,
-        classification: InputClassification,
-        pattern_matches: list[PatternMatch]
-    ) -> StrategySelection:
-        """
-        Choose the best strategy for this input.
-        """
+    def select(self, classification: InputClassification, pattern_matches: list[PatternMatch]) -> StrategySelection:
+        """Choose the best strategy for this input."""
         ...
 
 @dataclass
@@ -417,54 +319,32 @@ class StrategySelection:
     confidence: float
     reason: str
     requires_agents: bool
-    suggested_mode: Optional[OrchestrationMode]
+    suggested_reducer: Optional[ReducerType]   # Which reducer for MapReduce
     fallback_strategy: Optional[str]
 ```
 
 ### 3.4 EscalationManager
 
 ```python
-class IEscalationManager(Protocol):
+class EscalationManager:
     """Manages escalation and de-escalation."""
 
     ESCALATION_THRESHOLD: float = 0.6  # Per user decision
 
-    def should_escalate(
-        self,
-        classification: InputClassification,
-        strategy: StrategySelection
-    ) -> bool:
-        """
-        Returns True if escalation needed.
-        """
+    def should_escalate(self, classification: InputClassification, strategy: StrategySelection) -> bool:
+        """Returns True if escalation needed."""
         ...
 
-    def escalate(
-        self,
-        strategy: StrategySelection
-    ) -> StrategySelection:
-        """
-        Return escalated strategy.
-        """
+    def escalate(self, strategy: StrategySelection) -> StrategySelection:
+        """Return escalated strategy."""
         ...
 
-    def should_deescalate(
-        self,
-        strategy: StrategySelection,
-        pattern_confidence: float
-    ) -> bool:
-        """
-        Returns True if de-escalation appropriate.
-        """
+    def should_deescalate(self, strategy: StrategySelection, pattern_confidence: float) -> bool:
+        """Returns True if de-escalation appropriate."""
         ...
 
-    def deescalate(
-        self,
-        strategy: StrategySelection
-    ) -> StrategySelection:
-        """
-        Return de-escalated strategy.
-        """
+    def deescalate(self, strategy: StrategySelection) -> StrategySelection:
+        """Return de-escalated strategy."""
         ...
 ```
 
@@ -484,14 +364,15 @@ class AgentBundleProposal:
 
     # What agents are needed
     agents: list[str]             # Agent IDs to activate
-    orchestration_mode: OrchestrationMode
+    reducer: ReducerType          # How to combine outputs (MapReduce)
+    parallel: bool = True         # Run agents in parallel?
 
-    # Mode-specific config
-    mode_config: dict
-    # Pipeline:     {"sequence": ["a", "b", "c"]}
-    # Parallel:     {"aggregation": "merge" | "select_best", "timeout_ms": 5000}
-    # Voting:       {"threshold": 0.6, "tiebreaker": "first" | "abstain" | "escalate"}
-    # Hierarchical: {"lead": "agent_a", "delegates": ["b", "c"], "max_depth": 2}
+    # Reducer-specific config
+    reducer_config: dict = field(default_factory=dict)
+    # PASS_THROUGH: {} (pipeline - each feeds next)
+    # MERGE:        {"strategy": "concatenate" | "dedupe"}
+    # VOTE:         {"threshold": 0.6, "tiebreaker": "first"}
+    # SYNTHESIZE:   {"lead": "agent_a"} (lead synthesizes delegate outputs)
 
     # Rationale
     reason: str
@@ -502,7 +383,7 @@ class AgentBundleProposal:
 ### 3.6 ActionSelector (Next Best Action)
 
 ```python
-class IActionSelector(Protocol):
+class ActionSelector:
     """
     Final stage of Reasoning HRM.
 
@@ -515,11 +396,7 @@ class IActionSelector(Protocol):
     prioritized proposal.
     """
 
-    def select(
-        self,
-        candidates: list[CandidateAction],
-        context: HRMContext
-    ) -> SelectedAction:
+    def select(self, candidates: list['CandidateAction'], context: HRMContext) -> 'SelectedAction':
         """
         Pick the next best action from allowed candidates.
 
@@ -534,20 +411,14 @@ class IActionSelector(Protocol):
         """
         ...
 
-    def should_use_voting(
-        self,
-        candidates: list[CandidateAction],
-        context: HRMContext
-    ) -> bool:
+    def should_use_voting(self, candidates: list['CandidateAction'], context: HRMContext) -> bool:
         """
-        Determine if voting mode is warranted.
+        Determine if voting reducer is warranted.
 
         Voting is ONLY used when:
         1. High stakes (Stakes.HIGH) AND
         2. Multiple candidates with similar priority scores (within 0.1) AND
         3. Irreversible consequences
-
-        This prevents voting from becoming a default "committee" pattern.
         """
         ...
 
@@ -656,11 +527,11 @@ class ReasoningRouter:
 
     def __init__(
         self,
-        classifier: IInputClassifier,
-        strategy_selector: IStrategySelector,
-        escalation_manager: IEscalationManager,
-        action_selector: IActionSelector,      # NEW: Final selection stage
-        learning_hrm: Optional[LearningHRM] = None
+        classifier: InputClassifier,
+        strategy_selector: StrategySelector,
+        escalation_manager: EscalationManager,
+        action_selector: ActionSelector,
+        learning_hrm: Optional['LearningHRM'] = None
     ):
         ...
 
@@ -732,117 +603,80 @@ class ReasoningRouter:
 
 ## 4. Focus HRM Interfaces
 
+**Simplification:** No Protocol interfaces. Plain classes with typed methods.
+
 ### 4.1 StanceMachine
 
 ```python
-class IStanceMachine(Protocol):
+class StanceMachine:
     """4-state exclusive stance machine."""
+
+    def __init__(self):
+        self.current = Stance.SENSEMAKING
 
     def get_current(self) -> Stance:
         """Return current stance."""
-        ...
+        return self.current
 
-    def transition(
-        self,
-        to_stance: Stance,
-        reason: str,
-        via_gate: GateType
-    ) -> StanceTransition:
-        """
-        Attempt stance transition through a gate.
-        """
+    def transition(self, to_stance: Stance, reason: str, via_gate: GateType) -> bool:
+        """Attempt stance transition through a gate. Returns success."""
+        # Log transition as Event for audit trail
         ...
 
     def get_allowed_actions(self) -> list[str]:
-        """
-        Return actions allowed in current stance.
-        """
+        """Return actions allowed in current stance."""
         ...
-
-@dataclass
-class StanceTransition:
-    success: bool
-    from_stance: Stance
-    to_stance: Stance
-    via_gate: GateType
-    reason: str
-    timestamp: datetime
 ```
+
+**Note:** StanceTransition result type removed. Method returns bool. Log transitions as Events.
 
 ### 4.2 GateController
 
 ```python
-class IGateController(Protocol):
+class GateController:
     """Enforces checkpoints for state changes."""
 
-    def attempt_gate(
-        self,
-        gate: GateType,
-        context: dict
-    ) -> GateDecision:
-        """
-        Try to pass through a gate.
-        """
+    def __init__(self):
+        self.evaluators: dict[GateType, Callable] = {}
+
+    def attempt_gate(self, gate: GateType, context: dict) -> bool:
+        """Try to pass through a gate. Returns True if approved."""
         ...
 
-    def register_gate(
-        self,
-        gate: GateType,
-        evaluator: Callable
-    ) -> None:
-        """
-        Register custom gate evaluator.
-        """
-        ...
-
-@dataclass
-class GateDecision:
-    approved: bool
-    gate: GateType
-    reason: str
-    transitions_stance_to: Optional[Stance]
-    metadata: dict = None
+    def register_gate(self, gate: GateType, evaluator: Callable) -> None:
+        """Register custom gate evaluator."""
+        self.evaluators[gate] = evaluator
 ```
+
+**Note:** GateDecision result type removed. Method returns bool. Log decisions as Events.
 
 ### 4.3 CommitmentManager
 
 ```python
-class ICommitmentManager(Protocol):
+class CommitmentManager:
     """Lease-based focus with TTL."""
 
-    def create(
-        self,
-        problem_id: str,
-        description: str,
-        turns: int
-    ) -> Commitment:
-        """
-        Create a new commitment.
-        """
+    def __init__(self):
+        self.active: Optional[Commitment] = None
+
+    def create(self, problem_id: str, description: str, turns: int) -> Commitment:
+        """Create a new commitment."""
         ...
 
     def get_active(self) -> Optional[Commitment]:
-        """
-        Return current active commitment.
-        """
-        ...
+        """Return current active commitment."""
+        return self.active
 
     def tick(self) -> Optional[Commitment]:
-        """
-        Decrement turn counter, return commitment if still active.
-        """
+        """Decrement turn counter, return commitment if still active."""
         ...
 
     def complete(self) -> bool:
-        """
-        Mark commitment as complete.
-        """
+        """Mark commitment as complete. Returns success."""
         ...
 
     def abandon(self, reason: str) -> bool:
-        """
-        Abandon commitment with reason.
-        """
+        """Abandon commitment with reason. Returns success."""
         ...
 
 @dataclass
@@ -859,38 +693,29 @@ class Commitment:
 ### 4.4 AgentApprovalGate
 
 ```python
-class IAgentApprovalGate(Protocol):
+class AgentApprovalGate:
     """Gate for validating agent bundle proposals."""
 
-    def evaluate(
-        self,
-        proposal: AgentBundleProposal,
-        stance: Stance,
-        commitment: Optional[Commitment]
-    ) -> GateDecision:
+    def evaluate(self, proposal: AgentBundleProposal, stance: Stance, commitment: Optional[Commitment]) -> bool:
         """
-        Validate agent proposal against governance state.
+        Validate agent proposal against governance state. Returns True if approved.
 
         Validation Rules:
         1. Check stance compatibility
         2. Check commitment alignment
         3. Check agent authorization
-        4. Check orchestration mode constraints
+        4. Check reducer compatibility
         """
         ...
 
-    def stance_allows(
-        self,
-        proposal: AgentBundleProposal,
-        stance: Stance
-    ) -> bool:
+    def stance_allows(self, proposal: AgentBundleProposal, stance: Stance) -> bool:
         """
         Check if current stance allows this type of agent work.
 
         Mapping:
         - SENSEMAKING: exploration, verification
         - DISCOVERY: exploration, decomposition
-        - EXECUTION: pipeline, parallel, hierarchical
+        - EXECUTION: any reducer
         - EVALUATION: voting, verification
         """
         ...
@@ -898,76 +723,36 @@ class IAgentApprovalGate(Protocol):
 
 ### 4.5 AgentRuntime
 
-```python
-class IAgentRuntime(Protocol):
-    """Executes approved agent bundles."""
-
-    def execute_bundle(
-        self,
-        proposal: AgentBundleProposal,
-        context: AgentExecutionContext
-    ) -> AgentExecutionHandle:
-        """
-        Spin up and execute agent bundle.
-        """
-        ...
-
-    def cancel(
-        self,
-        handle_id: str
-    ) -> bool:
-        """
-        Cancel running execution.
-        """
-        ...
-
-    def get_status(
-        self,
-        handle_id: str
-    ) -> AgentExecutionStatus:
-        """
-        Get current status of execution.
-        """
-        ...
-
-@dataclass
-class AgentExecutionContext:
-    problem_id: str
-    commitment_id: Optional[str]
-    stance: Stance
-    mode: OrchestrationMode
-    mode_config: dict
-
-@dataclass
-class AgentExecutionHandle:
-    id: str
-    agents: list[str]
-    mode: OrchestrationMode
-    status: str                   # pending | running | completed | failed | cancelled
-    started_at: datetime
-    completed_at: Optional[datetime]
-    result: Optional[Any]
-    error: Optional[str]
-
-@dataclass
-class AgentExecutionStatus:
-    handle_id: str
-    status: str
-    progress: float               # 0.0 - 1.0
-    current_agent: Optional[str]
-    outputs_so_far: list[str]
-```
-
-### 4.6 AgentFirewall
+**Note:** AgentFirewall is inlined here as `_validate_output()`. No separate firewall class needed.
 
 ```python
-class IAgentFirewall(Protocol):
-    """Validates all agent outputs before returning."""
+class AgentRuntime:
+    """Executes approved agent bundles using MapReduce pattern."""
 
-    def validate(
-        self,
-        output: AgentOutput
-    ) -> AgentOutput:
+    def execute_bundle(self, proposal: AgentBundleProposal, context: 'AgentExecutionContext') -> 'AgentExecutionResult':
+        """
+        Execute agent bundle using MapReduce:
+        1. Map: Run agents (parallel or serial based on proposal.parallel)
+        2. Validate: Check each output via _validate_output()
+        3. Reduce: Combine outputs using proposal.reducer
+        """
+        outputs = self._map(proposal.agents, context, parallel=proposal.parallel)
+        validated = [self._validate_output(o) for o in outputs]
+        return self._reduce(validated, proposal.reducer, proposal.reducer_config)
+
+    def cancel(self, handle_id: str) -> bool:
+        """Cancel running execution. Returns success."""
+        ...
+
+    def get_status(self, handle_id: str) -> 'AgentExecutionStatus':
+        """Get current status of execution."""
+        ...
+
+    # ─────────────────────────────────────────────────────────────
+    # Inlined Firewall (validation happens in reduce phase)
+    # ─────────────────────────────────────────────────────────────
+
+    def _validate_output(self, output: 'AgentOutput') -> 'AgentOutput':
         """
         Validate agent output against security rules.
 
@@ -977,10 +762,41 @@ class IAgentFirewall(Protocol):
         3. Valid output packet structure
         4. No prompt injection attempts
 
-        Raises:
-            FirewallViolation if validation fails
+        Raises HRMError.agent_violation() on failure.
         """
-        ...
+        if output.contains_decision():
+            raise HRMError.agent_violation("Agents cannot make decisions, only proposals")
+        if not output.is_valid_packet():
+            raise HRMError.agent_violation("Invalid output packet structure")
+        # Additional checks...
+        return output
+
+@dataclass
+class AgentExecutionContext:
+    problem_id: str
+    commitment_id: Optional[str]
+    stance: Stance
+    reducer: ReducerType
+    reducer_config: dict
+
+@dataclass
+class AgentExecutionResult:
+    """Result of MapReduce execution."""
+    id: str
+    agents: list[str]
+    reducer: ReducerType
+    success: bool
+    result: Optional[Any]
+    error: Optional[str]
+    duration_ms: int
+
+@dataclass
+class AgentExecutionStatus:
+    handle_id: str
+    status: str                   # pending | running | completed | failed | cancelled
+    progress: float               # 0.0 - 1.0
+    current_agent: Optional[str]
+    outputs_so_far: list[str]
 
 @dataclass
 class AgentOutput:
@@ -992,83 +808,50 @@ class AgentOutput:
 
     def contains_decision(self) -> bool:
         """Check if output contains a decision instead of proposal."""
-        ...
+        decision_markers = ["DECISION:", "I have decided", "Final answer:"]
+        return any(m in str(self.content) for m in decision_markers)
 
     def is_valid_packet(self) -> bool:
         """Check if output has valid structure."""
-        ...
-
-class FirewallViolation(Exception):
-    def __init__(self, rule: str, message: str):
-        self.rule = rule
-        self.message = message
+        return self.agent_id and self.output_type in ("proposal", "data", "artifact")
 ```
+
+**Note:** FirewallViolation exception removed. Use `HRMError.agent_violation()` instead.
 
 ---
 
 ## 5. Learning HRM Interfaces
 
+**Simplification:** No Protocol interfaces. Plain classes with typed methods.
+
 ### 5.1 PatternStore
 
 ```python
-class IPatternStore(Protocol):
+class PatternStore:
     """Store and query patterns with evidence links."""
 
-    def add_pattern(
-        self,
-        pattern: Pattern
-    ) -> str:
-        """
-        Add a new pattern, return ID.
-        """
+    def add_pattern(self, pattern: 'Pattern') -> str:
+        """Add a new pattern, return ID."""
         ...
 
-    def get_pattern(
-        self,
-        pattern_id: str
-    ) -> Optional[Pattern]:
-        """
-        Retrieve pattern by ID.
-        """
+    def get_pattern(self, pattern_id: str) -> Optional['Pattern']:
+        """Retrieve pattern by ID."""
         ...
 
-    def search(
-        self,
-        input_signature: dict
-    ) -> list[PatternMatch]:
-        """
-        Find patterns matching the input signature.
-        """
+    def search(self, input_signature: dict) -> list[PatternMatch]:
+        """Find patterns matching the input signature."""
         ...
 
-    def strengthen(
-        self,
-        pattern_id: str,
-        evidence_id: str
-    ) -> None:
-        """
-        Increase pattern confidence with new evidence.
-        """
+    def strengthen(self, pattern_id: str, evidence_id: str) -> None:
+        """Increase pattern confidence with new evidence."""
         ...
 
-    def weaken(
-        self,
-        pattern_id: str,
-        reason: str
-    ) -> None:
-        """
-        Decrease pattern confidence.
-        """
+    def weaken(self, pattern_id: str, reason: str) -> None:
+        """Decrease pattern confidence."""
         ...
 
-    def protect(
-        self,
-        pattern_id: str
-    ) -> None:
-        """
-        Prevent pattern from manual removal.
-        NOTE: No auto-trim per user decision.
-        """
+    def protect(self, pattern_id: str) -> None:
+        """Prevent pattern from manual removal. NOTE: No auto-trim per user decision."""
         ...
 
 @dataclass
@@ -1087,34 +870,19 @@ class Pattern:
 ### 5.2 FeedbackLoop
 
 ```python
-class IFeedbackLoop(Protocol):
+class FeedbackLoop:
     """Session analysis and pattern learning."""
 
-    def record_outcome(
-        self,
-        signal: dict,
-        routing: dict,
-        outcome: dict
-    ) -> str:
-        """
-        Record a signal→routing→outcome tuple.
-        Returns evidence ID.
-        """
+    def record_outcome(self, signal: dict, routing: dict, outcome: dict) -> str:
+        """Record a signal→routing→outcome tuple. Returns evidence ID."""
         ...
 
-    def analyze_session(self) -> SessionAnalysis:
-        """
-        Analyze current session for patterns.
-        """
+    def analyze_session(self) -> 'SessionAnalysis':
+        """Analyze current session for patterns."""
         ...
 
-    def get_patterns_for_signal(
-        self,
-        signal: dict
-    ) -> list[PatternMatch]:
-        """
-        Query patterns matching a signal (for Reasoning HRM).
-        """
+    def get_patterns_for_signal(self, signal: dict) -> list[PatternMatch]:
+        """Query patterns matching a signal (for Reasoning HRM)."""
         ...
 
 @dataclass
@@ -1140,36 +908,19 @@ class OutcomeRecord:
 ### 5.3 Generalizer
 
 ```python
-class IGeneralizer(Protocol):
+class Generalizer:
     """Merge similar patterns into abstractions."""
 
-    def find_similar(
-        self,
-        patterns: list[Pattern]
-    ) -> list[tuple[Pattern, Pattern, float]]:
-        """
-        Find pairs of similar patterns with similarity score.
-        """
+    def find_similar(self, patterns: list[Pattern]) -> list[tuple[Pattern, Pattern, float]]:
+        """Find pairs of similar patterns with similarity score."""
         ...
 
-    def merge(
-        self,
-        p1: Pattern,
-        p2: Pattern
-    ) -> Pattern:
-        """
-        Merge two patterns into a more general one.
-        Preserves evidence from both.
-        """
+    def merge(self, p1: Pattern, p2: Pattern) -> Pattern:
+        """Merge two patterns into a more general one. Preserves evidence from both."""
         ...
 
-    def generalize_batch(
-        self,
-        patterns: list[Pattern]
-    ) -> list[Pattern]:
-        """
-        Process list, merging similar patterns.
-        """
+    def generalize_batch(self, patterns: list[Pattern]) -> list[Pattern]:
+        """Process list, merging similar patterns."""
         ...
 ```
 
@@ -1177,81 +928,44 @@ class IGeneralizer(Protocol):
 
 ## 6. Memory Bus Interfaces
 
+**Simplification:** No Protocol interfaces. Plain classes with typed methods.
+
 ### 6.1 MemoryBus
 
 ```python
-class IMemoryBus(Protocol):
+class MemoryBus:
     """Unified memory access with file locking."""
 
-    def write_to_working(
-        self,
-        problem_id: str,
-        key: str,
-        value: Any
-    ) -> bool:
-        """
-        Write to problem-isolated Working Set.
-        No gate required (local scope).
-        """
+    def write_to_working(self, problem_id: str, key: str, value: Any) -> bool:
+        """Write to problem-isolated Working Set. No gate required (local scope)."""
         ...
 
-    def write_to_shared(
-        self,
-        key: str,
-        value: Any,
-        source: str,
-        signals: WriteSignals
-    ) -> WriteDecision:
-        """
-        Write to Shared Reference.
-        Requires WriteGate approval.
-        """
+    def write_to_shared(self, key: str, value: Any, source: str, signals: 'WriteSignals') -> bool:
+        """Write to Shared Reference. Requires WriteGate approval. Returns success."""
         ...
 
-    def log_episode(
-        self,
-        entry: EpisodeEntry
-    ) -> str:
-        """
-        Append to Episodic Trace.
-        Always succeeds (append-only).
-        Returns entry ID.
-        """
+    def log_episode(self, entry: 'EpisodeEntry') -> str:
+        """Append to Episodic Trace. Always succeeds (append-only). Returns entry ID."""
         ...
 
-    def add_synthesis(
-        self,
-        pattern: SynthesizedPattern,
-        signals: WriteSignals
-    ) -> WriteDecision:
-        """
-        Add to Semantic Synthesis.
-        Requires WriteGate approval (high bar).
-        """
+    def add_synthesis(self, pattern: 'SynthesizedPattern', signals: 'WriteSignals') -> bool:
+        """Add to Semantic Synthesis. Requires WriteGate approval (high bar). Returns success."""
         ...
 
-    def get_evidence_chain(
-        self,
-        pattern_id: str
-    ) -> list[EpisodeEntry]:
-        """
-        Get full evidence chain for a pattern.
-        """
+    def get_evidence_chain(self, pattern_id: str) -> list['EpisodeEntry']:
+        """Get full evidence chain for a pattern."""
         ...
 ```
 
 ### 6.2 WriteGate
 
 ```python
-class IWriteGate(Protocol):
+class WriteGate:
     """Signal-based write policy decisions."""
 
-    def evaluate(
-        self,
-        request: WriteRequest
-    ) -> WriteDecision:
+    def evaluate(self, request: 'WriteRequest') -> bool:
         """
-        Evaluate whether write should proceed.
+        Evaluate whether write should proceed. Returns True if approved.
 
         Rules:
         1. High blast radius → higher confidence threshold
@@ -1280,86 +994,52 @@ class WriteDecision:
 ### 6.3 Compartment Stores
 
 ```python
-class IWorkingSetStore(Protocol):
+class WorkingSetStore:
     """Per-problem isolated memory with TTL."""
 
-    def create(
-        self,
-        problem_id: str,
-        ttl_hours: int = 2
-    ) -> WorkingSet:
+    def create(self, problem_id: str, ttl_hours: int = 2) -> 'WorkingSet':
         ...
 
-    def get(
-        self,
-        problem_id: str
-    ) -> Optional[WorkingSet]:
+    def get(self, problem_id: str) -> Optional['WorkingSet']:
         ...
 
-    def update(
-        self,
-        problem_id: str,
-        **kwargs
-    ) -> None:
+    def update(self, problem_id: str, **kwargs) -> None:
         ...
 
     def expire_stale(self) -> int:
         """Expire stale sets, return count."""
         ...
 
-    def export_summary(
-        self,
-        problem_id: str
-    ) -> str:
+    def export_summary(self, problem_id: str) -> str:
         """Export summary for archival."""
         ...
 
-class ISharedReferenceStore(Protocol):
+
+class SharedReferenceStore:
     """Versioned, citable cross-problem facts."""
 
-    def get(
-        self,
-        key: str,
-        version: int = None
-    ) -> SharedReference:
+    def get(self, key: str, version: int = None) -> 'SharedReference':
         ...
 
-    def set(
-        self,
-        key: str,
-        value: Any,
-        source: str
-    ) -> int:
+    def set(self, key: str, value: Any, source: str) -> int:
         """Set value, return new version number."""
         ...
 
-    def list_versions(
-        self,
-        key: str
-    ) -> list[int]:
+    def list_versions(self, key: str) -> list[int]:
         ...
 
-    def rollback(
-        self,
-        key: str,
-        to_version: int
-    ) -> bool:
+    def rollback(self, key: str, to_version: int) -> bool:
         ...
 
-    def cite(
-        self,
-        key: str
-    ) -> str:
+    def cite(self, key: str) -> str:
         """Generate citation string."""
         ...
 
-class IEpisodicTraceStore(Protocol):
+
+class EpisodicTraceStore:
     """Append-only audit logs."""
 
-    def append(
-        self,
-        entry: EpisodeEntry
-    ) -> str:
+    def append(self, entry: 'EpisodeEntry') -> str:
         """Append entry, return ID."""
         ...
 
@@ -1370,57 +1050,33 @@ class IEpisodicTraceStore(Protocol):
         problem_id: str = None,
         tags: list[str] = None,
         entry_type: str = None
-    ) -> list[EpisodeEntry]:
+    ) -> list['EpisodeEntry']:
         ...
 
-    def supersede(
-        self,
-        old_id: str,
-        new_entry: EpisodeEntry
-    ) -> str:
+    def supersede(self, old_id: str, new_entry: 'EpisodeEntry') -> str:
         """Create new entry that supersedes old one."""
         ...
 
-class ISemanticSynthesisStore(Protocol):
+
+class SemanticSynthesisStore:
     """Evidence-linked patterns."""
 
-    def add_pattern(
-        self,
-        pattern: SynthesizedPattern
-    ) -> str:
+    def add_pattern(self, pattern: 'SynthesizedPattern') -> str:
         ...
 
-    def get_pattern(
-        self,
-        pattern_id: str
-    ) -> SynthesizedPattern:
+    def get_pattern(self, pattern_id: str) -> 'SynthesizedPattern':
         ...
 
-    def search(
-        self,
-        pattern_type: str = None,
-        min_confidence: float = 0.0
-    ) -> list[SynthesizedPattern]:
+    def search(self, pattern_type: str = None, min_confidence: float = 0.0) -> list['SynthesizedPattern']:
         ...
 
-    def strengthen(
-        self,
-        pattern_id: str,
-        new_evidence_id: str
-    ) -> None:
+    def strengthen(self, pattern_id: str, new_evidence_id: str) -> None:
         ...
 
-    def weaken(
-        self,
-        pattern_id: str,
-        reason: str
-    ) -> None:
+    def weaken(self, pattern_id: str, reason: str) -> None:
         ...
 
-    def get_evidence_chain(
-        self,
-        pattern_id: str
-    ) -> list[EpisodeEntry]:
+    def get_evidence_chain(self, pattern_id: str) -> list['EpisodeEntry']:
         ...
 ```
 
@@ -1475,44 +1131,24 @@ class SynthesizedPattern:
 
 ## 7. Tracing Interface
 
+**Simplification:** No Protocol interfaces. Plain classes with typed methods.
+
 ### 7.1 Tracer
 
 ```python
-class ITracer(Protocol):
+class Tracer:
     """Observability singleton."""
 
-    def span(
-        self,
-        hrm: str,
-        operation: str,
-        component: str,
-        input_data: str = None
-    ) -> SpanContext:
-        """
-        Create a new span (context manager).
-        """
+    def span(self, hrm: str, operation: str, component: str, input_data: str = None) -> 'SpanContext':
+        """Create a new span (context manager)."""
         ...
 
-    def event(
-        self,
-        hrm: str,
-        operation: str,
-        status: str = "info",
-        data: dict = None
-    ) -> None:
-        """
-        Log a single event within current span.
-        """
+    def event(self, hrm: str, operation: str, status: str = "info", data: dict = None) -> None:
+        """Log a single event within current span."""
         ...
 
-    def generate_id(
-        self,
-        hrm: str
-    ) -> str:
-        """
-        Generate trace ID with HRM prefix.
-        Format: {hrm}_{timestamp}_{random}
-        """
+    def generate_id(self, hrm: str) -> str:
+        """Generate trace ID with HRM prefix. Format: {hrm}_{timestamp}_{random}"""
         ...
 
 @dataclass
@@ -1594,124 +1230,426 @@ class SpanContext:
 | Learning | MemoryBus | `add_synthesis(...)` | Pattern storage |
 | All | Tracer | `span(...), event(...)` | Trace data |
 
-### 8.3 Callback Interfaces
+### 8.3 Event-Based Communication
+
+**Simplification:** Instead of callback interfaces, use Event logging to EpisodicTrace.
+All cross-HRM notifications become Event appends. Consumers query the trace.
 
 ```python
-class IHRMCallback(Protocol):
-    """Callbacks for cross-HRM notification."""
+# Instead of callbacks, append Events to trace:
 
-    def on_altitude_transition(
-        self,
-        from_level: AltitudeLevel,
-        to_level: AltitudeLevel,
-        reason: str
-    ) -> None:
-        ...
+# Altitude transition
+trace.append(Event(
+    event_type="altitude_transition",
+    payload={"from": old_level.value, "to": new_level.value, "reason": reason}
+))
 
-    def on_stance_change(
-        self,
-        from_stance: Stance,
-        to_stance: Stance,
-        via_gate: GateType
-    ) -> None:
-        ...
+# Stance change
+trace.append(Event(
+    event_type="stance_change",
+    payload={"from": old_stance.value, "to": new_stance.value, "via_gate": gate.value}
+))
 
-    def on_agent_activated(
-        self,
-        handle: AgentExecutionHandle
-    ) -> None:
-        ...
+# Agent activated
+trace.append(Event(
+    event_type="agent_activated",
+    payload={"agents": handle.agents, "reducer": handle.reducer.value}
+))
 
-    def on_pattern_matched(
-        self,
-        pattern: Pattern,
-        confidence: float
-    ) -> None:
-        ...
+# Pattern matched
+trace.append(Event(
+    event_type="pattern_matched",
+    payload={"pattern_id": pattern.id, "confidence": confidence}
+))
 
-    def on_write_completed(
+# Write completed
+trace.append(Event(
+    event_type="write_completed",
+    payload={"target": target, "key": key, "approved": approved}
+))
+
+
+# Consumers query trace instead of registering callbacks:
+def get_recent_transitions(trace: EpisodicTraceStore, since: datetime) -> list[Event]:
+    return trace.query(event_type="altitude_transition", start=since)
+
+def get_agent_activations(trace: EpisodicTraceStore, session_id: str) -> list[Event]:
+    return trace.query(event_type="agent_activated", problem_id=session_id)
+```
+
+### 8.4 MapReduce Orchestration Pattern
+
+**Simplification:** Instead of 4 separate orchestration modes (Pipeline, Parallel, Voting, Hierarchical),
+use a single MapReduce pattern with different reducers.
+
+```python
+class Orchestrator:
+    """
+    Single execution engine for all agent orchestration.
+
+    All modes become Map + Reduce:
+    - Pipeline:     Map(serial) + PassThroughReducer
+    - Parallel:     Map(parallel) + MergeReducer
+    - Voting:       Map(parallel) + VotingReducer
+    - Hierarchical: Planning step → Map(parallel) + SynthesisReducer
+
+    Benefits:
+    - One timeout implementation
+    - One cancellation implementation
+    - One retry strategy
+    - One test suite
+    """
+
+    def __init__(self, runtime: AgentRuntime, timeout_ms: int = 30000):
+        self.runtime = runtime
+        self.timeout_ms = timeout_ms
+
+    def execute(
         self,
-        target: str,
-        key: str,
-        decision: WriteDecision
-    ) -> None:
-        ...
+        agents: list[str],
+        reducer: 'Reducer',
+        parallel: bool = True,
+        context: Optional[AgentExecutionContext] = None
+    ) -> 'OrchestratorResult':
+        """
+        Execute agents using MapReduce pattern.
+
+        Args:
+            agents: List of agent IDs to run
+            reducer: How to combine outputs
+            parallel: Run agents in parallel (True) or serial (False)
+            context: Execution context
+
+        Returns:
+            OrchestratorResult with combined output
+        """
+        try:
+            # Map phase: run all agents
+            outputs = self._map(agents, parallel, context)
+
+            # Validate phase: check each output (inlined firewall)
+            validated = [self._validate(o) for o in outputs]
+
+            # Reduce phase: combine outputs
+            result = reducer.reduce(validated)
+
+            return OrchestratorResult(success=True, result=result)
+
+        except HRMError as e:
+            return OrchestratorResult(success=False, error=e)
+
+    def _map(self, agents: list[str], parallel: bool, context) -> list[AgentOutput]:
+        """Run agents (parallel or serial)."""
+        if parallel:
+            # Run all agents concurrently with timeout
+            with concurrent.futures.ThreadPoolExecutor() as executor:
+                futures = {executor.submit(self._run_agent, a, context): a for a in agents}
+                outputs = []
+                for future in concurrent.futures.as_completed(futures, timeout=self.timeout_ms/1000):
+                    outputs.append(future.result())
+                return outputs
+        else:
+            # Run agents serially, each gets previous output
+            outputs = []
+            prev_output = None
+            for agent in agents:
+                output = self._run_agent(agent, context, prev_output)
+                outputs.append(output)
+                prev_output = output
+            return outputs
+
+    def _validate(self, output: AgentOutput) -> AgentOutput:
+        """Validate agent output (inlined firewall)."""
+        if output.contains_decision():
+            raise HRMError.agent_violation("Agents cannot make decisions")
+        return output
+
+
+@dataclass
+class OrchestratorResult:
+    success: bool
+    result: Optional[Any] = None
+    error: Optional[HRMError] = None
+
+
+# ─────────────────────────────────────────────────────────────
+# Reducer implementations
+# ─────────────────────────────────────────────────────────────
+
+class Reducer:
+    """Base class for reducers."""
+    def reduce(self, outputs: list[AgentOutput]) -> Any:
+        raise NotImplementedError
+
+
+class PassThroughReducer(Reducer):
+    """For pipeline mode: return last output."""
+    def reduce(self, outputs: list[AgentOutput]) -> Any:
+        return outputs[-1].content if outputs else None
+
+
+class MergeReducer(Reducer):
+    """For parallel mode: merge all outputs."""
+    def __init__(self, strategy: str = "concatenate"):
+        self.strategy = strategy  # concatenate | dedupe | select_best
+
+    def reduce(self, outputs: list[AgentOutput]) -> Any:
+        if self.strategy == "concatenate":
+            return [o.content for o in outputs]
+        elif self.strategy == "dedupe":
+            seen = set()
+            result = []
+            for o in outputs:
+                key = str(o.content)
+                if key not in seen:
+                    seen.add(key)
+                    result.append(o.content)
+            return result
+        elif self.strategy == "select_best":
+            # Select output with highest confidence (if available)
+            return max(outputs, key=lambda o: o.metadata.get("confidence", 0)).content
+        return [o.content for o in outputs]
+
+
+class VotingReducer(Reducer):
+    """For voting mode: tally votes and select winner."""
+    def __init__(self, threshold: float = 0.6, tiebreaker: str = "first"):
+        self.threshold = threshold
+        self.tiebreaker = tiebreaker  # first | escalate
+
+    def reduce(self, outputs: list[AgentOutput]) -> Any:
+        # Count votes for each unique answer
+        votes: dict[str, int] = {}
+        for o in outputs:
+            key = str(o.content)
+            votes[key] = votes.get(key, 0) + 1
+
+        # Find winner
+        total = len(outputs)
+        for answer, count in sorted(votes.items(), key=lambda x: -x[1]):
+            if count / total >= self.threshold:
+                return answer
+
+        # No winner met threshold
+        if self.tiebreaker == "first":
+            return outputs[0].content
+        else:
+            raise HRMError.gate_denied("voting", "No consensus reached, escalation required")
+
+
+class SynthesisReducer(Reducer):
+    """For hierarchical mode: lead agent synthesizes delegate outputs."""
+    def __init__(self, lead_agent: str, llm: 'ILLMAdapter'):
+        self.lead_agent = lead_agent
+        self.llm = llm
+
+    def reduce(self, outputs: list[AgentOutput]) -> Any:
+        # Synthesize outputs using lead agent's LLM
+        synthesis_prompt = f"Synthesize these outputs into a coherent response:\n"
+        for i, o in enumerate(outputs):
+            synthesis_prompt += f"\n[Output {i+1}]: {o.content}"
+
+        response = self.llm.chat(
+            messages=[Message(role="user", content=synthesis_prompt)],
+            system=f"You are {self.lead_agent}, synthesizing delegate outputs."
+        )
+        return response.content
+```
+
+**Usage examples:**
+
+```python
+orchestrator = Orchestrator(runtime)
+
+# Pipeline mode (serial execution)
+result = orchestrator.execute(
+    agents=["researcher", "writer", "editor"],
+    reducer=PassThroughReducer(),
+    parallel=False
+)
+
+# Parallel mode (concurrent, merge results)
+result = orchestrator.execute(
+    agents=["analyst_1", "analyst_2", "analyst_3"],
+    reducer=MergeReducer(strategy="dedupe"),
+    parallel=True
+)
+
+# Voting mode (concurrent, vote on answer)
+result = orchestrator.execute(
+    agents=["verifier_1", "verifier_2", "verifier_3"],
+    reducer=VotingReducer(threshold=0.6),
+    parallel=True
+)
+
+# Hierarchical mode (lead synthesizes delegate work)
+result = orchestrator.execute(
+    agents=["delegate_1", "delegate_2"],
+    reducer=SynthesisReducer(lead_agent="lead", llm=llm_adapter),
+    parallel=True
+)
 ```
 
 ---
 
 ## 9. Error Handling
 
-### 9.1 Exception Hierarchy
+### 9.1 Single Error Type with Codes
+
+**Simplification:** Instead of 12+ exception classes, use one HRMError with error codes.
 
 ```python
-class HRMError(Exception):
-    """Base exception for HRM errors."""
-    pass
+from dataclasses import dataclass, field
+from typing import Optional
+from enum import Enum
 
-class AltitudeError(HRMError):
-    """Altitude HRM errors."""
-    pass
+class ErrorCode(Enum):
+    """All error codes in one place."""
+    # Gate errors
+    GATE_DENIED = "gate_denied"
+    STANCE_VIOLATION = "stance_violation"
 
-class ReasoningError(HRMError):
-    """Reasoning HRM errors."""
-    pass
+    # Write errors
+    WRITE_DENIED = "write_denied"
+    CONFLICT_DETECTED = "conflict_detected"
 
-class FocusError(HRMError):
-    """Focus HRM errors."""
-    pass
+    # Reasoning errors
+    ESCALATION_REQUIRED = "escalation_required"
+    STRATEGY_FAILED = "strategy_failed"
 
-class LearningError(HRMError):
-    """Learning HRM errors."""
-    pass
+    # Agent errors
+    AGENT_VIOLATION = "agent_violation"
+    AGENT_TIMEOUT = "agent_timeout"
 
-class MemoryBusError(HRMError):
-    """Memory Bus errors."""
-    pass
+    # LLM errors
+    RATE_LIMIT = "rate_limit"
+    TOKEN_LIMIT = "token_limit"
+    CONTENT_FILTERED = "content_filtered"
+    PROVIDER_ERROR = "provider_error"
 
-# Specific errors
-class GateDeniedError(FocusError):
-    """Raised when a gate denies passage."""
-    def __init__(self, gate: GateType, reason: str):
-        self.gate = gate
-        self.reason = reason
+    # System errors
+    VALIDATION_FAILED = "validation_failed"
+    INTERNAL_ERROR = "internal_error"
 
-class StanceViolationError(FocusError):
-    """Raised when action violates current stance."""
-    def __init__(self, stance: Stance, action: str):
-        self.stance = stance
-        self.action = action
-
-class EscalationRequiredError(ReasoningError):
-    """Raised when escalation needed but not available."""
-    pass
-
-class WriteDeniedError(MemoryBusError):
-    """Raised when write gate denies a write."""
-    def __init__(self, target: str, reason: str):
-        self.target = target
-        self.reason = reason
-```
-
-### 9.2 Error Recovery
-
-```python
-class IErrorRecovery(Protocol):
-    """Standard error recovery interface."""
-
-    def can_recover(self, error: HRMError) -> bool:
-        """Check if error is recoverable."""
-        ...
-
-    def recover(self, error: HRMError) -> RecoveryAction:
-        """Suggest recovery action."""
-        ...
 
 @dataclass
-class RecoveryAction:
-    action: str                   # retry | fallback | escalate | abort
-    delay_ms: int = 0
-    context: dict = None
+class HRMError(Exception):
+    """
+    Single exception type for all HRM errors.
+
+    Usage:
+        raise HRMError.gate_denied("commitment", "No active commitment")
+        raise HRMError.rate_limit(retry_after_ms=5000)
+
+    Handling:
+        try:
+            result = do_thing()
+        except HRMError as e:
+            if e.code == ErrorCode.RATE_LIMIT:
+                time.sleep(e.retry_after_ms / 1000)
+                retry()
+            elif e.recoverable:
+                fallback()
+            else:
+                raise
+    """
+    code: ErrorCode
+    message: str
+    recoverable: bool = True
+    retry_after_ms: Optional[int] = None
+    context: dict = field(default_factory=dict)
+
+    def __str__(self) -> str:
+        return f"[{self.code.value}] {self.message}"
+
+    # ─────────────────────────────────────────────────────────────
+    # Factory methods for common errors
+    # ─────────────────────────────────────────────────────────────
+
+    @classmethod
+    def gate_denied(cls, gate: str, reason: str) -> 'HRMError':
+        return cls(
+            code=ErrorCode.GATE_DENIED,
+            message=reason,
+            recoverable=True,
+            context={"gate": gate}
+        )
+
+    @classmethod
+    def stance_violation(cls, stance: str, action: str) -> 'HRMError':
+        return cls(
+            code=ErrorCode.STANCE_VIOLATION,
+            message=f"Action '{action}' not allowed in stance '{stance}'",
+            recoverable=True,
+            context={"stance": stance, "action": action}
+        )
+
+    @classmethod
+    def write_denied(cls, target: str, reason: str) -> 'HRMError':
+        return cls(
+            code=ErrorCode.WRITE_DENIED,
+            message=reason,
+            recoverable=True,
+            context={"target": target}
+        )
+
+    @classmethod
+    def agent_violation(cls, reason: str) -> 'HRMError':
+        return cls(
+            code=ErrorCode.AGENT_VIOLATION,
+            message=reason,
+            recoverable=False,
+            context={}
+        )
+
+    @classmethod
+    def rate_limit(cls, retry_after_ms: int) -> 'HRMError':
+        return cls(
+            code=ErrorCode.RATE_LIMIT,
+            message="Rate limit exceeded",
+            recoverable=True,
+            retry_after_ms=retry_after_ms
+        )
+
+    @classmethod
+    def token_limit(cls, limit: int, actual: int) -> 'HRMError':
+        return cls(
+            code=ErrorCode.TOKEN_LIMIT,
+            message=f"Token limit exceeded: {actual} > {limit}",
+            recoverable=False,
+            context={"limit": limit, "actual": actual}
+        )
+
+    @classmethod
+    def provider_error(cls, status_code: int, message: str) -> 'HRMError':
+        return cls(
+            code=ErrorCode.PROVIDER_ERROR,
+            message=message,
+            recoverable=status_code >= 500,  # Server errors are retryable
+            context={"status_code": status_code}
+        )
+
+
+def recover_from_error(error: HRMError) -> dict:
+    """
+    Suggest recovery action for an error.
+
+    Returns:
+        {"action": "retry" | "fallback" | "escalate" | "abort", "delay_ms": int}
+    """
+    if not error.recoverable:
+        return {"action": "abort", "delay_ms": 0}
+
+    if error.code == ErrorCode.RATE_LIMIT:
+        return {"action": "retry", "delay_ms": error.retry_after_ms or 1000}
+
+    if error.code in (ErrorCode.GATE_DENIED, ErrorCode.STANCE_VIOLATION):
+        return {"action": "fallback", "delay_ms": 0}
+
+    if error.code == ErrorCode.ESCALATION_REQUIRED:
+        return {"action": "escalate", "delay_ms": 0}
+
+    return {"action": "retry", "delay_ms": 1000}
 ```
 
 ---

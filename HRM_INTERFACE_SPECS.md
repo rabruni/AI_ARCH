@@ -2206,6 +2206,893 @@ cost_alert_threshold: 10.0
 
 ---
 
+## 12. Governance Kernel
+
+The GovernanceKernel consolidates all policy decisions into a single module. This prevents "configuration sprawl" and ensures tunables are versioned together.
+
+**Location:** `shared/governance/kernel.py`
+
+### 12.1 PolicySurface (Canonical Tunables)
+
+```python
+from dataclasses import dataclass, field
+from typing import Tuple
+
+@dataclass(frozen=True)
+class PolicySurface:
+    """
+    Single source of truth for all system tunables.
+    Intentionally minimal. Version this file carefully.
+    """
+
+    # === ARBITRATION ===
+    PRIORITY_SCALE: Tuple[int, int] = (1, 10)
+    AUTO_PREEMPT_THRESHOLD: float = 0.70
+    ASK_BAND_LOW: float = 0.55
+    ASK_BAND_HIGH: float = 0.70
+    # < 0.55 → queue (no user interrupt)
+    # 0.55-0.70 → ask user
+    # >= 0.70 → auto preempt
+
+    # PreemptScore weights (must sum to 1.0)
+    WEIGHT_PRIORITY: float = 0.30
+    WEIGHT_URGENCY: float = 0.25
+    WEIGHT_STALENESS: float = 0.20
+    WEIGHT_SWITCH_COST: float = 0.25
+
+    # === SIGNAL DERIVATION ===
+    CONFLICT_CONFIDENCE_GAP: float = 0.3   # Below this = true ambiguity → HIGH conflict
+    BLAST_RADIUS_FILE_THRESHOLD: int = 3   # >3 files = MODERATE
+
+    # LLM signal bounds
+    LLM_SIGNAL_FLOOR: float = 0.1
+    LLM_SIGNAL_CEILING: float = 0.9
+    LLM_SIGNAL_WEIGHT: float = 0.6         # Deterministic gets 0.4
+
+    # === ESCALATION ===
+    ESCALATION_THRESHOLD: float = 0.6
+
+    # === PREFERENCE TRUTH ===
+    PREFERENCE_PATTERNS: Tuple[str, ...] = (
+        r"I prefer",
+        r"I hate",
+        r"I always",
+        r"I never",
+        r"I'm the kind of person who",
+        r"I like",
+        r"I don't like",
+        r"I need",
+    )
+
+    # === STANCE DEFAULTS (DoPeJar Mode) ===
+    NEW_SESSION_STANCE: str = "sensemaking"
+    SENSEMAKING_MAX_TURNS: int = 2         # Then transition to execution
+    MID_COMMITMENT_STANCE: str = "execution"
+    POST_DELIVERY_STANCE: str = "evaluation"
+    EVALUATION_MAX_TURNS: int = 1
+
+    # === INTERRUPT BUDGET ===
+    # When to surface to user (everything else: handle silently)
+    INTERRUPT_CONDITIONS: Tuple[str, ...] = (
+        "ask_band",                         # Arbitration ambiguity
+        "preference_conflict",              # Action conflicts with canon
+        "high_stakes_irreversible",         # SEVERE blast_radius + irreversible
+        "you_should_know",                  # Important info, no action needed
+    )
+
+    # === RUNTIME ===
+    MAX_CONCURRENT_AGENTS: int = 3         # Semaphore for async (even in sync mode)
+    AGENT_TIMEOUT_MS: int = 30000
+
+    # === VERSION ===
+    VERSION: str = "1.0.0"
+
+    def validate(self) -> bool:
+        """Ensure weights sum to 1.0 and thresholds are sane."""
+        weights = (
+            self.WEIGHT_PRIORITY +
+            self.WEIGHT_URGENCY +
+            self.WEIGHT_STALENESS +
+            self.WEIGHT_SWITCH_COST
+        )
+        assert abs(weights - 1.0) < 0.01, f"Weights sum to {weights}, must be 1.0"
+        assert self.ASK_BAND_LOW < self.ASK_BAND_HIGH < self.AUTO_PREEMPT_THRESHOLD
+        assert 0 < self.ESCALATION_THRESHOLD < 1
+        return True
+
+
+# Global singleton
+POLICY = PolicySurface()
+POLICY.validate()
+```
+
+### 12.2 SignalEngine (Deterministic + Bounded LLM)
+
+```python
+from enum import Enum
+from dataclasses import dataclass
+from typing import Optional, List
+
+class BlastRadius(Enum):
+    MINIMAL = "minimal"
+    MODERATE = "moderate"
+    SEVERE = "severe"
+
+class ConflictLevel(Enum):
+    NONE = "none"
+    LOW = "low"
+    MEDIUM = "medium"
+    HIGH = "high"
+
+@dataclass
+class DerivedSignals:
+    """All signals derived from a single turn/action."""
+    conflict_level: ConflictLevel
+    blast_radius: BlastRadius
+    source_quality: float          # 0.0 - 1.0
+    alignment_score: float         # 0.0 - 1.0
+    urgency: float                 # 0.0 - 1.0
+
+    # Derivation metadata
+    deterministic_components: dict
+    llm_adjustments: dict
+
+
+class SignalEngine:
+    """
+    Derives all signals for WriteGate and Arbitration.
+
+    Principle: Deterministic signals are authoritative.
+    LLM-assisted signals are advisory and bounded.
+    """
+
+    def __init__(self, policy: PolicySurface, llm: Optional['ILLMAdapter'] = None):
+        self.policy = policy
+        self.llm = llm
+
+    def derive(
+        self,
+        turn_input: 'TurnInput',
+        context: 'HRMContext',
+        artifacts: List[str],
+        agent_outputs: Optional[List['AgentOutput']] = None
+    ) -> DerivedSignals:
+        """
+        Derive all signals for this turn.
+
+        Order of operations:
+        1. Compute deterministic signals (authoritative)
+        2. Compute LLM-assisted signals (bounded by deterministic constraints)
+        3. Return combined DerivedSignals
+        """
+        det = self._deterministic(turn_input, context, artifacts, agent_outputs)
+        llm_adj = self._llm_assisted(turn_input, context) if self.llm else {}
+
+        return DerivedSignals(
+            conflict_level=det["conflict_level"],
+            blast_radius=det["blast_radius"],
+            source_quality=self._bounded_signal(
+                det["source_quality_floor"],
+                llm_adj.get("source_quality", 0.5)
+            ),
+            alignment_score=self._bounded_signal(
+                det["alignment_floor"],
+                llm_adj.get("alignment_score", 0.5)
+            ),
+            urgency=det["urgency"],
+            deterministic_components=det,
+            llm_adjustments=llm_adj
+        )
+
+    # ─────────────────────────────────────────────────────────────
+    # DETERMINISTIC SIGNALS (authoritative)
+    # ─────────────────────────────────────────────────────────────
+
+    def _deterministic(
+        self,
+        turn_input: 'TurnInput',
+        context: 'HRMContext',
+        artifacts: List[str],
+        agent_outputs: Optional[List['AgentOutput']]
+    ) -> dict:
+        return {
+            "conflict_level": self._compute_conflict_level(agent_outputs, context),
+            "blast_radius": self._compute_blast_radius(artifacts),
+            "source_quality_floor": self._compute_source_quality_floor(turn_input),
+            "alignment_floor": self._compute_alignment_floor(context),
+            "urgency": self._compute_urgency(turn_input),
+        }
+
+    def _compute_blast_radius(self, artifacts: List[str]) -> BlastRadius:
+        """
+        SEVERE if:
+        - Target is SharedReference or SemanticSynthesis
+
+        MODERATE if:
+        - Touches >3 artifacts/files
+        - Crosses problem boundary
+
+        Else MINIMAL
+        """
+        severe_targets = {"SharedReference", "SemanticSynthesis", "shared_reference", "semantic_synthesis"}
+
+        for artifact in artifacts:
+            if any(t in artifact for t in severe_targets):
+                return BlastRadius.SEVERE
+
+        if len(artifacts) > self.policy.BLAST_RADIUS_FILE_THRESHOLD:
+            return BlastRadius.MODERATE
+
+        return BlastRadius.MINIMAL
+
+    def _compute_conflict_level(
+        self,
+        agent_outputs: Optional[List['AgentOutput']],
+        context: 'HRMContext'
+    ) -> ConflictLevel:
+        """
+        HIGH if:
+        - Two agent outputs disagree AND confidence gap <= 0.3 (true ambiguity)
+        - New claim contradicts SharedReference with high confidence
+
+        MEDIUM if:
+        - Minor contradictions or missing evidence
+
+        LOW/NONE otherwise
+
+        Key: confidence gap <= 0.3 means true ambiguity.
+        If one source is clearly stronger, treat as low conflict.
+        """
+        if not agent_outputs or len(agent_outputs) < 2:
+            return ConflictLevel.NONE
+
+        # Check for agent disagreement
+        confidences = [getattr(o, 'confidence', 0.5) for o in agent_outputs]
+        if len(set(o.content for o in agent_outputs)) > 1:  # Different outputs
+            gap = max(confidences) - min(confidences)
+            if gap <= self.policy.CONFLICT_CONFIDENCE_GAP:
+                return ConflictLevel.HIGH  # True ambiguity
+            else:
+                return ConflictLevel.LOW   # One clearly stronger
+
+        # TODO: Check SharedReference contradictions
+        return ConflictLevel.NONE
+
+    def _compute_source_quality_floor(self, turn_input: 'TurnInput') -> float:
+        """
+        Deterministic floor for source quality.
+        Based on: citation presence, recency, user confirmation.
+
+        Returns floor value (LLM can raise but not lower).
+        """
+        floor = 0.3  # Base
+
+        # User direct input gets higher floor
+        if turn_input.source == "user":
+            floor += 0.2
+
+        # TODO: Add citation counting, recency scoring
+        return min(floor, 0.6)  # Cap deterministic at 0.6
+
+    def _compute_alignment_floor(self, context: 'HRMContext') -> float:
+        """
+        Deterministic floor for alignment score.
+
+        1.0 if matches active commitment
+        0.5 if same problem
+        0.2 otherwise
+        """
+        if context.commitment_id:
+            return 1.0
+        if context.problem_id:
+            return 0.5
+        return 0.2
+
+    def _compute_urgency(self, turn_input: 'TurnInput') -> float:
+        """
+        Deterministic urgency from input signals.
+        """
+        urgency = 0.3  # Base
+
+        # Priority boost
+        if hasattr(turn_input, 'priority'):
+            urgency += turn_input.priority * 0.05
+
+        # TODO: Keyword detection for urgency markers
+        return min(urgency, 1.0)
+
+    # ─────────────────────────────────────────────────────────────
+    # LLM-ASSISTED SIGNALS (bounded by deterministic)
+    # ─────────────────────────────────────────────────────────────
+
+    def _llm_assisted(self, turn_input: 'TurnInput', context: 'HRMContext') -> dict:
+        """
+        Get LLM estimates for judgment-call signals.
+        These are BOUNDED by deterministic floors/ceilings.
+        """
+        if not self.llm:
+            return {}
+
+        # Simple prompt for signal estimation
+        prompt = f"""Rate the following on 0.0-1.0 scale:
+        Input: {turn_input.text[:500]}
+
+        source_quality: How well-grounded/cited is this information?
+        alignment_score: How relevant is this to the user's stated goals?
+
+        Return JSON: {{"source_quality": X, "alignment_score": Y}}"""
+
+        try:
+            response = self.llm.chat(
+                messages=[Message(role="user", content=prompt)],
+                system="You are a signal estimation engine. Return only JSON.",
+                config=LLMCallConfig(temperature=0.1, max_tokens=100)
+            )
+            return json.loads(response.content)
+        except:
+            return {}
+
+    def _bounded_signal(self, deterministic_floor: float, llm_estimate: float) -> float:
+        """
+        Combine deterministic floor with bounded LLM estimate.
+
+        Formula: floor + (ceiling - floor) * llm_weight * llm_estimate
+        Always clamped to [0, 1]
+        """
+        p = self.policy
+        ceiling = p.LLM_SIGNAL_CEILING
+        floor = max(deterministic_floor, p.LLM_SIGNAL_FLOOR)
+
+        # Weighted combination
+        det_weight = 1 - p.LLM_SIGNAL_WEIGHT
+        llm_weight = p.LLM_SIGNAL_WEIGHT
+
+        combined = (det_weight * floor) + (llm_weight * llm_estimate)
+        return max(floor, min(ceiling, combined))
+```
+
+### 12.3 PreemptScoreArbiter
+
+```python
+from dataclasses import dataclass
+from enum import Enum
+from typing import Optional
+
+class ArbitrationDisposition(Enum):
+    STAY = "stay"           # Continue active problem
+    SWITCH = "switch"       # Auto-switch to new problem
+    ASK = "ask"             # Ask user (D tie-breaker)
+    QUEUE = "queue"         # Queue new problem, don't interrupt
+
+@dataclass
+class ArbitrationDecision:
+    """Output of the arbiter."""
+    active_problem_id: str
+    disposition: ArbitrationDisposition
+    preempt_score: float
+    reason: str
+    candidate_problem_id: Optional[str] = None
+
+
+class PreemptScoreArbiter:
+    """
+    Implements arbitration policy C (Priority + TTL) with D (ask user) as tie-breaker.
+
+    Uses 4 terms (cleaner than 5):
+    - priority_term: normalized priority delta
+    - urgency: from SignalEngine
+    - staleness: time since active problem progressed
+    - switch_cost: context switch penalty (includes finish_penalty)
+    """
+
+    def __init__(self, policy: PolicySurface):
+        self.policy = policy
+
+    def decide(
+        self,
+        turn_input: 'TurnInput',
+        focus_state: 'FocusState',
+        problem_registry: 'ProblemRegistry',
+        signals: 'DerivedSignals'
+    ) -> ArbitrationDecision:
+        """
+        Main arbitration entry point.
+
+        Returns ArbitrationDecision with disposition and reason.
+        """
+        active = problem_registry.get_active()
+        candidate = self._identify_candidate(turn_input, problem_registry)
+
+        # No active problem → just switch
+        if not active:
+            return ArbitrationDecision(
+                active_problem_id=candidate.id if candidate else None,
+                disposition=ArbitrationDisposition.SWITCH,
+                preempt_score=1.0,
+                reason="No active problem"
+            )
+
+        # Same problem → stay
+        if candidate and candidate.id == active.id:
+            return ArbitrationDecision(
+                active_problem_id=active.id,
+                disposition=ArbitrationDisposition.STAY,
+                preempt_score=0.0,
+                reason="Input relates to active problem"
+            )
+
+        # Check emergency gate first
+        if self._is_emergency(turn_input, focus_state):
+            return ArbitrationDecision(
+                active_problem_id=candidate.id if candidate else active.id,
+                disposition=ArbitrationDisposition.SWITCH,
+                preempt_score=1.0,
+                reason="Emergency gate triggered",
+                candidate_problem_id=candidate.id if candidate else None
+            )
+
+        # Compute PreemptScore
+        score = self._compute_preempt_score(
+            candidate=candidate,
+            active=active,
+            signals=signals,
+            focus_state=focus_state
+        )
+
+        # Apply thresholds
+        p = self.policy
+        if score >= p.AUTO_PREEMPT_THRESHOLD:
+            disposition = ArbitrationDisposition.SWITCH
+            reason = f"Auto-preempt: score {score:.2f} >= {p.AUTO_PREEMPT_THRESHOLD}"
+        elif score >= p.ASK_BAND_LOW:
+            disposition = ArbitrationDisposition.ASK
+            reason = f"Ask user: score {score:.2f} in ask-band [{p.ASK_BAND_LOW}, {p.ASK_BAND_HIGH})"
+        else:
+            disposition = ArbitrationDisposition.QUEUE
+            reason = f"Queue: score {score:.2f} < {p.ASK_BAND_LOW}"
+
+        return ArbitrationDecision(
+            active_problem_id=active.id,
+            disposition=disposition,
+            preempt_score=score,
+            reason=reason,
+            candidate_problem_id=candidate.id if candidate else None
+        )
+
+    def _compute_preempt_score(
+        self,
+        candidate: Optional['Problem'],
+        active: 'Problem',
+        signals: 'DerivedSignals',
+        focus_state: 'FocusState'
+    ) -> float:
+        """
+        PreemptScore formula (4 terms, weights sum to 1.0):
+
+        score = W_priority * priority_term
+              + W_urgency * urgency
+              + W_staleness * staleness
+              + W_switch_cost * (1 - switch_cost)
+
+        Returns: float in [0, 1]
+        """
+        p = self.policy
+
+        # 1. Priority term: normalize delta to [0, 1]
+        p_new = (candidate.priority if candidate else 5) / p.PRIORITY_SCALE[1]
+        p_active = active.priority / p.PRIORITY_SCALE[1]
+        p_delta = (p_new - p_active + 1) / 2  # Map [-1,1] to [0,1]
+
+        # 2. Urgency: from signals
+        urgency = signals.urgency
+
+        # 3. Staleness: time since progress (normalized)
+        staleness = self._compute_staleness(active)
+
+        # 4. Switch cost: includes commitment remaining penalty
+        switch_cost = self._compute_switch_cost(focus_state)
+
+        # Weighted sum
+        score = (
+            p.WEIGHT_PRIORITY * p_delta +
+            p.WEIGHT_URGENCY * urgency +
+            p.WEIGHT_STALENESS * staleness +
+            p.WEIGHT_SWITCH_COST * (1 - switch_cost)  # Invert: high cost = low score
+        )
+
+        return max(0.0, min(1.0, score))
+
+    def _compute_staleness(self, active: 'Problem') -> float:
+        """
+        How long since active problem progressed.
+        Normalized to [0, 1] over reasonable range.
+        """
+        if not hasattr(active, 'last_progress_at'):
+            return 0.5
+
+        elapsed = (datetime.now() - active.last_progress_at).total_seconds()
+        # Normalize: 0 at 0 min, 1 at 30 min
+        return min(1.0, elapsed / (30 * 60))
+
+    def _compute_switch_cost(self, focus_state: 'FocusState') -> float:
+        """
+        Context switch penalty.
+        Includes: commitment remaining (don't drop work at finish line)
+        """
+        cost = 0.3  # Base switch cost
+
+        # Commitment remaining penalty
+        if focus_state.commitment:
+            remaining_ratio = (
+                focus_state.commitment.turns_remaining /
+                focus_state.commitment.turns_total
+            )
+            # High penalty when near completion (low remaining)
+            finish_penalty = 1 - remaining_ratio
+            cost += 0.4 * finish_penalty
+
+        return min(1.0, cost)
+
+    def _is_emergency(self, turn_input: 'TurnInput', focus_state: 'FocusState') -> bool:
+        """Check if emergency gate conditions are met."""
+        # TODO: Implement emergency detection
+        return False
+
+    def _identify_candidate(
+        self,
+        turn_input: 'TurnInput',
+        problem_registry: 'ProblemRegistry'
+    ) -> Optional['Problem']:
+        """Identify which problem the input relates to."""
+        # TODO: Implement problem identification logic
+        return None
+```
+
+### 12.4 PreferenceClassifier
+
+```python
+import re
+from enum import Enum
+from dataclasses import dataclass
+from typing import Optional
+
+class PreferenceClass(Enum):
+    """
+    Preference classification for write-time enforcement.
+
+    EXPLICIT: User stated it clearly → can promote to SharedReference
+    INFERRED_CONFIRM_REQUIRED: Pattern detected → needs user YES
+    INFERRED_SILENT: Observation only → WorkingSet only
+    BEHAVIORAL: Usage pattern → Episodic only, never promotes
+    """
+    EXPLICIT = "pref_explicit"
+    INFERRED_CONFIRM_REQUIRED = "pref_inferred_confirm_required"
+    INFERRED_SILENT = "pref_inferred_silent"
+    BEHAVIORAL = "pref_behavioral"
+
+
+@dataclass
+class PreferenceClassification:
+    """Result of preference classification."""
+    preference_class: PreferenceClass
+    statement: str
+    matched_pattern: Optional[str]
+    confidence: float
+    can_canonize: bool              # Can write to SharedReference?
+    needs_confirmation: bool        # Must ask user first?
+
+
+class PreferenceClassifier:
+    """
+    Classifies statements for preference truth model.
+
+    One-shot canonization rule:
+    - Tier 1 (auto-canon): Clear preferences stated in context
+    - Tier 2 (confirm required): Inferred patterns
+    - Tier 3 (silent): Observations only
+    - Tier 4 (behavioral): Usage patterns, never promotes
+
+    Canonize immediately if statement matches preference/identity pattern:
+    - "I prefer...", "I hate...", "I always...", "I never..."
+    - "I'm the kind of person who..."
+    - AND the object is a stable preference/habit (not one-off observation)
+    """
+
+    def __init__(self, policy: PolicySurface):
+        self.policy = policy
+        self._patterns = [re.compile(p, re.IGNORECASE) for p in policy.PREFERENCE_PATTERNS]
+
+    def classify(self, statement: str, source: str = "user") -> PreferenceClassification:
+        """
+        Classify a statement for preference handling.
+
+        Args:
+            statement: The text to classify
+            source: Who said it (user, agent, system)
+
+        Returns:
+            PreferenceClassification with class and permissions
+        """
+        # Check for explicit preference patterns
+        matched_pattern = self._match_preference_pattern(statement)
+
+        if matched_pattern and source == "user":
+            # User explicitly stated a preference → Tier 1
+            return PreferenceClassification(
+                preference_class=PreferenceClass.EXPLICIT,
+                statement=statement,
+                matched_pattern=matched_pattern,
+                confidence=0.9,
+                can_canonize=True,
+                needs_confirmation=False
+            )
+
+        if self._is_behavioral_observation(statement):
+            # Usage pattern observation → Tier 4 (behavioral)
+            return PreferenceClassification(
+                preference_class=PreferenceClass.BEHAVIORAL,
+                statement=statement,
+                matched_pattern=None,
+                confidence=0.7,
+                can_canonize=False,
+                needs_confirmation=False
+            )
+
+        if self._looks_like_preference(statement):
+            # Might be a preference but not explicitly stated → Tier 2
+            return PreferenceClassification(
+                preference_class=PreferenceClass.INFERRED_CONFIRM_REQUIRED,
+                statement=statement,
+                matched_pattern=None,
+                confidence=0.5,
+                can_canonize=True,  # Can canonize IF user confirms
+                needs_confirmation=True
+            )
+
+        # Default: silent observation → Tier 3
+        return PreferenceClassification(
+            preference_class=PreferenceClass.INFERRED_SILENT,
+            statement=statement,
+            matched_pattern=None,
+            confidence=0.3,
+            can_canonize=False,
+            needs_confirmation=False
+        )
+
+    def _match_preference_pattern(self, statement: str) -> Optional[str]:
+        """Check if statement matches explicit preference patterns."""
+        for pattern in self._patterns:
+            if pattern.search(statement):
+                return pattern.pattern
+        return None
+
+    def _is_behavioral_observation(self, statement: str) -> bool:
+        """Check if this is a behavioral observation (not a stated preference)."""
+        behavioral_markers = [
+            r"user (often|usually|tends to)",
+            r"(noticed|observed) that",
+            r"based on (history|past|patterns)",
+            r"statistically",
+        ]
+        for marker in behavioral_markers:
+            if re.search(marker, statement, re.IGNORECASE):
+                return True
+        return False
+
+    def _looks_like_preference(self, statement: str) -> bool:
+        """Heuristic: does this look like it might be a preference?"""
+        preference_indicators = [
+            r"(like|prefer|enjoy|want|need)",
+            r"(don't like|hate|avoid|dislike)",
+            r"(better|worse|rather)",
+        ]
+        for indicator in preference_indicators:
+            if re.search(indicator, statement, re.IGNORECASE):
+                return True
+        return False
+```
+
+### 12.5 GovernanceKernel (Unified Interface)
+
+```python
+@dataclass
+class GovernanceKernel:
+    """
+    Single interface that ties all governance decisions together.
+
+    Usage:
+        kernel = GovernanceKernel.create()
+        signals = kernel.derive_signals(turn_input, context, artifacts)
+        decision = kernel.arbitrate(turn_input, focus_state, problem_registry)
+        pref_class = kernel.classify_preference(statement)
+    """
+    policy: PolicySurface
+    signal_engine: SignalEngine
+    arbiter: PreemptScoreArbiter
+    preference_classifier: PreferenceClassifier
+
+    @classmethod
+    def create(cls, llm: Optional['ILLMAdapter'] = None) -> 'GovernanceKernel':
+        """Factory method with default policy."""
+        policy = PolicySurface()
+        policy.validate()
+
+        return cls(
+            policy=policy,
+            signal_engine=SignalEngine(policy, llm),
+            arbiter=PreemptScoreArbiter(policy),
+            preference_classifier=PreferenceClassifier(policy)
+        )
+
+    def arbitrate(
+        self,
+        turn_input: 'TurnInput',
+        focus_state: 'FocusState',
+        problem_registry: 'ProblemRegistry'
+    ) -> ArbitrationDecision:
+        """
+        Main arbitration entry point.
+
+        Derives signals, then decides: stay | switch | ask | queue
+        """
+        signals = self.signal_engine.derive(
+            turn_input=turn_input,
+            context=focus_state.context,
+            artifacts=[],
+            agent_outputs=None
+        )
+
+        return self.arbiter.decide(
+            turn_input=turn_input,
+            focus_state=focus_state,
+            problem_registry=problem_registry,
+            signals=signals
+        )
+
+    def derive_signals(
+        self,
+        turn_input: 'TurnInput',
+        context: 'HRMContext',
+        artifacts: list,
+        agent_outputs: list = None
+    ) -> DerivedSignals:
+        """
+        Derive all signals for WriteGate and other consumers.
+        """
+        return self.signal_engine.derive(
+            turn_input=turn_input,
+            context=context,
+            artifacts=artifacts,
+            agent_outputs=agent_outputs
+        )
+
+    def classify_preference(self, statement: str, source: str = "user") -> PreferenceClassification:
+        """
+        Classify a statement for preference truth model.
+        """
+        return self.preference_classifier.classify(statement, source)
+
+    def check_interrupt_condition(self, condition: str) -> bool:
+        """
+        Check if a condition warrants user interrupt.
+        """
+        return condition in self.policy.INTERRUPT_CONDITIONS
+```
+
+### 12.6 Integration with WriteGate
+
+```python
+# Update to WriteGate to use GovernanceKernel
+
+class WriteGate:
+    """
+    Updated WriteGate that uses GovernanceKernel for signals and preference handling.
+    """
+
+    def __init__(self, kernel: GovernanceKernel):
+        self.kernel = kernel
+
+    def evaluate(self, request: WriteRequest) -> WriteDecision:
+        """
+        Evaluate write request using kernel-derived signals.
+        """
+        signals = request.signals  # Already derived by kernel
+
+        # Check preference class if this is a preference write
+        if request.is_preference:
+            pref_class = self.kernel.classify_preference(
+                str(request.value),
+                source=request.source
+            )
+
+            # Enforce preference truth model
+            if pref_class.preference_class == PreferenceClass.BEHAVIORAL:
+                return WriteDecision(
+                    approved=True,
+                    target="episodic_trace",  # Behavioral → Episodic only
+                    reason="Behavioral observation: Episodic only"
+                )
+
+            if pref_class.preference_class == PreferenceClass.INFERRED_SILENT:
+                return WriteDecision(
+                    approved=True,
+                    target="working_set",  # Silent → WorkingSet only
+                    reason="Inferred silent: WorkingSet only"
+                )
+
+            if pref_class.needs_confirmation:
+                return WriteDecision(
+                    approved=False,
+                    target=request.target,
+                    reason="Preference requires user confirmation",
+                    conditions=["needs_user_confirmation"]
+                )
+
+        # Standard WriteGate rules using signals
+        if signals.blast_radius == BlastRadius.SEVERE:
+            if signals.source_quality < 0.7:
+                return WriteDecision(
+                    approved=False,
+                    target=request.target,
+                    reason="SEVERE blast radius requires high source quality"
+                )
+
+        if signals.conflict_level == ConflictLevel.HIGH:
+            return WriteDecision(
+                approved=True,
+                target="working_set",  # Conflict → WorkingSet only
+                reason="HIGH conflict: redirected to WorkingSet"
+            )
+
+        return WriteDecision(
+            approved=True,
+            target=request.target,
+            reason="Write approved"
+        )
+```
+
+### 12.7 Integration with Focus HRM
+
+```python
+# Focus HRM calls kernel for arbitration
+
+class FocusHRM:
+    def __init__(self, kernel: GovernanceKernel, ...):
+        self.kernel = kernel
+        ...
+
+    def process_turn(self, turn_input: TurnInput) -> FocusResult:
+        """
+        Main turn processing with kernel arbitration.
+        """
+        # Step 1: Arbitrate (which problem?)
+        arbitration = self.kernel.arbitrate(
+            turn_input=turn_input,
+            focus_state=self._get_focus_state(),
+            problem_registry=self.problem_registry
+        )
+
+        # Step 2: Handle disposition
+        if arbitration.disposition == ArbitrationDisposition.ASK:
+            # Surface to user (D tie-breaker)
+            return FocusResult(
+                action="ask_user",
+                message=f"Interrupt current work? (score: {arbitration.preempt_score:.2f})",
+                arbitration=arbitration
+            )
+
+        if arbitration.disposition == ArbitrationDisposition.SWITCH:
+            self._switch_to_problem(arbitration.candidate_problem_id)
+
+        if arbitration.disposition == ArbitrationDisposition.QUEUE:
+            self._queue_problem(arbitration.candidate_problem_id)
+
+        # Step 3: Continue with active problem
+        return self._execute_turn(turn_input)
+```
+
+---
+
 ## Appendix: Implementation Checklist
 
 For each interface, implementation must:

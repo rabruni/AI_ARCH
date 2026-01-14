@@ -13,15 +13,6 @@ venv/
 # Secrets - NEVER commit
 .env
 
-# Legacy state (archived)
-/state/checkpoints/
-
-# Memory and feedback (personal data - NEVER commit)
-the_assist/memory/store/
-the_assist/memory/state/checkpoints/
-the_assist/hrm/memory/
-the_assist/feedback/
-
 # IDE
 .idea/
 .vscode/
@@ -46,3 +37,7 @@ Downloads/
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
+
+# Runtime data (if applicable)
+/data/
+/output/

@@ -85,3 +85,59 @@ The current `the_assist/hrm/` is being replaced by the **Locked System** archite
 - Read `SESSION_HANDOFF.md` for current project state and next steps
 - Update `the_assist/docs/LEARNINGS.md` with session patterns
 - Commitment persists via leases; conversation is ephemeral
+
+## CRITICAL: Context Compaction Recovery
+
+If you see "This session is being continued from a previous conversation":
+
+**STOP. DO NOT PROCEED BASED ON SUMMARY ALONE.**
+
+1. **READ THESE FILES FIRST:**
+   - `DECISIONS.md` - All design decisions
+   - `BUILD_PROCESS.md` - Build instructions and file locations
+   - `capabilities_v2.csv` - Component inventory with EXACT locations
+
+2. **VERIFY WITH USER:**
+   - "What milestone are we on?"
+   - "What was the last completed work?"
+
+3. **CHECK FILE LOCATIONS:**
+   - Reasoning HRM goes in `the_assist/reasoning/` NOT `locked_system/core/`
+   - Learning HRM goes in `the_assist/learning/` NOT `locked_system/core/`
+   - Memory Bus goes in `shared/memory/` NOT `locked_system/core/`
+
+**Background:** 12 hours of work was nearly lost because an agent after context compaction built modules in wrong locations without reading the specs. Don't repeat this mistake.
+
+## Canonical Spec Files
+
+| File | Purpose | Authority |
+|------|---------|-----------|
+| `DECISIONS.md` | All design decisions | HIGHEST - read first |
+| `BUILD_PROCESS.md` | Build instructions | Required before implementation |
+| `DOPEJAR_ARCHITECTURE.md` | System architecture | Design reference |
+| `capabilities_v2.csv` | File locations | EXACT paths for all files |
+| `HRM_INTERFACE_SPECS.md` | API contracts | Interface definitions |
+| `IMPLEMENTATION_ORDER.md` | Build sequence | Milestone order |
+
+## Conventions
+
+### run.sh Files (ALWAYS DO THIS)
+
+Every runnable application MUST have a `run.sh` at its root. When creating or modifying entry points:
+
+1. **Always update `run.sh`** - User starts apps via `./run.sh`, never raw python commands
+2. **Root run.sh** (`/run.sh`) - Master launcher with options for all apps
+3. **Package run.sh** (`/locked_system/run.sh`, etc.) - Package-specific launcher
+
+```bash
+# User always runs:
+./run.sh              # Default (frontdoor demo)
+./run.sh assist       # The Assist HRM
+./run.sh locked       # Locked System CLI
+./run.sh test         # Run tests
+```
+
+When adding a new entry point:
+- Add option to root `run.sh`
+- Create package-level `run.sh` if needed
+- Update help text in both

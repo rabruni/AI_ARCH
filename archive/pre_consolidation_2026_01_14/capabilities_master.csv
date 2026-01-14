@@ -1,0 +1,166 @@
+Capability,Location,HRM_Layer,Purpose,Function,Depends_On,Priority,Has_Tests,Needs_Tests,Test_Type,Success_Criteria,Exit_Criteria,Percent,Status,Notes
+# ============================================================
+# ALTITUDE HRM (Scope Governance - L4/L3/L2/L1)
+# ============================================================
+altitude.py,the_assist/hrm/,Altitude,Scope governance,Governs attention scope via L4-L1 levels,None,P0,No,Yes,Unit+Integration,"Level detection accurate >90%; Descent blocking works; Fast lane triggers correctly","All level transitions tested; Friction detection works",95%,Active,"Core of altitude system. Token-efficient patterns already exist."
+loop.py,the_assist/hrm/,Altitude,HRM orchestration,Coordinates planner/evaluator/executor by altitude,altitude.py,P0,No,Yes,Integration,"Orchestrates correctly at each level; Integrates with history.py","Full turn cycle works at all 4 levels",85%,Active,"Integration with history.py pending"
+planner.py,the_assist/hrm/,Altitude,Planning layer,Generates plans at current altitude,altitude.py;loop.py,P1,No,Yes,Unit+Integration,"Plans respect altitude constraints; Submits to Focus HRM for validation","Plans at L4/L3/L2/L1 all generate correctly",75%,Active,"Should use Focus HRM gates for validation"
+evaluator.py,the_assist/hrm/,Altitude,Evaluation layer,Assesses plans and results,altitude.py;loop.py,P1,No,Yes,Unit+Integration,"Evaluation scores accurate; Integrates with continuous_eval","Evaluation at all levels works; Feedback loop closed",75%,Active,"Should integrate with Focus HRM continuous_eval"
+executor.py,the_assist/hrm/,Execution layer,Runs approved actions,planner.py;evaluator.py,P1,No,Yes,Integration,"All writes delegated to Focus HRM; No direct side effects","Execution audit trail complete",70%,Active,"MUST delegate writes to Focus HRM - currently doesn't"
+history.py,the_assist/hrm/,Altitude,Session history,Stores session summaries with timestamps and search,None,P1,No,Yes,Unit,"start_session/record_exchange/end_session work; Continuity detection >80%","Session persistence verified; Search works",100%,Active,"Fully implemented. Lazy loading pattern."
+intent.py,the_assist/hrm/,Altitude,Intent detection,Detects user intent from input,None,P2,No,Yes,Unit,"Intent classification >80% accuracy","All intent types detected correctly",60%,Active,"Should unify with Focus HRM signal detection"
+main_hrm.py,the_assist/,Altitude,Entry point,Initializes altitude governance and runs main loop,loop.py;altitude.py,P0,No,Yes,Integration,"Boot sequence completes; Wired to Focus HRM","End-to-end turn works",90%,Active,"Entry point for Altitude HRM"
+# ============================================================
+# FOCUS HRM (Control Governance - Gates/Stance/Lanes)
+# ============================================================
+loop.py,locked_system/,Focus,Two-tempo loop,Runs slow governance + fast execution,stance.py;gates.py,P0,No,Yes,Integration,"Slow/fast tempo correct; Gate enforcement works","Full governance cycle tested",85%,Active,"Core governance loop"
+stance.py,locked_system/slow_loop/,Focus,Stance machine,4 states: sensemaking/discovery/execution/eval,None,P0,Yes,Yes,Unit,"State transitions valid; Invalid transitions blocked","All 4 states + transitions tested",90%,Active,"test_* files exist"
+gates.py,locked_system/slow_loop/,Focus,Gate controller,Enforces checkpoints before state changes,stance.py,P0,Yes,Yes,Unit+Integration,"Gates block unauthorized actions; Approval flow works","All gate types tested",90%,Active,"Security critical"
+commitment.py,locked_system/slow_loop/,Focus,Commitment manager,Tracks commitments with leases,gates.py,P1,No,Yes,Unit,"Lease expiry works; Commitment tracking accurate","Lease lifecycle tested",85%,Active,"Works"
+bootstrap.py,locked_system/slow_loop/,Focus,Bootstrap protocol,2-stage first-contact (intro + connect),None,P2,No,Yes,Integration,"Bootstrap flow completes; User data captured","Full bootstrap cycle tested",90%,Orphan,"Move to Altitude HRM experience layer"
+executor.py,locked_system/fast_loop/,Focus,Fast executor,Runs approved actions quickly,gates.py,P0,Yes,Yes,Unit+Integration,"Only approved actions execute; Audit trail complete","All action types tested",80%,Active,"Works"
+hrm.py,locked_system/fast_loop/,Focus,HRM bridge,Connects Altitude HRM to Focus HRM,executor.py,P1,No,Yes,Integration,"Bridge passes data correctly both directions","Round-trip data integrity verified",70%,Active,"Bridge layer"
+continuous_eval.py,locked_system/fast_loop/,Focus,Continuous eval,Monitors execution quality,executor.py,P1,No,Yes,Unit,"Quality signals accurate; Triggers escalation correctly","All signal types tested",75%,Active,"Works"
+# ============================================================
+# FOCUS HRM - Front Door (Routing)
+# ============================================================
+agent.py,locked_system/front_door/,Focus,Front-door routing,Detects signals and proposes gates/bundles,signals.py;bundles.py,P1,Yes,Yes,Integration,"Signal→Gate mapping correct; Bundle proposals valid","All signal types route correctly",85%,Active,"Cognitive router - proposal only"
+signals.py,locked_system/front_door/,Focus,Signal detection,Detects intent signals from input,None,P1,Yes,Yes,Unit,"Signal detection >85% accuracy","All signal types detected",85%,Active,"Detection logic stays in Focus HRM"
+bundles.py,locked_system/front_door/,Focus,Bundle definitions,Defines agent bundles (writer/finance/monitor),None,P2,No,Yes,Unit,"Bundle composition correct","All bundle types defined",90%,Active,"Move to Altitude HRM"
+emotional.py,locked_system/front_door/,Focus,Emotional telemetry,Bounded emotional state enums,None,P2,Yes,Yes,Unit,"Emotional signals bounded; No authority leakage","All emotional states tested",90%,Active,"Well bounded"
+# ============================================================
+# FOCUS HRM - Agents
+# ============================================================
+models.py,locked_system/agents/,Focus,Agent models,Data classes for agents,None,P1,Yes,Yes,Unit,"Models serialize/deserialize correctly","All agent model types tested",90%,Active,"Stable"
+loader.py,locked_system/agents/,Focus,Agent loader,Loads agent definitions from YAML,models.py,P1,Yes,Yes,Unit+Integration,"YAML loading works; Validation catches errors","All agent YAML files load correctly",85%,Active,"Works"
+firewall.py,locked_system/agents/,Focus,Packet firewall,Validates agent outputs,models.py,P0,Yes,Yes,Unit,"Blocks forbidden packets; Allows valid packets","All packet validation rules tested",85%,Active,"Security critical"
+runtime.py,locked_system/agents/,Focus,Agent runtime,Invokes agents and gets packets,firewall.py;loader.py,P1,Yes,Yes,Integration,"Agent invocation works; Packets returned correctly","All orchestration modes tested",80%,Active,"Works"
+orchestrator.py,locked_system/agents/,Focus,Agent orchestrator,Multi-agent orchestration modes,runtime.py,P1,No,Yes,Integration,"Single/router/panel/chain modes work","All modes tested with multiple agents",75%,Active,"Has modes but needs testing"
+agent.py,locked_system/agents/base/,Focus,Base agent class,Abstract base for agents,None,P2,No,Yes,Unit,"Base class contracts enforced","Inheritance tested",60%,Stub,"Needs implementation"
+# ============================================================
+# FOCUS HRM - Tools
+# ============================================================
+models.py,locked_system/tools/,Focus,Tool models,Data classes for tools,None,P1,Yes,Yes,Unit,"Models serialize/deserialize correctly","All tool model types tested",90%,Active,"Stable"
+registry.py,locked_system/tools/,Focus,Tool registry,Loads and manages tool specs,models.py,P1,Yes,Yes,Unit,"Registry loads all specs; Lookup works","All tool specs registered",85%,Active,"Works"
+runtime.py,locked_system/tools/,Focus,Tool runtime (PEP),Executes approved tool calls,registry.py;decision.py,P0,Yes,Yes,Unit+Integration,"Only approved tools execute; Audit trail complete","All tool types tested with allow/deny",85%,Active,"Security critical - PEP"
+decision.py,locked_system/tools/,Focus,Decision pipeline (PDP),Evaluates allow/deny for requests,None,P0,Yes,Yes,Unit,"Allow/deny decisions correct; Obligations attached","All decision rules tested",85%,Active,"Security critical - PDP"
+base.py,locked_system/tools/connectors/,Focus,Connector base,Abstract connector interface,None,P1,No,Yes,Unit,"Interface contracts enforced","Connector inheritance tested",90%,Active,"Clean interface"
+local_fs.py,locked_system/tools/connectors/,Focus,Filesystem connector,Implements file operations,base.py,P1,Yes,Yes,Unit+Integration,"Read/write/list work; Sandbox enforced","All FS operations tested within sandbox",85%,Active,"Sandboxed access"
+# ============================================================
+# FOCUS HRM - Lanes
+# ============================================================
+models.py,locked_system/lanes/,Focus,Lane models,Data classes for lanes,None,P1,Yes,Yes,Unit,"Models serialize/deserialize correctly","All lane model types tested",90%,Active,"From spec"
+store.py,locked_system/lanes/,Focus,Lane store,Persists lane state,models.py,P1,Yes,Yes,Unit+Integration,"CRUD operations work; State persists correctly","Lane lifecycle tested",85%,Active,"Works"
+gates.py,locked_system/lanes/,Focus,Lane gates,WorkDeclaration and LaneSwitch gates,store.py,P1,Yes,Yes,Unit+Integration,"Gate triggers correct; Lane state updated","All lane gate types tested",85%,Active,"Works"
+# ============================================================
+# FOCUS HRM - Executor Pipeline
+# ============================================================
+pipeline.py,locked_system/executor/,Focus,Execution pipeline,Full turn execution flow,gates.py (multiple),P0,Yes,Yes,Integration,"Full turn executes correctly; All gates fire","End-to-end turn tested",80%,Active,"Works"
+gates.py,locked_system/executor/,Focus,Executor gates,WriteApproval and other gates,None,P0,Yes,Yes,Unit,"WriteApproval required for all writes","All executor gates tested",85%,Active,"Consent enforcement"
+# ============================================================
+# FOCUS HRM - Memory (Token-Optimized)
+# ============================================================
+slow.py,locked_system/memory/,Focus,Slow memory,Long-term memory storage,None,P1,No,Yes,Unit+Integration,"Persist/retrieve works; No data loss","Memory lifecycle tested",80%,Active,"Works"
+fast.py,locked_system/memory/,Focus,Fast memory,Short-term working memory,None,P1,No,Yes,Unit,"Cache hits correct; Expiry works","Cache behavior tested",75%,Active,"Works"
+bridge.py,locked_system/memory/,Focus,Memory bridge,Connects fast and slow memory,fast.py;slow.py,P1,No,Yes,Integration,"Promotion/demotion works correctly","Bridge operations tested",70%,Partial,"Needs completion"
+consent.py,locked_system/memory/,Focus,Consent tracking,Tracks user consent for writes,None,P1,No,Yes,Unit,"Consent state accurate; Revocation works","All consent operations tested",80%,Active,"Important for governance"
+# ============================================================
+# ALTITUDE HRM - Memory (Token-Optimized - 60% reduction)
+# ============================================================
+memory.py,the_assist/core/,Altitude,Original memory,Hierarchical file-based memory,None,P2,No,Yes,Unit,"CRUD works; Context builds correctly","Memory operations tested",85%,Active,"v1 - still works"
+memory_v2.py,the_assist/core/,Altitude,Compressed memory,Token-efficient with codes/patterns,None,P0,No,Yes,Unit+Integration,"60% token reduction achieved; Pattern codes work","Token efficiency verified; All pattern codes tested",70%,Active,"KEY: Extend to Learning HRM"
+curator.py,the_assist/core/,Altitude,Memory curator,Manages memory lifecycle and pruning,memory_v2.py,P1,No,Yes,Unit+Integration,"Daily/weekly curation works; Pruning accurate","Curation cycle tested",80%,Active,"Good implementation - extend to Learning HRM"
+# ============================================================
+# FOCUS HRM - Signals
+# ============================================================
+state.py,locked_system/signals/,Focus,Signal state,Tracks signal state,None,P2,No,Yes,Unit,"State updates correct","Signal state lifecycle tested",70%,Active,"Works"
+collector.py,locked_system/signals/,Focus,Signal collector,Collects signals for processing,state.py,P2,No,Yes,Unit,"Collection accurate; No signal loss","Collection tested",70%,Active,"Works"
+computer.py,locked_system/signals/,Focus,Signal computer,Computes derived signals,collector.py,P2,No,Yes,Unit,"Computation accurate","All derived signals tested",60%,Partial,"Needs completion"
+# ============================================================
+# FOCUS HRM - Sensing
+# ============================================================
+perception.py,locked_system/sensing/,Focus,Perception sensing,Senses environment state,None,P2,No,Yes,Unit,"Perception accurate","All perception types tested",60%,Partial,"Partial implementation"
+contrast.py,locked_system/sensing/,Focus,Contrast detection,Detects contradictions/changes,perception.py,P3,No,Yes,Unit,"Contradiction detection works","Contrast scenarios tested",50%,Experimental,"Experimental"
+# ============================================================
+# FOCUS HRM - Proposals
+# ============================================================
+buffer.py,locked_system/proposals/,Focus,Proposal buffer,Buffers proposals for evaluation,None,P1,No,Yes,Unit,"Buffer FIFO correct; No proposal loss","Buffer operations tested",80%,Active,"Works"
+# ============================================================
+# FOCUS HRM - Capabilities (Gated)
+# ============================================================
+registry.py,locked_system/capabilities/,Focus,Capability registry,Registers gated capabilities,delegation.py,P1,No,Yes,Unit,"Registration works; Permission checks correct","All capabilities registered and checked",40%,Stub,"Needs capability definitions"
+delegation.py,locked_system/core/governance/,Focus,Delegation leases,Explicit scoped time-bounded authority grants,None,P0,No,Yes,Unit+Integration,"Lease grant/revoke/check works; Expiry correct","Full lease lifecycle tested",30%,Stub,"KEY for capability gating"
+tool.py,locked_system/capabilities/note_capture/,Focus,Note capture tool,Gated note writing,registry.py;delegation.py,P1,No,Yes,Integration,"Gated writes work; Ungated blocked","Note capture with/without delegation tested",30%,Stub,"Replaces notes.py"
+notes.py,locked_system/,Focus,Note capture (ungated),Writes notes without governance,None,P3,No,No,N/A,"N/A - to be replaced","N/A",85%,Risk,"REMOVE after gated version works"
+# ============================================================
+# FOCUS HRM - Prompt Compilation
+# ============================================================
+prompt_compiler.py,locked_system/core/execution/,Focus,Prompt compiler,Enforces prompt precedence (laws last),None,P1,No,Yes,Unit,"Precedence enforced; Override detection works","All precedence scenarios tested",90%,Active,"Use this for all prompt building"
+# ============================================================
+# ALTITUDE HRM - Core Components
+# ============================================================
+orchestrator.py,the_assist/core/,Altitude,Original orchestrator,Main loop before HRM added,memory.py,P3,No,No,N/A,"N/A - legacy","N/A",80%,Deprecate,"Legacy - keep for reference"
+feedback.py,the_assist/core/,Altitude,Feedback collection,Logs what works/doesn't for iteration,None,P1,No,Yes,Unit,"Logging works; Summary accurate","All feedback types logged and retrieved",95%,Active,"KEY for Learning HRM"
+integrity.py,the_assist/core/,Shared,System integrity,Boot/shutdown with checkpointing,None,P0,No,Yes,Unit+Integration,"Boot/shutdown clean; Hash verification works","Full boot/shutdown cycle tested",100%,Active,"Move to shared/"
+proactive.py,the_assist/core/,Altitude,Proactive suggestions,Generates unprompted helpful suggestions,memory_v2.py,P2,No,Yes,Unit,"Suggestions relevant; Timing appropriate","Proactive trigger scenarios tested",60%,Active,"Basic implementation"
+retrospective.py,the_assist/core/,Altitude,Session retrospective,End-of-session summary and learning,memory_v2.py,P2,No,Yes,Integration,"Summary accurate; Learning captured","Retrospective cycle tested",65%,Active,"Wire to HRM loop"
+formatter.py,the_assist/core/,UI,Output formatter,Formats responses for display,None,P2,No,Yes,Unit,"Formatting correct","All format types tested",80%,Active,"Move to the_assist/ui/"
+# ============================================================
+# ALTITUDE HRM - Personality/Adapters
+# ============================================================
+injector.py,the_assist/personality/,Altitude,Personality injector,Injects personality traits into prompts,None,P2,No,Yes,Unit,"Injection correct; Traits preserved","All personality traits tested",70%,Active,"Wire to HRM loop"
+intent_to_commitment.py,the_assist/adapters/,Bridge,Intent adapter,Converts intents to commitments for Focus HRM,None,P1,No,Yes,Integration,"Conversion accurate; Focus HRM accepts","All intent types converted",60%,Active,"Bridge - needs work"
+# ============================================================
+# UI (Centralized)
+# ============================================================
+chat_ui.py,locked_system/cli/,UI,Chat UI,Terminal chat interface,None,P2,No,Yes,Unit,"UI renders correctly","All UI states tested",70%,Active,"Move to the_assist/ui/"
+display.py,locked_system/signals/,UI,Signal display,Displays signal state,None,P3,No,Yes,Unit,"Display accurate","All signal displays tested",70%,Active,"Move to the_assist/ui/"
+demo_front_door.py,locked_system/,UI,Front-door demo,Demo chat with routing,None,P2,No,Yes,Integration,"Demo works end-to-end","Demo scenario tested",70%,Active,"Move to the_assist/"
+# ============================================================
+# TESTS (Existing)
+# ============================================================
+test_lanes.py,locked_system/tests/,Test,Lane tests,Unit tests for lanes,lanes/*,P0,Yes,N/A,Unit,"All lane tests pass","100% pass rate",90%,Active,"Good coverage"
+test_tools.py,locked_system/tests/,Test,Tool tests,Unit tests for tools,tools/*,P0,Yes,N/A,Unit,"All tool tests pass","100% pass rate",90%,Active,"Good coverage"
+test_agents.py,locked_system/tests/,Test,Agent tests,Unit tests for agents,agents/*,P0,Yes,N/A,Unit,"All agent tests pass","100% pass rate",85%,Active,"Good coverage"
+test_executor.py,locked_system/tests/,Test,Executor tests,Unit tests for executor,executor/*,P0,Yes,N/A,Unit,"All executor tests pass","100% pass rate",80%,Active,"Good coverage"
+test_front_door.py,locked_system/tests/,Test,Front-door tests,Unit tests for front-door,front_door/*,P0,Yes,N/A,Unit,"All front-door tests pass","100% pass rate",85%,Active,"Good coverage"
+test_l2_fastlane.py,AI_ARCH/,Test,L2 fastlane tests,Tests L2 atomic fast lane,altitude.py,P1,Yes,N/A,Unit,"All fastlane tests pass","100% pass rate",100%,Active,"New test file"
+# ============================================================
+# REASONING HRM (Signal Router - NEW)
+# ============================================================
+router.py,the_assist/reasoning/,Reasoning,Signal router,Routes reasoning based on detected signals,signals.py;altitude.py,P1,No,Yes,Unit+Integration,"Signal→Strategy mapping >85% accurate; Escalation/de-escalation works","All signal types route to correct strategy",0%,Missing,"NEW: Core of Reasoning HRM"
+strategies.py,the_assist/reasoning/,Reasoning,Reasoning strategies,Defines CoT/decomposition/verification/etc,None,P1,No,Yes,Unit,"Strategy injection works; LLM follows strategy","All strategy types tested",0%,Missing,"NEW: Strategy definitions"
+classifier.py,the_assist/reasoning/,Reasoning,Request classifier,Classifies request type for routing,None,P1,No,Yes,Unit,"Classification >85% accurate","All request types classified correctly",0%,Missing,"NEW: Could use lightweight model"
+escalation.py,the_assist/reasoning/,Reasoning,Escalation logic,Handles uncertainty/conflict/horizon signals,router.py,P1,No,Yes,Unit+Integration,"Escalation triggers correctly; De-escalation works","All escalation scenarios tested",0%,Missing,"NEW: 5.1-5.4 signal handling"
+# ============================================================
+# LEARNING HRM (Pattern Memory - NEW)
+# ============================================================
+patterns.py,the_assist/learning/,Learning,Pattern store,Stores successful signal→routing→outcome patterns,memory_v2.py,P1,No,Yes,Unit+Integration,"Pattern storage works; Retrieval accurate","Pattern CRUD tested",0%,Missing,"NEW: Extends memory_v2 compressed format"
+trimmer.py,the_assist/learning/,Learning,Pattern trimmer,Removes stale/unused patterns,patterns.py,P2,No,Yes,Unit,"Trimming rules correct; No over-trimming","Trim scenarios tested",0%,Missing,"NEW: Self-management"
+generalizer.py,the_assist/learning/,Learning,Pattern generalizer,Abstracts specific patterns to general,patterns.py,P2,No,Yes,Unit,"Generalization accurate; Specifics removed","Generalization scenarios tested",0%,Missing,"NEW: Pattern abstraction"
+feedback_loop.py,the_assist/learning/,Learning,Feedback integration,Connects feedback.py outcomes to patterns,patterns.py;feedback.py,P1,No,Yes,Integration,"Feedback→Pattern learning works","Learning cycle tested",0%,Missing,"NEW: Closes the learning loop"
+# ============================================================
+# SHARED (Cross-Layer)
+# ============================================================
+integrity.py,shared/,Shared,Cross-layer integrity,Boot/shutdown for both layers,None,P0,No,Yes,Unit+Integration,"Both layers use same integrity","Cross-layer boot tested",0%,Missing,"NEW: Move from the_assist/core/"
+# ============================================================
+# UI (Centralized - NEW)
+# ============================================================
+__init__.py,the_assist/ui/,UI,UI package,Centralized UI module,None,P2,No,Yes,Unit,"Package imports work","Package structure tested",0%,Missing,"NEW: Consolidate all UI"
+colors.py,the_assist/ui/,UI,Color definitions,ANSI colors and themes,None,P2,No,Yes,Unit,"Colors render correctly","All color codes tested",0%,Missing,"NEW: From demo_front_door"
+display.py,the_assist/ui/,UI,Display utilities,Consolidated display functions,colors.py,P2,No,Yes,Unit,"All display types work","Display scenarios tested",0%,Missing,"NEW: Consolidate formatter + signal display"
+announcements.py,the_assist/ui/,UI,Agent announcements,Agent engagement display,colors.py,P2,No,Yes,Unit,"Announcements render correctly","All announcement types tested",0%,Missing,"NEW: From demo_front_door"
+# ============================================================
+# ADAPTERS (LLM - NEW)
+# ============================================================
+llm.py,the_assist/adapters/,Adapter,LLM adapter,Connects to LLM providers,None,P0,No,Yes,Unit+Integration,"Claude/OpenAI/local work; Config respected","All providers tested",0%,Missing,"NEW: Needed for integration"
+llm_config.yaml,the_assist/config/,Config,LLM configuration,Model selection and parameters,None,P1,No,No,N/A,"N/A - config file","Config loads correctly",0%,Missing,"NEW: model_id/temperature/max_tokens/provider"
+# ============================================================
+# DUPLICATES (To Merge)
+# ============================================================
+stance.py,locked_system/core/governance/,Focus,Core stance (duplicate),Duplicate of slow_loop/stance.py,None,P3,No,No,N/A,"N/A - delete after merge","N/A",50%,Duplicate,"DELETE - merge to slow_loop/"
+commitment.py,locked_system/core/governance/,Focus,Core commitment (duplicate),Duplicate of slow_loop/commitment.py,None,P3,No,No,N/A,"N/A - delete after merge","N/A",50%,Duplicate,"DELETE - merge to slow_loop/"
+gates.py,locked_system/core/governance/,Focus,Core gates (duplicate),Duplicate of slow_loop/gates.py,None,P3,No,No,N/A,"N/A - delete after merge","N/A",50%,Duplicate,"DELETE - merge to slow_loop/"
+executor.py,locked_system/core/execution/,Focus,Core executor (duplicate),Duplicate of fast_loop/executor.py,None,P3,No,No,N/A,"N/A - delete after merge","N/A",50%,Duplicate,"DELETE - merge to fast_loop/"
+hrm.py,locked_system/core/execution/,Focus,Core HRM (duplicate),Duplicate of fast_loop/hrm.py,None,P3,No,No,N/A,"N/A - delete after merge","N/A",50%,Duplicate,"DELETE - merge to fast_loop/"
+continuous_eval.py,locked_system/core/execution/,Focus,Core eval (duplicate),Duplicate of fast_loop/continuous_eval.py,None,P3,No,No,N/A,"N/A - delete after merge","N/A",50%,Duplicate,"DELETE - merge to fast_loop/"

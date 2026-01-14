@@ -1,0 +1,97 @@
+Capability,Location,Purpose,Function,Constraint,Status,Change,Questions,Percent,Response
+history.py,the_assist/hrm/,Session history,Stores session summaries with timestamps and search,Experience - keep in assist,New,Keep,,100%,"FULLY IMPLEMENTED. Has: start_session, record_exchange, end_session, search_sessions, is_continuity_question detector. Best use: call start_session on boot, record_exchange after each turn (with topics), end_session on quit. The is_continuity_question() detects 'what were we doing' patterns and loads context only when needed - lazy loading."
+integrity.py,the_assist/core/,System integrity,Boot/shutdown with checkpointing and hash verification,Experience - keep in assist,Active,Keep,,100%,"FULLY IMPLEMENTED. Has preflight checks, boot sequence, shutdown sequence, hash-based corruption detection, version log. SHOULD BE GLOBAL - both layers need integrity. Move to shared/ or have locked_system import from the_assist."
+test_l2_fastlane.py,AI_ARCH/,L2 fastlane tests,Tests L2 atomic fast lane,Keep at root,New,Keep,,100%,New test file
+altitude.py,the_assist/hrm/,Altitude governance,Defines L4/L3/L2/L1 levels and transitions,Experience - keep in assist,Active,Keep,,95%,H/R/M = Horizon(L4-3)/Risk(L3-2)/Moment(L2-1). These are ZONES not levels. Horizon=strategic thinking. Risk=where drift happens. Moment=execution. HRM acronym is confusing because levels are L4-L1 but the zones are what matter for governance.
+feedback.py,the_assist/core/,Feedback collection,Logs what works/doesn't for iteration,Experience - keep in assist,Active,Keep,,95%,"WORKS WELL. log_feedback(type='worked|didnt_work|suggestion', note, context, tags). Stores to JSON. get_feedback_summary() and get_session_feedback(since_time) for review. Use it: log_feedback('worked', 'altitude descent blocked me correctly') or ('didnt_work', 'too preachy'). Tags enable filtering later."
+main_hrm.py,the_assist/,Entry point for HRM experience,Initializes altitude governance and runs main loop,Experience - keep in assist,Active,Keep,,90%,Fully functional - just needs wiring to locked_system for writes
+entities.py,the_assist/core/,Entity types,Data models for core,Experience - keep in assist,Active,Keep,,90%,Stable
+settings.py,the_assist/config/,Configuration,App settings and paths,Experience - keep in assist,Active,Keep,,90%,Works
+config.py,locked_system/,Configuration,Governance settings,Governance - keep in locked,Active,Keep,,90%,Works
+stance.py,locked_system/slow_loop/,Stance machine,4 states: sensemaking/discovery/execution/eval,Governance - keep in locked,Active,Keep,,90%,Fully functional
+gates.py,locked_system/slow_loop/,Gate controller,Enforces checkpoints before state changes,Governance - keep in locked,Active,Keep,,90%,Security critical - well implemented
+bootstrap.py,locked_system/slow_loop/,Bootstrap protocol,2-stage first-contact (intro + connect),Move to assist,Active,Move,,90%,"FULLY IMPLEMENTED but orphaned. Integration: slow_loop should check is_active on boot. If true, run bootstrap.process_input() instead of normal flow until BootstrapTransitionProposal is returned. Then transition to normal operation. Bootstrap captures user_name and favorite_things."
+bundles.py,locked_system/front_door/,Bundle definitions,Defines agent bundles (writer/finance/monitor),Can move to assist,Active,Move to Assist,,90%,Experience configuration - belongs in assist
+emotional.py,locked_system/front_door/,Emotional telemetry,Bounded emotional state enums,Governance - keep in locked,Active,Keep,,90%,Well bounded - stays in governance
+models.py,locked_system/agents/,Agent models,Data classes for agents,Governance - keep in locked,Active,Keep,,90%,Stable
+models.py,locked_system/tools/,Tool models,Data classes for tools,Governance - keep in locked,Active,Keep,,90%,Stable
+base.py,locked_system/tools/connectors/,Connector base,Abstract connector interface,Governance - keep in locked,Active,Keep,,90%,Clean interface
+models.py,locked_system/lanes/,Lane models,Data classes for lanes,Governance - keep in locked,Active,Keep,,90%,From spec
+prompt_compiler.py,locked_system/core/execution/,Prompt compiler,Enforces prompt precedence (laws last),Governance - keep in locked,New,Keep,,90%,"FULLY IMPLEMENTED. Compiles prompts with: 1) Agent context (sandboxed), 2) Executor constraints, 3) Core laws (LAST = highest precedence). Has override detection. Use this instead of ad-hoc prompt building."
+run.sh,AI_ARCH/,Root launcher,Dispatches to experiences,Experience - keep at root,Active,Keep,,90%,Works
+test_lanes.py,locked_system/tests/,Lane tests,Unit tests for lanes,Keep in tests,Active,Keep,,90%,Good coverage
+test_tools.py,locked_system/tests/,Tool tests,Unit tests for tools,Keep in tests,Active,Keep,,90%,Good coverage
+loop.py,the_assist/hrm/,HRM orchestration,Coordinates planner/evaluator/executor by altitude,Experience - keep in assist,Active,Keep,,85%,Core loop works. Integration with history.py pending.
+memory.py,the_assist/core/,Original memory,Compressed memory system,Experience - keep in assist,Active,Keep,,85%,Works well. Should integrate with locked_system memory bridge
+main.py,locked_system/,Main entry,Primary locked_system entry point,Governance - keep in locked,Active,Keep,,85%,Works
+main.py,locked_system/cli/,CLI entry,Command-line interface,Governance - keep in locked,Active,Keep,,85%,Works
+loop.py,locked_system/,Two-tempo loop,Runs slow governance + fast execution,Governance - keep in locked,Active,Keep,,85%,Core loop works
+commitment.py,locked_system/slow_loop/,Commitment manager,Tracks commitments with leases,Governance - keep in locked,Active,Keep,,85%,Works
+agent.py,locked_system/front_door/,Front-door routing,Detects signals and proposes gates/bundles,Can move to assist,Active,Keep,Does this go through the locked system?,85%,NOT a duplicate. This routes USER INPUT to appropriate AGENTS based on detected signals. Flow: user says 'help me write' → signal detector sees FORMAL_WORK → proposes WorkDeclarationGate → proposes writer bundle. The 'agent routing' means: detect intent → select agent(s) → propose gates. It's the cognitive router.
+signals.py,locked_system/front_door/,Signal detection,Detects intent signals from input,Split - logic stays,Active,Split,,85%,Detection logic is governance. UI display can move.
+loader.py,locked_system/agents/,Agent loader,Loads agent definitions from YAML,Governance - keep in locked,Active,Keep,,85%,Works
+firewall.py,locked_system/agents/,Packet firewall,Validates agent outputs,Governance - keep in locked,Active,Keep,,85%,Security critical
+registry.py,locked_system/tools/,Tool registry,Loads and manages tool specs,Governance - keep in locked,Active,Keep,,85%,Works
+runtime.py,locked_system/tools/,Tool runtime (PEP),Executes approved tool calls,Governance - keep in locked,Active,Keep,,85%,Security critical - PEP
+decision.py,locked_system/tools/,Decision pipeline (PDP),Evaluates allow/deny for requests,Governance - keep in locked,Active,Keep,,85%,Security critical - PDP
+local_fs.py,locked_system/tools/connectors/,Filesystem connector,Implements file operations,Governance - keep in locked,Active,Keep,,85%,Sandboxed access
+store.py,locked_system/lanes/,Lane store,Persists lane state,Governance - keep in locked,Active,Keep,,85%,Works
+gates.py,locked_system/lanes/,Lane gates,WorkDeclaration and LaneSwitch gates,Governance - keep in locked,Active,Keep,,85%,Works
+gates.py,locked_system/executor/,Executor gates,WriteApproval and other gates,Governance - keep in locked,Active,Keep,,85%,Consent enforcement
+notes.py,locked_system/,Note capture (ungated),Writes notes without governance,Move to capabilities/gated,Risk,Fix,"Let's only imliment the gated approach first, see how it works",85%,"RISK: Bypasses governance. For scratchpad/scratch writes: create two tiers. 1) Scratch: ephemeral, no gate needed, auto-expires (like /tmp). 2) Persist: requires WriteApprovalGate. Notes should be 'persist' tier. Scratchpad for thinking/draft work could be ungated but auto-cleaned."
+test_agents.py,locked_system/tests/,Agent tests,Unit tests for agents,Keep in tests,Active,Keep,,85%,Good coverage
+test_front_door.py,locked_system/tests/,Front-door tests,Unit tests for front-door,Keep in tests,Active,Keep,,85%,Good coverage
+orchestrator.py,the_assist/core/,Experience orchestrator,Multi-agent coordinator with Perception+HRM agents and proactive engine,Experience - keep in assist,Active,Keep,,90%,"NOT LEGACY - Active experience orchestrator. Uses: 1) Multi-agent architecture (Perception+HRM agents with Chinese walls), 2) AI reflection feedback loop for self-calibration, 3) CompressedMemory v2, 4) ProactiveEngine for intuition-first interaction, 5) Predictive perception. DIFFERENT from hrm/loop.py which handles altitude governance. This is the CHAT layer, altitude HRM is the GOVERNANCE layer."
+curator.py,the_assist/core/,Memory curator,Manages memory lifecycle and pruning,Experience - keep in assist,Active,Keep,,80%,Good implementation
+formatter.py,the_assist/core/,Output formatter,Formats responses for display,Experience - move to ui/,Active,Move to UI,,80%,Should centralize with all UI
+session_logger.py,locked_system/cli/,Session logging,Logs sessions to files,Governance - keep in locked,Active,Keep,,80%,Good for audit
+executor.py,locked_system/fast_loop/,Fast executor,Runs approved actions quickly,Governance - keep in locked,Active,Keep,,80%,Works
+runtime.py,locked_system/agents/,Agent runtime,Invokes agents and gets packets,Governance - keep in locked,Active,Keep,,80%,Works
+pipeline.py,locked_system/executor/,Execution pipeline,Full turn execution flow,Governance - keep in locked,Active,Keep,,80%,Works
+slow.py,locked_system/memory/,Slow memory,Long-term memory storage,Governance - keep in locked,Active,Keep,,80%,Works
+consent.py,locked_system/memory/,Consent tracking,Tracks user consent for writes,Governance - keep in locked,Active,Keep,,80%,Important for governance
+buffer.py,locked_system/proposals/,Proposal buffer,Buffers proposals for evaluation,Governance - keep in locked,Active,Keep,,80%,Works
+test_executor.py,locked_system/tests/,Executor tests,Unit tests for executor,Keep in tests,Active,Keep,,80%,Good coverage
+planner.py,the_assist/hrm/,Planning layer,Generates plans at current altitude,Experience - keep in assist,Active,Keep,isn't the integration critical?,75%,Works but doesn't yet use locked_system gates for validation
+evaluator.py,the_assist/hrm/,Evaluation layer,Assesses plans and results,Experience - keep in assist,Active,Keep,integrate,75%,Works standalone. Should integrate with continuous_eval from locked
+continuous_eval.py,locked_system/fast_loop/,Continuous eval,Monitors execution quality,Governance - keep in locked,Active,Keep,,75%,Works
+orchestrator.py,locked_system/agents/,Agent orchestrator,Multi-agent orchestration modes,Governance - keep in locked,Active,Keep,,75%,Has modes but needs testing
+fast.py,locked_system/memory/,Fast memory,Short-term working memory,Governance - keep in locked,Active,Keep,,75%,Works
+executor.py,the_assist/hrm/,Execution layer,Runs approved actions,Experience - keep in assist,Active,Keep,,70%,Should delegate ALL writes to locked_system - currently doesn't
+memory_v2.py,the_assist/core/,Memory v2,Enhanced memory with tiering,Experience - keep in assist,Active,Keep,,70%,Partial - some features stubbed
+injector.py,the_assist/personality/,Personality injector,Injects personality traits into prompts,Experience - keep in assist,Active,Keep,,70%,Works but not used by HRM loop
+chat_ui.py,locked_system/cli/,Chat UI,Terminal chat interface,Move to assist ui/,Active,Move to UI,,70%,UI should centralize
+hrm.py,locked_system/fast_loop/,HRM bridge,Connects HRM to governance,Governance - keep in locked,Active,Keep,,70%,Bridge layer
+demo_front_door.py,locked_system/,Front-door demo,Demo chat with agent routing and LLM,Move to assist,Active,Move,,70%,"WORKS but is a demo. Shows: agent announcements, bundle activation, signal detection, LLM integration. Should move to the_assist as the unified experience entry point."
+bridge.py,locked_system/memory/,Memory bridge,Connects fast and slow memory,Governance - keep in locked,Active,Keep,,70%,Partial
+state.py,locked_system/signals/,Signal state,Tracks signal state,Governance - keep in locked,Active,Keep,,70%,Works
+collector.py,locked_system/signals/,Signal collector,Collects signals for processing,Governance - keep in locked,Active,Keep,,70%,Works
+display.py,locked_system/signals/,Signal display,Displays signal state,Move to assist ui/,Active,Move to UI,,70%,UI concern
+run.sh,locked_system/,Locked launcher,Runs locked standalone,Governance - keep in locked,Active,Keep,,70%,"GOOD QUESTION. The locked_system standalone is for: 1) Testing governance without experience layer, 2) Direct API access for programmatic use. The LLM is NOT managing governance - governance CONSTRAINS the LLM. Think of it as: LLM proposes, governance approves/denies. Standalone is fine for dev/test but production should go through the_assist."
+retrospective.py,the_assist/core/,Session retrospective,End-of-session summary and learning,Experience - keep in assist,Active,Keep,,65%,Works but not wired to HRM loop
+history.py,locked_system/memory/,Memory history,History tracking for memory,Governance - keep in locked,Active,Keep,,65%,Basic
+main.py,the_assist/,Legacy entry point,Calls main_hrm or original orchestrator,Experience - keep in assist,Active,Merge,,60%,Has two code paths - should merge into main_hrm for clarity
+intent.py,the_assist/hrm/,Intent detection,Detects user intent from input,Experience - keep in assist,Active,Keep,,60%,Basic patterns. Should unify with locked_system signal detection
+proactive.py,the_assist/core/,Proactive suggestions,Generates unprompted helpful suggestions,Experience - keep in assist,Active,Keep,,60%,Basic implementation
+intent_to_commitment.py,the_assist/adapters/,Intent adapter,Converts intents to commitments for locked,Experience - keep in assist,Active,Keep,,60%,Bridge to locked_system - needs work
+agent.py,locked_system/agents/base/,Base agent class,Abstract base for agents,Governance - keep in locked,Active,Keep,,60%,Stub - needs implementation
+perception.py,locked_system/sensing/,Perception sensing,Senses environment state,Governance - keep in locked,Active,Keep,,60%,Partial
+computer.py,locked_system/signals/,Signal computer,Computes derived signals,Governance - keep in locked,Active,Keep,,60%,Partial
+ai_reflection.py,the_assist/core/,AI self-reflection,Meta-cognition about own responses,Experience - keep in assist,Active,Keep,,50%,Experimental
+hrm_agent.py,the_assist/core/,HRM agent wrapper,Wraps HRM for orchestrator,Experience - keep in assist,Active,Keep,,50%,Bridge code - may be redundant with hrm/
+contrast.py,locked_system/sensing/,Contrast detection,Detects contradictions/changes,Governance - keep in locked,Active,Keep,,50%,Experimental
+stance.py,locked_system/core/governance/,Core stance,Governance stance (new location),Governance - keep in locked,Duplicate,Merge,,50%,Duplicate of slow_loop/stance.py - merge
+commitment.py,locked_system/core/governance/,Core commitment,Governance commitment (new location),Governance - keep in locked,Duplicate,Merge,,50%,Duplicate of slow_loop/commitment.py - merge
+gates.py,locked_system/core/governance/,Core gates,Governance gates (new location),Governance - keep in locked,Duplicate,Merge,,50%,Duplicate of slow_loop/gates.py - merge
+executor.py,locked_system/core/execution/,Core executor,Execution (new location),Governance - keep in locked,Duplicate,Merge,,50%,Duplicate of fast_loop/executor.py
+hrm.py,locked_system/core/execution/,Core HRM,HRM bridge (new location),Governance - keep in locked,Duplicate,Merge,,50%,Duplicate of fast_loop/hrm.py
+continuous_eval.py,locked_system/core/execution/,Core eval,Continuous eval (new location),Governance - keep in locked,Duplicate,Merge,,50%,Duplicate of fast_loop/continuous_eval.py
+perception_agent.py,the_assist/core/,Perception agent,Senses context and state,Experience - keep in assist,Active,Keep,,40%,Partial implementation
+main_locked.py,the_assist/,Locked integration entry,Runs assist with locked_system governance,Experience - keep in assist,Active,Keep,,40%,Partial - integration incomplete
+registry.py,locked_system/capabilities/,Capability registry,Registers gated capabilities,Governance - keep in locked,New,Keep,,40%,Stub - needs capability definitions
+delegation.py,locked_system/core/governance/,Delegation leases,Explicit scoped time-bounded authority grants,Governance - keep in locked,New,Keep,,30%,STUB - needs implementation. Key feature for capability gating.
+tool.py,locked_system/capabilities/note_capture/,Note capture tool,Gated note writing,Governance - keep in locked,New,Keep,,30%,Stub - supposed to replace notes.py
+MISSING: LLM adapter,the_assist/adapters/llm.py,LLM abstraction,Connect to different LLM providers,Experience - create in assist,Missing,Create,,0%,"NEEDS CREATION. Should have: base interface, Claude adapter, config file (llm_config.yaml) for model selection, API keys via env vars. Config should support: model_id, temperature, max_tokens, provider (anthropic/openai/local)."
+MISSING: UI module,the_assist/ui/,Centralized UI,All display and formatting,Experience - create in assist,Missing,Create,,0%,"NEEDS CREATION. Consolidate: formatter.py, signal display, chat_ui.py, demo_front_door colors. Single source for all presentation."
+MISSING: Shared integrity,shared/integrity.py,Cross-layer integrity,Boot/shutdown for both layers,Create shared/,Missing,Create,,0%,Both layers need integrity. Create shared/ directory for cross-cutting concerns.
+MISSING: Scratchpad capability,locked_system/capabilities/scratch/,Ephemeral scratch space,Ungated temp storage that auto-expires,Governance - in locked,Missing,Create,,0%,For 'thinking out loud' without gate overhead. Auto-cleans on session end. No persistence.

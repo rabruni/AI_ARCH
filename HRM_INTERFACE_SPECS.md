@@ -1752,6 +1752,460 @@ class HRMConfig:
 
 ---
 
+## 11. LLM Adapter Interface
+
+The LLM Adapter abstracts all language model calls. Every HRM component that needs to generate text uses this interface.
+
+### 11.1 Core Adapter Protocol
+
+```python
+from typing import Iterator, Optional, Callable
+from abc import ABC, abstractmethod
+
+class ILLMAdapter(Protocol):
+    """
+    Abstract interface for LLM providers.
+    All HRM components use this - never call providers directly.
+    """
+
+    def chat(
+        self,
+        messages: list[Message],
+        system: str,
+        config: Optional[LLMCallConfig] = None
+    ) -> LLMResponse:
+        """
+        Synchronous chat completion.
+
+        Args:
+            messages: Conversation history
+            system: System prompt (compiled by PromptCompiler)
+            config: Optional override for model/temperature/etc.
+
+        Returns:
+            LLMResponse with content and metadata
+        """
+        ...
+
+    def stream(
+        self,
+        messages: list[Message],
+        system: str,
+        config: Optional[LLMCallConfig] = None
+    ) -> Iterator[StreamChunk]:
+        """
+        Streaming chat completion.
+
+        Yields:
+            StreamChunk with delta content
+        """
+        ...
+
+    def count_tokens(
+        self,
+        text: str
+    ) -> int:
+        """
+        Count tokens for budget management.
+        """
+        ...
+
+    @property
+    def provider(self) -> str:
+        """Return provider name (anthropic, openai, etc.)"""
+        ...
+
+    @property
+    def model(self) -> str:
+        """Return current model ID."""
+        ...
+```
+
+### 11.2 Data Types
+
+```python
+@dataclass
+class Message:
+    """Single message in conversation."""
+    role: str                     # user | assistant | system
+    content: str
+    timestamp: Optional[datetime] = None
+    metadata: Optional[dict] = None
+
+@dataclass
+class LLMCallConfig:
+    """Per-call configuration overrides."""
+    model: Optional[str] = None           # Override default model
+    temperature: Optional[float] = None   # 0.0 - 1.0
+    max_tokens: Optional[int] = None
+    stop_sequences: Optional[list[str]] = None
+    timeout_ms: Optional[int] = None
+
+    # Cost controls
+    max_input_tokens: Optional[int] = None
+    max_output_tokens: Optional[int] = None
+
+@dataclass
+class LLMResponse:
+    """Response from synchronous chat."""
+    content: str
+    model: str
+    provider: str
+
+    # Usage stats
+    input_tokens: int
+    output_tokens: int
+    total_tokens: int
+
+    # Metadata
+    finish_reason: str            # stop | length | content_filter
+    latency_ms: int
+    request_id: Optional[str] = None
+
+    def cost_estimate(self, pricing: dict) -> float:
+        """Estimate cost based on token counts."""
+        input_cost = self.input_tokens * pricing.get("input_per_1k", 0) / 1000
+        output_cost = self.output_tokens * pricing.get("output_per_1k", 0) / 1000
+        return input_cost + output_cost
+
+@dataclass
+class StreamChunk:
+    """Single chunk from streaming response."""
+    delta: str                    # New content
+    accumulated: str              # All content so far
+    done: bool                    # Is this the final chunk?
+    finish_reason: Optional[str] = None
+```
+
+### 11.3 Provider Implementations
+
+```python
+class ClaudeAdapter(ILLMAdapter):
+    """Anthropic Claude implementation."""
+
+    def __init__(self, config: LLMConfig):
+        self.client = anthropic.Anthropic(api_key=config.api_key)
+        self._model = config.model or "claude-sonnet-4-20250514"
+        self._default_config = config
+
+    def chat(
+        self,
+        messages: list[Message],
+        system: str,
+        config: Optional[LLMCallConfig] = None
+    ) -> LLMResponse:
+        cfg = self._merge_config(config)
+
+        start = time.time()
+        response = self.client.messages.create(
+            model=cfg.model or self._model,
+            max_tokens=cfg.max_tokens or 4096,
+            temperature=cfg.temperature or 0.7,
+            system=system,
+            messages=[{"role": m.role, "content": m.content} for m in messages]
+        )
+        latency = int((time.time() - start) * 1000)
+
+        return LLMResponse(
+            content=response.content[0].text,
+            model=response.model,
+            provider="anthropic",
+            input_tokens=response.usage.input_tokens,
+            output_tokens=response.usage.output_tokens,
+            total_tokens=response.usage.input_tokens + response.usage.output_tokens,
+            finish_reason=response.stop_reason,
+            latency_ms=latency,
+            request_id=response.id
+        )
+
+    def stream(
+        self,
+        messages: list[Message],
+        system: str,
+        config: Optional[LLMCallConfig] = None
+    ) -> Iterator[StreamChunk]:
+        cfg = self._merge_config(config)
+        accumulated = ""
+
+        with self.client.messages.stream(
+            model=cfg.model or self._model,
+            max_tokens=cfg.max_tokens or 4096,
+            temperature=cfg.temperature or 0.7,
+            system=system,
+            messages=[{"role": m.role, "content": m.content} for m in messages]
+        ) as stream:
+            for text in stream.text_stream:
+                accumulated += text
+                yield StreamChunk(
+                    delta=text,
+                    accumulated=accumulated,
+                    done=False
+                )
+
+            yield StreamChunk(
+                delta="",
+                accumulated=accumulated,
+                done=True,
+                finish_reason=stream.get_final_message().stop_reason
+            )
+
+    def count_tokens(self, text: str) -> int:
+        # Use anthropic's token counter
+        return self.client.count_tokens(text)
+
+    @property
+    def provider(self) -> str:
+        return "anthropic"
+
+    @property
+    def model(self) -> str:
+        return self._model
+
+
+class OpenAIAdapter(ILLMAdapter):
+    """OpenAI GPT implementation."""
+
+    def __init__(self, config: LLMConfig):
+        self.client = openai.OpenAI(api_key=config.api_key)
+        self._model = config.model or "gpt-4o"
+        self._default_config = config
+
+    def chat(
+        self,
+        messages: list[Message],
+        system: str,
+        config: Optional[LLMCallConfig] = None
+    ) -> LLMResponse:
+        cfg = self._merge_config(config)
+
+        # OpenAI includes system in messages
+        all_messages = [{"role": "system", "content": system}]
+        all_messages.extend([{"role": m.role, "content": m.content} for m in messages])
+
+        start = time.time()
+        response = self.client.chat.completions.create(
+            model=cfg.model or self._model,
+            max_tokens=cfg.max_tokens or 4096,
+            temperature=cfg.temperature or 0.7,
+            messages=all_messages
+        )
+        latency = int((time.time() - start) * 1000)
+
+        return LLMResponse(
+            content=response.choices[0].message.content,
+            model=response.model,
+            provider="openai",
+            input_tokens=response.usage.prompt_tokens,
+            output_tokens=response.usage.completion_tokens,
+            total_tokens=response.usage.total_tokens,
+            finish_reason=response.choices[0].finish_reason,
+            latency_ms=latency,
+            request_id=response.id
+        )
+
+    # stream() implementation similar...
+
+    @property
+    def provider(self) -> str:
+        return "openai"
+
+    @property
+    def model(self) -> str:
+        return self._model
+```
+
+### 11.4 LLM Configuration
+
+```python
+@dataclass
+class LLMConfig:
+    """Global LLM configuration."""
+
+    # Provider selection
+    provider: str = "anthropic"           # anthropic | openai
+    api_key: Optional[str] = None         # Or use env var
+    api_key_env: str = "ANTHROPIC_API_KEY"  # Fallback to env
+
+    # Model defaults
+    model: str = "claude-sonnet-4-20250514"
+    temperature: float = 0.7
+    max_tokens: int = 4096
+
+    # Rate limiting
+    requests_per_minute: int = 60
+    tokens_per_minute: int = 100000
+
+    # Retry policy
+    max_retries: int = 3
+    retry_delay_ms: int = 1000
+    retry_on: list[str] = field(default_factory=lambda: [
+        "rate_limit",
+        "timeout",
+        "server_error"
+    ])
+
+    # Cost tracking
+    track_costs: bool = True
+    cost_alert_threshold: float = 10.0    # Alert if session exceeds $
+
+    @classmethod
+    def from_yaml(cls, path: str) -> 'LLMConfig':
+        """Load from YAML config file."""
+        with open(path) as f:
+            data = yaml.safe_load(f)
+        return cls(**data)
+
+    @classmethod
+    def from_env(cls) -> 'LLMConfig':
+        """Load from environment variables."""
+        return cls(
+            provider=os.getenv("LLM_PROVIDER", "anthropic"),
+            api_key=os.getenv("ANTHROPIC_API_KEY") or os.getenv("OPENAI_API_KEY"),
+            model=os.getenv("LLM_MODEL", "claude-sonnet-4-20250514"),
+            temperature=float(os.getenv("LLM_TEMPERATURE", "0.7")),
+            max_tokens=int(os.getenv("LLM_MAX_TOKENS", "4096"))
+        )
+```
+
+### 11.5 Adapter Factory
+
+```python
+class LLMAdapterFactory:
+    """Creates appropriate adapter based on config."""
+
+    _adapters: dict[str, type] = {
+        "anthropic": ClaudeAdapter,
+        "openai": OpenAIAdapter,
+    }
+
+    @classmethod
+    def create(cls, config: LLMConfig) -> ILLMAdapter:
+        """
+        Create adapter for configured provider.
+
+        Usage:
+            config = LLMConfig.from_env()
+            llm = LLMAdapterFactory.create(config)
+            response = llm.chat(messages, system_prompt)
+        """
+        adapter_class = cls._adapters.get(config.provider)
+        if not adapter_class:
+            raise ValueError(f"Unknown provider: {config.provider}")
+
+        return adapter_class(config)
+
+    @classmethod
+    def register(cls, provider: str, adapter_class: type) -> None:
+        """Register custom adapter."""
+        cls._adapters[provider] = adapter_class
+```
+
+### 11.6 Usage in HRM Components
+
+```python
+# Example: How Reasoning HRM uses the adapter
+
+class ReasoningRouter:
+    def __init__(
+        self,
+        llm: ILLMAdapter,          # Injected dependency
+        classifier: InputClassifier,
+        ...
+    ):
+        self.llm = llm
+        self.classifier = classifier
+
+    def _classify_with_llm(self, input: TurnInput) -> InputClassification:
+        """Use LLM for complex classification."""
+        response = self.llm.chat(
+            messages=[Message(role="user", content=input.text)],
+            system=CLASSIFICATION_PROMPT,
+            config=LLMCallConfig(
+                temperature=0.3,      # Low temp for classification
+                max_tokens=500        # Short response needed
+            )
+        )
+        return self._parse_classification(response.content)
+
+
+# Example: How agents use the adapter
+
+class WritingAgent:
+    def __init__(self, llm: ILLMAdapter):
+        self.llm = llm
+
+    def generate(self, prompt: str, context: AgentContext) -> str:
+        """Generate content using LLM."""
+        for chunk in self.llm.stream(
+            messages=[Message(role="user", content=prompt)],
+            system=self._build_system_prompt(context),
+            config=LLMCallConfig(
+                temperature=0.8,      # Higher temp for creativity
+                max_tokens=2000
+            )
+        ):
+            yield chunk.delta        # Stream to UI
+
+        return chunk.accumulated     # Return full response
+```
+
+### 11.7 Error Handling
+
+```python
+class LLMError(HRMError):
+    """Base class for LLM errors."""
+    pass
+
+class RateLimitError(LLMError):
+    """Rate limit exceeded."""
+    def __init__(self, retry_after_ms: int):
+        self.retry_after_ms = retry_after_ms
+
+class TokenLimitError(LLMError):
+    """Input or output exceeded token limit."""
+    def __init__(self, limit: int, actual: int):
+        self.limit = limit
+        self.actual = actual
+
+class ContentFilterError(LLMError):
+    """Content blocked by safety filter."""
+    pass
+
+class ProviderError(LLMError):
+    """Provider-side error (5xx, etc.)"""
+    def __init__(self, status_code: int, message: str):
+        self.status_code = status_code
+        self.message = message
+```
+
+### 11.8 Configuration File Example
+
+```yaml
+# config/llm.yaml
+provider: anthropic
+model: claude-sonnet-4-20250514
+temperature: 0.7
+max_tokens: 4096
+
+# Rate limiting
+requests_per_minute: 60
+tokens_per_minute: 100000
+
+# Retry policy
+max_retries: 3
+retry_delay_ms: 1000
+retry_on:
+  - rate_limit
+  - timeout
+  - server_error
+
+# Cost tracking
+track_costs: true
+cost_alert_threshold: 10.0
+```
+
+---
+
 ## Appendix: Implementation Checklist
 
 For each interface, implementation must:

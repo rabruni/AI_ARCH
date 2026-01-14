@@ -130,7 +130,7 @@ test_l2_fastlane.py,AI_ARCH/,Tests,L2 Fastlane Tests,Tests L2 atomic fast lane,A
 # ADAPTERS
 # ============================================================
 intent_to_commitment.py,the_assist/adapters/,Adapters,Intent Adapter,Converts intents to commitments,Active,60%,-,P2,"Bridge to locked_system."
-llm.py,the_assist/adapters/,Adapters,LLM Adapter,LLM provider abstraction,Missing,0%,-,P0,"NEEDS CREATION. Claude/OpenAI adapters."
+llm.py,the_assist/adapters/,Adapters,LLM Adapter,LLM provider abstraction,Specified,0%,-,P0,"Interface spec complete. Claude/OpenAI adapters. See HRM_INTERFACE_SPECS.md Section 11."
 # ============================================================
 # DUPLICATES TO MERGE
 # ============================================================

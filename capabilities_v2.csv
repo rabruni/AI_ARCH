@@ -152,5 +152,6 @@ notes.py,locked_system/,Capabilities,Note Capture (ungated),Writes notes without
 bootstrap.py,locked_system/slow_loop/,Bootstrap,Bootstrap Protocol,2-stage first-contact,Active,90%,-,P2,"Fully implemented but orphaned. Needs integration."
 prompt_compiler.py,locked_system/core/execution/,Prompts,Prompt Compiler,Enforces prompt precedence,New,90%,-,P0,"Laws LAST. Agent context sandboxed."
 delegation.py,locked_system/core/governance/,Governance,Delegation Leases,Explicit scoped time-bounded grants,New,30%,-,P1,"Stub. Key for capability gating."
+governance_kernel.py,locked_system/core/governance/,Governance,Governance Kernel,Unified policy module,Specified,0%,-,P0,"NEW: PolicySurface + SignalEngine + PreemptScoreArbiter + PreferenceClassifier. Section 12."
 injector.py,the_assist/personality/,Personality,Personality Injector,Injects personality traits,Active,70%,-,P3,"Not used by HRM loop."
 demo_front_door.py,locked_system/,Demo,Front-door Demo,Demo with agent routing,Active,70%,-,P3,"Move to the_assist."

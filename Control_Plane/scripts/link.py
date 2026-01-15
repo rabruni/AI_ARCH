@@ -320,7 +320,7 @@ def cmd_orphans():
             item = items[item_id][0]
             name = item.get("name", "?")
             status = item.get("status", "?")
-            print(f"  {item_id}: {name} ({status})")
+            print(f"  {name:40} {status:10} ({item_id})")
 
     print(f"\nTotal: {len(orphans)} orphans")
     return 0
@@ -341,7 +341,7 @@ def cmd_roots():
         item = items[item_id][0]
         name = item.get("name", "?")
         status = item.get("status", "?")
-        print(f"  {item_id}: {name} ({status})")
+        print(f"  {name:40} {status:10} ({item_id})")
 
     print(f"\nTotal: {len(roots)} roots")
     return 0

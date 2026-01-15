@@ -114,7 +114,10 @@ def get_verb_prompt_path(item: dict, verb: str) -> Optional[Path]:
     # Check item-specific prompt path
     path_key = f"{verb}_prompt_path"
     if path_key in item and item[path_key]:
-        return resolve_path(item[path_key])
+        resolved = resolve_path(item[path_key])
+        if resolved.is_file():
+            return resolved
+        # Item path doesn't exist, fall through to standard
 
     # Fall back to standard verb prompt
     if verb in VERB_PROMPTS:
@@ -152,7 +155,7 @@ def cmd_list():
             name = p.get("name", "?")
             status = p.get("status", "?")
             selected = "✓" if p.get("selected", "").lower() == "yes" else " "
-            print(f"  [{selected}] {pid:12} {status:10} {name}")
+            print(f"  [{selected}] {name:35} {status:10} ({pid})")
 
     print(f"\nTotal: {len(rows)} prompts")
     return 0

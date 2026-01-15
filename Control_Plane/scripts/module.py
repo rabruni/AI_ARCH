@@ -169,7 +169,7 @@ def cmd_list():
             mod_id = mod.get("module_id", "?")
             name = mod.get("name", "?")
             status = mod.get("status", "?")
-            print(f"  {mod_id:15} {status:10} {name}")
+            print(f"  {name:30} {status:10} ({mod_id})")
 
     print(f"\nTotal: {len(rows)} modules")
     return 0

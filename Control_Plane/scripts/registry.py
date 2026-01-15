@@ -154,7 +154,7 @@ def op_list(registry_name: Optional[str] = None):
             item_id = row.get(id_col, "?") if id_col else "?"
             name = row.get("name", "?")
             status = row.get("status", "?")
-            print(f"  {item_id:12} {status:10} {name}")
+            print(f"  {name:40} {status:10} ({item_id})")
 
         print(f"\nTotal: {len(rows)} items")
         return 0

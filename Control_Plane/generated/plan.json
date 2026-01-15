@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-01-15T02:44:37.025911",
+  "generated_at": "2026-01-14T21:29:22.084027",
   "plans": [
     {
       "registry": "registries/components_registry.csv",
@@ -56,20 +56,6 @@
           "priority": "P0"
         },
         {
-          "id": "PRMPT-004",
-          "name": "Control Plane Uninstall",
-          "entity_type": "prompt",
-          "category": "control_plane",
-          "artifact_path": "/control_plane/prompts/uninstall.md",
-          "install_prompt_path": "",
-          "update_prompt_path": "",
-          "verify_prompt_path": "",
-          "uninstall_prompt_path": "",
-          "child_registry_path": "",
-          "next_action": "",
-          "priority": "P1"
-        },
-        {
           "id": "PRMPT-002",
           "name": "Control Plane Update",
           "entity_type": "prompt",
@@ -82,12 +68,40 @@
           "child_registry_path": "",
           "next_action": "",
           "priority": "P0"
+        },
+        {
+          "id": "PRMPT-004",
+          "name": "Control Plane Uninstall",
+          "entity_type": "prompt",
+          "category": "control_plane",
+          "artifact_path": "/control_plane/prompts/uninstall.md",
+          "install_prompt_path": "",
+          "update_prompt_path": "",
+          "verify_prompt_path": "",
+          "uninstall_prompt_path": "",
+          "child_registry_path": "",
+          "next_action": "",
+          "priority": "P1"
         }
       ]
     },
     {
       "registry": "modules/repo_os/registries/repo_os_registry.csv",
       "items": [
+        {
+          "id": "ROS-M001",
+          "name": "Repo OS Prompts",
+          "entity_type": "pack",
+          "category": "",
+          "artifact_path": "",
+          "install_prompt_path": "",
+          "update_prompt_path": "",
+          "verify_prompt_path": "/control_plane/prompts/verify.md",
+          "uninstall_prompt_path": "",
+          "child_registry_path": "/modules/repo_os/registries/prompts_registry.csv",
+          "next_action": "",
+          "priority": ""
+        },
         {
           "id": "ROS-M012",
           "name": "Repo OS Templates",
@@ -131,20 +145,6 @@
           "priority": ""
         },
         {
-          "id": "ROS-M001",
-          "name": "Repo OS Prompts",
-          "entity_type": "pack",
-          "category": "",
-          "artifact_path": "",
-          "install_prompt_path": "",
-          "update_prompt_path": "",
-          "verify_prompt_path": "/control_plane/prompts/verify.md",
-          "uninstall_prompt_path": "",
-          "child_registry_path": "/modules/repo_os/registries/prompts_registry.csv",
-          "next_action": "",
-          "priority": ""
-        },
-        {
           "id": "ROS-M013",
           "name": "Repo OS Docs",
           "entity_type": "pack",
@@ -173,20 +173,6 @@
           "priority": ""
         },
         {
-          "id": "ROS-M011",
-          "name": "Repo OS Workflows",
-          "entity_type": "pack",
-          "category": "",
-          "artifact_path": "",
-          "install_prompt_path": "",
-          "update_prompt_path": "",
-          "verify_prompt_path": "/control_plane/prompts/verify.md",
-          "uninstall_prompt_path": "",
-          "child_registry_path": "/modules/repo_os/registries/workflows_registry.csv",
-          "next_action": "",
-          "priority": ""
-        },
-        {
           "id": "ROS-M002",
           "name": "Repo OS Created Items",
           "entity_type": "pack",
@@ -199,6 +185,123 @@
           "child_registry_path": "/modules/repo_os/registries/repo_os_created_items_registry.csv",
           "next_action": "",
           "priority": ""
+        },
+        {
+          "id": "ROS-M011",
+          "name": "Repo OS Workflows",
+          "entity_type": "pack",
+          "category": "",
+          "artifact_path": "",
+          "install_prompt_path": "",
+          "update_prompt_path": "",
+          "verify_prompt_path": "/control_plane/prompts/verify.md",
+          "uninstall_prompt_path": "",
+          "child_registry_path": "/modules/repo_os/registries/workflows_registry.csv",
+          "next_action": "",
+          "priority": ""
+        }
+      ]
+    },
+    {
+      "registry": "modules/repo_os/registries/prompts_registry.csv",
+      "items": [
+        {
+          "id": "ROS-P003",
+          "name": "03 Claude Reliability Anchor",
+          "entity_type": "prompt",
+          "category": "repo_os",
+          "artifact_path": "/modules/repo_os/prompts/v1/03_claude_reliability_anchor.md",
+          "install_prompt_path": "/modules/repo_os/prompts/v1/03_claude_reliability_anchor.md",
+          "update_prompt_path": "",
+          "verify_prompt_path": "/control_plane/prompts/verify.md",
+          "uninstall_prompt_path": "",
+          "child_registry_path": "",
+          "next_action": "",
+          "priority": "P0"
+        },
+        {
+          "id": "ROS-P002",
+          "name": "02 Prompt Governance Model",
+          "entity_type": "prompt",
+          "category": "repo_os",
+          "artifact_path": "/modules/repo_os/prompts/v1/02_prompt_governance_model.md",
+          "install_prompt_path": "/modules/repo_os/prompts/v1/02_prompt_governance_model.md",
+          "update_prompt_path": "",
+          "verify_prompt_path": "/control_plane/prompts/verify.md",
+          "uninstall_prompt_path": "",
+          "child_registry_path": "",
+          "next_action": "",
+          "priority": "P0"
+        },
+        {
+          "id": "ROS-P001",
+          "name": "01 Archive Clean Init Meta Prompt",
+          "entity_type": "prompt",
+          "category": "repo_os",
+          "artifact_path": "/modules/repo_os/prompts/v1/01_archive_clean_init_meta_prompt.md",
+          "install_prompt_path": "/modules/repo_os/prompts/v1/01_archive_clean_init_meta_prompt.md",
+          "update_prompt_path": "",
+          "verify_prompt_path": "/control_plane/prompts/verify.md",
+          "uninstall_prompt_path": "",
+          "child_registry_path": "",
+          "next_action": "",
+          "priority": "P0"
+        },
+        {
+          "id": "ROS-P004",
+          "name": "04 Ci Guardrails Prompt",
+          "entity_type": "prompt",
+          "category": "repo_os",
+          "artifact_path": "/modules/repo_os/prompts/v1/04_ci_guardrails_prompt.md",
+          "install_prompt_path": "/modules/repo_os/prompts/v1/04_ci_guardrails_prompt.md",
+          "update_prompt_path": "",
+          "verify_prompt_path": "/control_plane/prompts/verify.md",
+          "uninstall_prompt_path": "",
+          "child_registry_path": "",
+          "next_action": "",
+          "priority": "P0"
+        },
+        {
+          "id": "ROS-P007",
+          "name": "07 Missing Items Tracker",
+          "entity_type": "prompt",
+          "category": "repo_os",
+          "artifact_path": "/modules/repo_os/prompts/v1/07_missing_items_tracker.md",
+          "install_prompt_path": "/modules/repo_os/prompts/v1/07_missing_items_tracker.md",
+          "update_prompt_path": "",
+          "verify_prompt_path": "/control_plane/prompts/verify.md",
+          "uninstall_prompt_path": "",
+          "child_registry_path": "",
+          "next_action": "",
+          "priority": "P0"
+        },
+        {
+          "id": "ROS-P006",
+          "name": "06 Prompt Tracking Csv",
+          "entity_type": "prompt",
+          "category": "repo_os",
+          "artifact_path": "/modules/repo_os/prompts/v1/06_prompt_tracking_csv.md",
+          "install_prompt_path": "/modules/repo_os/prompts/v1/06_prompt_tracking_csv.md",
+          "update_prompt_path": "",
+          "verify_prompt_path": "/control_plane/prompts/verify.md",
+          "uninstall_prompt_path": "",
+          "child_registry_path": "",
+          "next_action": "",
+          "priority": "P0"
+        },
+        {
+          "id": "ROS-P005",
+          "name": "05 Local Hooks Prompt",
+          "entity_type": "prompt",
+          "category": "repo_os",
+          "artifact_path": "/modules/repo_os/prompts/v1/05_local_hooks_prompt.md",
+          "install_prompt_path": "/modules/repo_os/prompts/v1/05_local_hooks_prompt.md",
+          "update_prompt_path": "",
+          "verify_prompt_path": "/control_plane/prompts/verify.md",
+          "uninstall_prompt_path": "",
+          "child_registry_path": "",
+          "next_action": "",
+          "priority": "P0"
         }
       ]
     },
@@ -206,11 +309,11 @@
       "registry": "modules/repo_os/registries/templates_registry.csv",
       "items": [
         {
-          "id": "ROS-T002",
-          "name": "PR Template",
+          "id": "ROS-T001",
+          "name": "ADR Template",
           "entity_type": "template",
           "category": "",
-          "artifact_path": "/templates/pr/PULL_REQUEST_TEMPLATE.md",
+          "artifact_path": "/templates/adr/0000-template.md",
           "install_prompt_path": "",
           "update_prompt_path": "",
           "verify_prompt_path": "/control_plane/prompts/verify.md",
@@ -220,11 +323,11 @@
           "priority": ""
         },
         {
-          "id": "ROS-T001",
-          "name": "ADR Template",
+          "id": "ROS-T002",
+          "name": "PR Template",
           "entity_type": "template",
           "category": "",
-          "artifact_path": "/templates/adr/0000-template.md",
+          "artifact_path": "/templates/pr/PULL_REQUEST_TEMPLATE.md",
           "install_prompt_path": "",
           "update_prompt_path": "",
           "verify_prompt_path": "/control_plane/prompts/verify.md",
@@ -288,125 +391,8 @@
       ]
     },
     {
-      "registry": "modules/repo_os/registries/prompts_registry.csv",
-      "items": [
-        {
-          "id": "ROS-P001",
-          "name": "01 Archive Clean Init Meta Prompt",
-          "entity_type": "prompt",
-          "category": "repo_os",
-          "artifact_path": "/modules/repo_os/prompts/v1/01_archive_clean_init_meta_prompt.md",
-          "install_prompt_path": "/modules/repo_os/prompts/v1/01_archive_clean_init_meta_prompt.md",
-          "update_prompt_path": "",
-          "verify_prompt_path": "/control_plane/prompts/verify.md",
-          "uninstall_prompt_path": "",
-          "child_registry_path": "",
-          "next_action": "",
-          "priority": "P0"
-        },
-        {
-          "id": "ROS-P003",
-          "name": "03 Claude Reliability Anchor",
-          "entity_type": "prompt",
-          "category": "repo_os",
-          "artifact_path": "/modules/repo_os/prompts/v1/03_claude_reliability_anchor.md",
-          "install_prompt_path": "/modules/repo_os/prompts/v1/03_claude_reliability_anchor.md",
-          "update_prompt_path": "",
-          "verify_prompt_path": "/control_plane/prompts/verify.md",
-          "uninstall_prompt_path": "",
-          "child_registry_path": "",
-          "next_action": "",
-          "priority": "P0"
-        },
-        {
-          "id": "ROS-P007",
-          "name": "07 Missing Items Tracker",
-          "entity_type": "prompt",
-          "category": "repo_os",
-          "artifact_path": "/modules/repo_os/prompts/v1/07_missing_items_tracker.md",
-          "install_prompt_path": "/modules/repo_os/prompts/v1/07_missing_items_tracker.md",
-          "update_prompt_path": "",
-          "verify_prompt_path": "/control_plane/prompts/verify.md",
-          "uninstall_prompt_path": "",
-          "child_registry_path": "",
-          "next_action": "",
-          "priority": "P0"
-        },
-        {
-          "id": "ROS-P004",
-          "name": "04 Ci Guardrails Prompt",
-          "entity_type": "prompt",
-          "category": "repo_os",
-          "artifact_path": "/modules/repo_os/prompts/v1/04_ci_guardrails_prompt.md",
-          "install_prompt_path": "/modules/repo_os/prompts/v1/04_ci_guardrails_prompt.md",
-          "update_prompt_path": "",
-          "verify_prompt_path": "/control_plane/prompts/verify.md",
-          "uninstall_prompt_path": "",
-          "child_registry_path": "",
-          "next_action": "",
-          "priority": "P0"
-        },
-        {
-          "id": "ROS-P005",
-          "name": "05 Local Hooks Prompt",
-          "entity_type": "prompt",
-          "category": "repo_os",
-          "artifact_path": "/modules/repo_os/prompts/v1/05_local_hooks_prompt.md",
-          "install_prompt_path": "/modules/repo_os/prompts/v1/05_local_hooks_prompt.md",
-          "update_prompt_path": "",
-          "verify_prompt_path": "/control_plane/prompts/verify.md",
-          "uninstall_prompt_path": "",
-          "child_registry_path": "",
-          "next_action": "",
-          "priority": "P0"
-        },
-        {
-          "id": "ROS-P002",
-          "name": "02 Prompt Governance Model",
-          "entity_type": "prompt",
-          "category": "repo_os",
-          "artifact_path": "/modules/repo_os/prompts/v1/02_prompt_governance_model.md",
-          "install_prompt_path": "/modules/repo_os/prompts/v1/02_prompt_governance_model.md",
-          "update_prompt_path": "",
-          "verify_prompt_path": "/control_plane/prompts/verify.md",
-          "uninstall_prompt_path": "",
-          "child_registry_path": "",
-          "next_action": "",
-          "priority": "P0"
-        },
-        {
-          "id": "ROS-P006",
-          "name": "06 Prompt Tracking Csv",
-          "entity_type": "prompt",
-          "category": "repo_os",
-          "artifact_path": "/modules/repo_os/prompts/v1/06_prompt_tracking_csv.md",
-          "install_prompt_path": "/modules/repo_os/prompts/v1/06_prompt_tracking_csv.md",
-          "update_prompt_path": "",
-          "verify_prompt_path": "/control_plane/prompts/verify.md",
-          "uninstall_prompt_path": "",
-          "child_registry_path": "",
-          "next_action": "",
-          "priority": "P0"
-        }
-      ]
-    },
-    {
       "registry": "modules/repo_os/registries/docs_registry.csv",
       "items": [
-        {
-          "id": "ROS-D010",
-          "name": "Control Plane Contract",
-          "entity_type": "doc",
-          "category": "",
-          "artifact_path": "/control_plane/CONTROL_PLANE_CONTRACT.md",
-          "install_prompt_path": "",
-          "update_prompt_path": "",
-          "verify_prompt_path": "/control_plane/prompts/verify.md",
-          "uninstall_prompt_path": "",
-          "child_registry_path": "",
-          "next_action": "",
-          "priority": ""
-        },
         {
           "id": "ROS-D001",
           "name": "Repo Root README",
@@ -422,11 +408,11 @@
           "priority": ""
         },
         {
-          "id": "ROS-D020",
-          "name": "Repo OS Module README",
+          "id": "ROS-D010",
+          "name": "Control Plane Contract",
           "entity_type": "doc",
           "category": "",
-          "artifact_path": "/modules/repo_os/README.md",
+          "artifact_path": "/control_plane/CONTROL_PLANE_CONTRACT.md",
           "install_prompt_path": "",
           "update_prompt_path": "",
           "verify_prompt_path": "/control_plane/prompts/verify.md",
@@ -441,6 +427,20 @@
           "entity_type": "doc",
           "category": "",
           "artifact_path": "/HOWTO_USE.md",
+          "install_prompt_path": "",
+          "update_prompt_path": "",
+          "verify_prompt_path": "/control_plane/prompts/verify.md",
+          "uninstall_prompt_path": "",
+          "child_registry_path": "",
+          "next_action": "",
+          "priority": ""
+        },
+        {
+          "id": "ROS-D020",
+          "name": "Repo OS Module README",
+          "entity_type": "doc",
+          "category": "",
+          "artifact_path": "/modules/repo_os/README.md",
           "install_prompt_path": "",
           "update_prompt_path": "",
           "verify_prompt_path": "/control_plane/prompts/verify.md",
@@ -471,55 +471,8 @@
       ]
     },
     {
-      "registry": "modules/repo_os/registries/workflows_registry.csv",
-      "items": [
-        {
-          "id": "ROS-W001",
-          "name": "Repo OS Validation Workflow",
-          "entity_type": "workflow",
-          "category": "",
-          "artifact_path": "/.github/workflows/repo_os_validation.yml",
-          "install_prompt_path": "",
-          "update_prompt_path": "",
-          "verify_prompt_path": "/control_plane/prompts/verify.md",
-          "uninstall_prompt_path": "",
-          "child_registry_path": "",
-          "next_action": "",
-          "priority": ""
-        }
-      ]
-    },
-    {
       "registry": "modules/repo_os/registries/repo_os_created_items_registry.csv",
       "items": [
-        {
-          "id": "ROS-001",
-          "name": "Archive + Clean Init meta-prompt (idempotent)",
-          "entity_type": "repo_os_created_item",
-          "category": "governance",
-          "artifact_path": "/modules/repo_os/prompts/v1/01_archive_clean_init_meta_prompt.md",
-          "install_prompt_path": "/modules/repo_os/prompts/v1/01_archive_clean_init_meta_prompt.md",
-          "update_prompt_path": "",
-          "verify_prompt_path": "/control_plane/prompts/verify.md",
-          "uninstall_prompt_path": "",
-          "child_registry_path": "",
-          "next_action": "",
-          "priority": ""
-        },
-        {
-          "id": "ROS-006",
-          "name": "Prompt tracking CSV (starter)",
-          "entity_type": "repo_os_created_item",
-          "category": "prompts",
-          "artifact_path": "/generated/prompts_index.csv",
-          "install_prompt_path": "/modules/repo_os/prompts/v1/06_prompt_tracking_csv.md",
-          "update_prompt_path": "",
-          "verify_prompt_path": "/control_plane/prompts/verify.md",
-          "uninstall_prompt_path": "",
-          "child_registry_path": "",
-          "next_action": "",
-          "priority": ""
-        },
         {
           "id": "ROS-007",
           "name": "Missing items tracker CSV",
@@ -541,6 +494,34 @@
           "category": "ci_cd",
           "artifact_path": "/.github/workflows/repo_guardrails.yml",
           "install_prompt_path": "/modules/repo_os/prompts/v1/04_ci_guardrails_prompt.md",
+          "update_prompt_path": "",
+          "verify_prompt_path": "/control_plane/prompts/verify.md",
+          "uninstall_prompt_path": "",
+          "child_registry_path": "",
+          "next_action": "",
+          "priority": ""
+        },
+        {
+          "id": "ROS-001",
+          "name": "Archive + Clean Init meta-prompt (idempotent)",
+          "entity_type": "repo_os_created_item",
+          "category": "governance",
+          "artifact_path": "/modules/repo_os/prompts/v1/01_archive_clean_init_meta_prompt.md",
+          "install_prompt_path": "/modules/repo_os/prompts/v1/01_archive_clean_init_meta_prompt.md",
+          "update_prompt_path": "",
+          "verify_prompt_path": "/control_plane/prompts/verify.md",
+          "uninstall_prompt_path": "",
+          "child_registry_path": "",
+          "next_action": "",
+          "priority": ""
+        },
+        {
+          "id": "ROS-006",
+          "name": "Prompt tracking CSV (starter)",
+          "entity_type": "repo_os_created_item",
+          "category": "prompts",
+          "artifact_path": "/generated/prompts_index.csv",
+          "install_prompt_path": "/modules/repo_os/prompts/v1/06_prompt_tracking_csv.md",
           "update_prompt_path": "",
           "verify_prompt_path": "/control_plane/prompts/verify.md",
           "uninstall_prompt_path": "",
@@ -583,6 +564,25 @@
           "category": "governance",
           "artifact_path": "/CLAUDE.md",
           "install_prompt_path": "/modules/repo_os/prompts/v1/03_claude_reliability_anchor.md",
+          "update_prompt_path": "",
+          "verify_prompt_path": "/control_plane/prompts/verify.md",
+          "uninstall_prompt_path": "",
+          "child_registry_path": "",
+          "next_action": "",
+          "priority": ""
+        }
+      ]
+    },
+    {
+      "registry": "modules/repo_os/registries/workflows_registry.csv",
+      "items": [
+        {
+          "id": "ROS-W001",
+          "name": "Repo OS Validation Workflow",
+          "entity_type": "workflow",
+          "category": "",
+          "artifact_path": "/.github/workflows/repo_os_validation.yml",
+          "install_prompt_path": "",
           "update_prompt_path": "",
           "verify_prompt_path": "/control_plane/prompts/verify.md",
           "uninstall_prompt_path": "",

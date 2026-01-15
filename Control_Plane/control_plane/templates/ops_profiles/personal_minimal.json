@@ -1,0 +1,11 @@
+{
+  "profile": "personal_minimal",
+  "selected_frameworks": [
+    "FMWK-001",
+    "FMWK-002",
+    "FMWK-005",
+    "FMWK-012",
+    "FMWK-022"
+  ],
+  "notes": "Starter profile for Phase 1. Keeps <=5 active modules."
+}

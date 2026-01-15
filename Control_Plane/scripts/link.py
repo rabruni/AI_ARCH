@@ -38,15 +38,13 @@ def get_repo_root() -> Path:
 REPO_ROOT = get_repo_root()
 CONTROL_PLANE = REPO_ROOT / "Control_Plane"
 
-# All registries to scan
+# Unified registry
+REGISTRY = CONTROL_PLANE / "registries" / "control_plane_registry.csv"
+
+# Also include boot_os_registry for backward compatibility
 REGISTRIES = [
+    REGISTRY,
     CONTROL_PLANE / "boot_os_registry.csv",
-    CONTROL_PLANE / "registries" / "frameworks_registry.csv",
-    CONTROL_PLANE / "registries" / "prompts_registry.csv",
-    CONTROL_PLANE / "registries" / "modules_registry.csv",
-    CONTROL_PLANE / "registries" / "cloud_services_registry.csv",
-    CONTROL_PLANE / "registries" / "components_registry.csv",
-    CONTROL_PLANE / "init" / "init_registry.csv",
 ]
 
 
@@ -62,7 +60,9 @@ def read_registry(registry_path: Path) -> tuple[list[str], list[dict]]:
 
 
 def get_id_column(headers: list[str]) -> Optional[str]:
-    """Find the ID column."""
+    """Find the ID column (id or ends with _id)."""
+    if "id" in headers:
+        return "id"
     for h in headers:
         if h.endswith("_id"):
             return h

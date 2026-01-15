@@ -37,7 +37,7 @@ def get_repo_root() -> Path:
 
 REPO_ROOT = get_repo_root()
 CONTROL_PLANE = REPO_ROOT / "Control_Plane"
-MODULES_REGISTRY = CONTROL_PLANE / "registries" / "modules_registry.csv"
+REGISTRY = CONTROL_PLANE / "registries" / "control_plane_registry.csv"
 MODULE_CONFIG = CONTROL_PLANE / "generated" / "module_config.json"
 
 # Predefined slots that can have swappable modules
@@ -101,14 +101,33 @@ def save_module_config(config: dict):
 
 
 def read_modules_registry() -> tuple[list[str], list[dict]]:
-    """Read modules registry."""
-    if not MODULES_REGISTRY.is_file():
+    """Read modules from unified registry (entity_type=module)."""
+    if not REGISTRY.is_file():
         return [], []
 
-    with open(MODULES_REGISTRY, newline="", encoding="utf-8") as f:
+    with open(REGISTRY, newline="", encoding="utf-8") as f:
         reader = csv.DictReader(f)
         headers = reader.fieldnames or []
-        rows = list(reader)
+        all_rows = list(reader)
+
+    # Filter for modules and parse config
+    rows = []
+    for r in all_rows:
+        if r.get("entity_type") == "module":
+            # Parse config JSON to extract slot/interface
+            config_str = r.get("config", "")
+            if config_str:
+                try:
+                    config = json.loads(config_str)
+                    r["slot"] = config.get("slot", r.get("category", ""))
+                    r["interface"] = config.get("interface", "")
+                except json.JSONDecodeError:
+                    r["slot"] = r.get("category", "")
+                    r["interface"] = ""
+            else:
+                r["slot"] = r.get("category", "")
+                r["interface"] = ""
+            rows.append(r)
     return headers, rows
 
 
@@ -116,7 +135,7 @@ def find_module_by_id(module_id: str) -> Optional[dict]:
     """Find a module by ID."""
     _, rows = read_modules_registry()
     for row in rows:
-        if row.get("module_id", "").upper() == module_id.upper():
+        if row.get("id", "").upper() == module_id.upper():
             return row
     return None
 
@@ -166,7 +185,7 @@ def cmd_list():
         print(f"\n[{slot_info['name']}]")
 
         for mod in modules:
-            mod_id = mod.get("module_id", "?")
+            mod_id = mod.get("id", "?")
             name = mod.get("name", "?")
             status = mod.get("status", "?")
             print(f"  {name:30} {status:10} ({mod_id})")

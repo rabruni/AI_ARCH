@@ -24,6 +24,8 @@ def read_csv(path: Path) -> List[Dict[str,str]]:
 def infer_id_field(rows: List[Dict[str,str]]) -> str:
     if not rows:
         return ""
+    if "id" in rows[0].keys():
+        return "id"
     for k in rows[0].keys():
         if k.endswith("_id"):
             return k

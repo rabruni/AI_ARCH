@@ -60,10 +60,8 @@ def get_critical_files() -> list[str]:
         "Control_Plane/scripts/validate_registry.py",
         "Control_Plane/scripts/apply_selection.py",
 
-        # Root registries
-        "Control_Plane/registries/frameworks_registry.csv",
-        "Control_Plane/registries/components_registry.csv",
-        "Control_Plane/registries/prompts_registry.csv",
+        # Unified registry
+        "Control_Plane/registries/control_plane_registry.csv",
     ]
 
 

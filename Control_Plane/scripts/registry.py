@@ -95,7 +95,9 @@ def write_registry(reg_path: Path, headers: list[str], rows: list[dict]):
 
 
 def get_id_column(headers: list[str]) -> Optional[str]:
-    """Find the ID column (ends with _id)."""
+    """Find the ID column (id or ends with _id)."""
+    if "id" in headers:
+        return "id"
     for h in headers:
         if h.endswith("_id"):
             return h

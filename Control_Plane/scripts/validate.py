@@ -164,8 +164,8 @@ def check_registry_schema(result: ValidationResult):
                 reader = csv.DictReader(f)
                 headers = reader.fieldnames or []
 
-                # Check for ID column (ends with _id)
-                id_cols = [h for h in headers if h.endswith("_id")]
+                # Check for ID column (id or ends with _id)
+                id_cols = [h for h in headers if h == "id" or h.endswith("_id")]
                 if not id_cols:
                     result.fail("Schema", f"{rel_path}: No *_id column")
                     continue

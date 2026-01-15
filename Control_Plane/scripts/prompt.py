@@ -36,8 +36,7 @@ def get_repo_root() -> Path:
 
 REPO_ROOT = get_repo_root()
 CONTROL_PLANE = REPO_ROOT / "Control_Plane"
-PROMPTS_REGISTRY = CONTROL_PLANE / "registries" / "prompts_registry.csv"
-FRAMEWORKS_REGISTRY = CONTROL_PLANE / "registries" / "frameworks_registry.csv"
+REGISTRY = CONTROL_PLANE / "registries" / "control_plane_registry.csv"
 
 # Standard verb prompts
 VERB_PROMPTS = {
@@ -69,7 +68,9 @@ def read_registry(registry_path: Path) -> tuple[list[str], list[dict]]:
 
 
 def get_id_column(headers: list[str]) -> Optional[str]:
-    """Find the ID column."""
+    """Find the ID column (id or ends with _id)."""
+    if "id" in headers:
+        return "id"
     for h in headers:
         if h.endswith("_id"):
             return h
@@ -77,34 +78,24 @@ def get_id_column(headers: list[str]) -> Optional[str]:
 
 
 def find_item_by_id(item_id: str) -> Optional[tuple[dict, Path, str]]:
-    """Find an item by ID across registries. Returns (item, registry_path, id_column)."""
-    registries = [
-        PROMPTS_REGISTRY,
-        FRAMEWORKS_REGISTRY,
-        CONTROL_PLANE / "boot_os_registry.csv",
-        CONTROL_PLANE / "registries" / "modules_registry.csv",
-        CONTROL_PLANE / "registries" / "cloud_services_registry.csv",
-        CONTROL_PLANE / "registries" / "components_registry.csv",
-    ]
-
-    for reg_path in registries:
-        if not reg_path.is_file():
-            continue
-        headers, rows = read_registry(reg_path)
-        id_col = get_id_column(headers)
-        if not id_col:
-            continue
-        for row in rows:
-            if row.get(id_col, "").upper() == item_id.upper():
-                return row, reg_path, id_col
+    """Find an item by ID in the unified registry."""
+    if not REGISTRY.is_file():
+        return None
+    headers, rows = read_registry(REGISTRY)
+    id_col = get_id_column(headers)
+    if not id_col:
+        return None
+    for row in rows:
+        if row.get(id_col, "").upper() == item_id.upper():
+            return row, REGISTRY, id_col
     return None
 
 
 def find_prompt_by_id(prompt_id: str) -> Optional[dict]:
-    """Find a prompt by ID."""
-    _, rows = read_registry(PROMPTS_REGISTRY)
+    """Find a prompt by ID (entity_type=prompt)."""
+    _, rows = read_registry(REGISTRY)
     for row in rows:
-        if row.get("prompt_id", "").upper() == prompt_id.upper():
+        if row.get("id", "").upper() == prompt_id.upper() and row.get("entity_type") == "prompt":
             return row
     return None
 
@@ -129,29 +120,29 @@ def get_verb_prompt_path(item: dict, verb: str) -> Optional[Path]:
 # === Commands ===
 
 def cmd_list():
-    """List all prompts."""
-    _, rows = read_registry(PROMPTS_REGISTRY)
+    """List all prompts (entity_type=prompt)."""
+    _, all_rows = read_registry(REGISTRY)
+    rows = [r for r in all_rows if r.get("entity_type") == "prompt"]
 
     if not rows:
-        print("\nNo prompts registry found.")
-        print(f"Create: {PROMPTS_REGISTRY.relative_to(REPO_ROOT)}")
+        print("\nNo prompts found in registry.")
         return 0
 
-    print("\nPrompts Registry")
+    print("\nPrompts")
     print("=" * 70)
 
-    # Group by domain
-    by_domain = {}
+    # Group by category
+    by_category = {}
     for row in rows:
-        domain = row.get("domain", "other")
-        if domain not in by_domain:
-            by_domain[domain] = []
-        by_domain[domain].append(row)
+        category = row.get("category", "other")
+        if category not in by_category:
+            by_category[category] = []
+        by_category[category].append(row)
 
-    for domain, prompts in sorted(by_domain.items()):
-        print(f"\n[{domain}]")
+    for category, prompts in sorted(by_category.items()):
+        print(f"\n[{category}]")
         for p in prompts:
-            pid = p.get("prompt_id", "?")
+            pid = p.get("id", "?")
             name = p.get("name", "?")
             status = p.get("status", "?")
             selected = "✓" if p.get("selected", "").lower() == "yes" else " "
@@ -169,10 +160,10 @@ def cmd_show(prompt_id: str):
         print(f"Prompt not found: {prompt_id}")
         return 1
 
-    print(f"\nPrompt: {prompt.get('prompt_id', '?')}")
+    print(f"\nPrompt: {prompt.get('id', '?')}")
     print("=" * 70)
     print(f"Name:     {prompt.get('name', '?')}")
-    print(f"Domain:   {prompt.get('domain', '?')}")
+    print(f"Category: {prompt.get('category', '?')}")
     print(f"Purpose:  {prompt.get('purpose', '?')}")
     print(f"Status:   {prompt.get('status', '?')}")
     print(f"Selected: {prompt.get('selected', 'no')}")
@@ -303,17 +294,18 @@ dependencies: {item.get('dependencies', 'none')}
 
 
 def cmd_validate():
-    """Validate prompts registry."""
-    _, rows = read_registry(PROMPTS_REGISTRY)
+    """Validate prompts in unified registry."""
+    _, all_rows = read_registry(REGISTRY)
+    rows = [r for r in all_rows if r.get("entity_type") == "prompt"]
 
-    print("\nValidating Prompts Registry")
+    print("\nValidating Prompts")
     print("=" * 70)
 
     errors = 0
     warnings = 0
 
     for row in rows:
-        pid = row.get("prompt_id", "?")
+        pid = row.get("id", "?")
         name = row.get("name", "?")
         status = row.get("status", "?")
         artifact_path = row.get("artifact_path", "")

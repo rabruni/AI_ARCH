@@ -25,5 +25,6 @@ The Repo OS module registry (`/modules/repo_os/registries/repo_os_registry.csv`)
 - Docs
 - Profiles
 - Runbooks Library
+- Init System
 
 If any are missing, Repo OS is considered misconfigured.

@@ -1,0 +1,69 @@
+{
+  "version": "1.0.0",
+  "generated": "2026-01-15T05:21:43.891220+00:00",
+  "generator": "Control_Plane/scripts/generate_manifest.py",
+  "checksums": {
+    "SYSTEM_CONSTITUTION.md": {
+      "sha256": "cf6e5e9cb4b8cf9edfbb936be421c6ea9193e6a573d6992cb761bd233ce66d22",
+      "size": 4641
+    },
+    "VERSION": {
+      "sha256": "e9dd8507f4bf0c6f42458e41aea833ad0bd3f6127272335eee9bf4d58541ed67",
+      "size": 6
+    },
+    "Control_Plane/init/init.md": {
+      "sha256": "6e2e48214fdc9f21f6c1067486cf5dfba88f2e8beffcf2b698b724f9da42ac50",
+      "size": 6382
+    },
+    "Control_Plane/CLAUDE.md": {
+      "sha256": "1865bb4f37311edd96d0b221f9fbe91efb2e2c69cfe76193aef738d73af7530f",
+      "size": 4548
+    },
+    "Control_Plane/control_plane/CONTROL_PLANE_CONTRACT.md": {
+      "sha256": "72bfdc856e8033f75590b1170614d029e8cde2fd77ee86f9ca6648c8a0aae9ea",
+      "size": 1112
+    },
+    "Control_Plane/control_plane/prompts/install.md": {
+      "sha256": "e6886c079299dedba5c32d10500dc043cfadac59c4890b066d82bc10fbbf0c42",
+      "size": 2457
+    },
+    "Control_Plane/control_plane/prompts/update.md": {
+      "sha256": "d53c70b0a8470a32b70d829799dcdf3857328f2bf569b135c10156e55e8bdc9e",
+      "size": 2456
+    },
+    "Control_Plane/control_plane/prompts/verify.md": {
+      "sha256": "09e1a3bbc8ac48001a3c892a744cd689772be39bdd3d101801fa43db1fadd817",
+      "size": 2962
+    },
+    "Control_Plane/control_plane/prompts/uninstall.md": {
+      "sha256": "8e1dfa4e9d7cef399a4d8db9325e063bdc46ce70114822a09a33b254abbe4117",
+      "size": 3220
+    },
+    "Control_Plane/scripts/bootstrap.py": {
+      "sha256": "7191111ccebbe9d35ce6140731eda6910728bfbe132fedfa6fad0378395f33e2",
+      "size": 6681
+    },
+    "Control_Plane/scripts/validate_registry.py": {
+      "sha256": "21f3828867bc31a172355ef034f7a9f248101e9e967dc902f06f94df6752cfe5",
+      "size": 9188
+    },
+    "Control_Plane/scripts/apply_selection.py": {
+      "sha256": "71ffe5d095bcb7bfb9e1dcff2f73eefab735da1efb5bec03da196a07c96b20d3",
+      "size": 4627
+    },
+    "Control_Plane/registries/frameworks_registry.csv": {
+      "sha256": "77fd6773580a32056e07d8310e800fab66751499ceaa4910ef35d703d93dd619",
+      "size": 13759
+    },
+    "Control_Plane/registries/components_registry.csv": {
+      "sha256": "e716a608db45c5ab0a200a2e014e2f7daa27d2fae0a040c050fa73eb42cc02c6",
+      "size": 1300
+    },
+    "Control_Plane/registries/prompts_registry.csv": {
+      "sha256": "f3e2e35344fc8b67e01475a7295cc0f37c0529eb12f9fbb60837a2f6ccb7d53a",
+      "size": 1390
+    }
+  },
+  "missing": [],
+  "registry_count": 3
+}

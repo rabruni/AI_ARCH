@@ -148,17 +148,46 @@ required_files:
   - Control_Plane/registries/frameworks_registry.csv
 
 registry_schema:
+  # Column that ends with _id is auto-detected as primary key
   required_columns:
     - "*_id"
     - name
     - status
     - selected
+
   status_values:
     - missing
     - draft
     - active
     - deprecated
+
   selected_values:
     - "yes"
     - "no"
+    - ""
+
+  priority_values:
+    - P0
+    - P1
+    - P2
+    - P3
+    - ""
+
+  # When selected=yes, these paths must exist if the column is present and non-empty
+  path_columns_to_validate:
+    - artifact_path
+    - install_prompt_path
+    - update_prompt_path
+    - verify_prompt_path
+    - uninstall_prompt_path
+    - child_registry_path
+
+  # If exposes_control_plane=yes, child_registry_path must be non-empty
+  control_plane_rule:
+    trigger_column: exposes_control_plane
+    trigger_values:
+      - "yes"
+      - "true"
+      - "1"
+    required_column: child_registry_path
 ```

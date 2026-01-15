@@ -320,7 +320,18 @@ def execute_uninstall(item: dict, reg_path: Path, result: ExecutionResult):
     result.step_manual(f"Set status=deprecated in {reg_path.name}")
 
 
-def execute(verb: str, item_id: str) -> bool:
+def check_mode_permission(verb: str) -> tuple[bool, str]:
+    """Check if verb is allowed in current mode."""
+    try:
+        from mode import detect_mode, check_verb_allowed
+        mode, reason = detect_mode()
+        status, message = check_verb_allowed(verb, mode)
+        return (status != "blocked", f"[{mode}] {message}")
+    except ImportError:
+        return (True, "Mode enforcement not available")
+
+
+def execute(verb: str, item_id: str, force: bool = False) -> bool:
     """Main execution function."""
 
     # Validate verb
@@ -328,6 +339,18 @@ def execute(verb: str, item_id: str) -> bool:
         print(f"ERROR: Invalid verb '{verb}'")
         print(f"Valid verbs: {', '.join(VALID_VERBS)}")
         return False
+
+    # Check mode permission
+    allowed, mode_msg = check_mode_permission(verb)
+    print(f"Mode: {mode_msg}")
+
+    if not allowed and not force:
+        print(f"\nERROR: {verb} is blocked in current mode.")
+        print("Use --force to override.\n")
+        return False
+
+    if not allowed and force:
+        print("WARNING: Forcing blocked operation.\n")
 
     # Find item
     found = find_item_by_id(item_id)
@@ -361,17 +384,21 @@ def execute(verb: str, item_id: str) -> bool:
 
 def main():
     if len(sys.argv) < 3:
-        print("Usage: python execute.py <verb> <item_id>")
+        print("Usage: python execute.py <verb> <item_id> [--force]")
         print(f"Verbs: {', '.join(VALID_VERBS)}")
+        print("\nOptions:")
+        print("  --force    Override mode restrictions")
         print("\nExamples:")
         print("  python execute.py verify BOOT-001")
         print("  python execute.py install FMWK-001")
+        print("  python execute.py install FMWK-001 --force")
         return 1
 
     verb = sys.argv[1].lower()
     item_id = sys.argv[2].upper()
+    force = "--force" in sys.argv
 
-    success = execute(verb, item_id)
+    success = execute(verb, item_id, force=force)
     return 0 if success else 3
 
 

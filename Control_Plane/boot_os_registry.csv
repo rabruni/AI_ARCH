@@ -11,7 +11,7 @@ BOOT-009,Agent Front Door - Copilot,agent_governance,active,P0,Governance rules 
 BOOT-010,Agent Front Door - Cursor,agent_governance,active,P0,Governance rules for Cursor,/.cursorrules,BOOT-005
 BOOT-011,Agent Front Door - Cline,agent_governance,active,P0,Governance rules for Cline,/.clinerules,BOOT-005
 BOOT-012,Verb Execution Engine,automation,active,P1,Automate install/update/verify/uninstall prompt execution,/Control_Plane/scripts/execute.py,BOOT-005
-BOOT-013,Mode Enforcement,automation,missing,P1,Enforce BUILD/STABILIZE/RESET mode constraints,,BOOT-005
+BOOT-013,Mode Enforcement,automation,active,P1,Enforce BUILD/STABILIZE/RESET mode constraints,/Control_Plane/scripts/mode.py,BOOT-005
 BOOT-014,Registry CRUD,automation,missing,P1,Automated add/modify/delete registry rows,,BOOT-002
 BOOT-015,Cloud Services Bootstrap,infrastructure,missing,P2,Bring up cloud services based on registry config,,BOOT-012
 BOOT-016,Module Swapping,infrastructure,missing,P2,Hot-swap modules like memory bus,,BOOT-012

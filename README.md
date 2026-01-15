@@ -1,37 +1,59 @@
 # AI_ARCH
 
-A cognitive anchor system for AI agents implementing structured reasoning and memory.
+A registry-driven repository operating system for building agentic software with repeatability, auditability, and CI-backed guarantees.
 
 ---
 
-**This repository was re-initialized from scratch on 2026-01-14.**
+## Governance
 
-Previous work has been preserved in the archive for reference and traceability.
-See: [`/_archive/2026-01-14_repo-archive_v1/`](./_archive/2026-01-14_repo-archive_v1/)
+This repository is governed by [`SYSTEM_CONSTITUTION.md`](./SYSTEM_CONSTITUTION.md).
+
+Key principles:
+- **Registries are truth** — All modules, prompts, and frameworks tracked in CSV registries
+- **ID is primary key** — Lookups by ID; names are display only
+- **Agents execute plans** — `Control_Plane/generated/plan.json` drives automation
 
 ---
 
-## Repository Structure
+## Structure
 
 ```
 /
-├── _archive/           # Historical snapshots (read-only)
-├── docs/               # Documentation and design specs
-├── prompts/            # LLM prompts and templates
-├── src/                # Source code
-├── tests/              # Test suites
-├── scripts/            # Utility scripts
-├── config/             # Configuration files
-├── README.md           # This file
-├── HOWTO_USE.md        # Getting started guide
-├── REPO_MANIFEST.json  # Repository metadata
-└── VERSION             # Current version
+├── SYSTEM_CONSTITUTION.md   # Canonical rules
+├── Control_Plane/           # Registry-driven governance
+│   ├── registries/          # Source of truth (CSV)
+│   ├── scripts/             # validate, apply, generate
+│   └── generated/           # Execution plans and reports
+├── src/                     # Application code
+├── prompts/                 # Prompt modules
+├── tests/                   # Validation
+├── docs/                    # Architecture
+└── _archive/                # Historical snapshots
 ```
 
-## Status
+---
 
-This repository is in **clean-init** state. Core implementation has not yet begun.
+## Quick Start
 
-## License
+```bash
+# Validate registries
+python Control_Plane/scripts/validate_registry.py
 
-See project documentation for license details.
+# Generate execution plan
+python Control_Plane/scripts/apply_selection.py
+
+# View plan
+cat Control_Plane/generated/plan.json
+```
+
+---
+
+## Archive
+
+Previous work preserved at [`/_archive/`](./_archive/).
+
+---
+
+## Version
+
+See [`VERSION`](./VERSION) — currently `0.1.0`

@@ -1,0 +1,18 @@
+boot_os_id,name,category,status,priority,description,artifact_path,depends_on
+BOOT-001,Bootstrap Script,layer_1,active,P0,Environmental checks - directories/tools/versions/CI/registries,/Control_Plane/scripts/bootstrap.py,
+BOOT-002,Validate Script,layer_2,active,P0,Integrity checks - checksums/schema/references/version,/Control_Plane/scripts/validate.py,BOOT-001
+BOOT-003,Manifest Generator,layer_2,active,P0,Generate SHA256 checksums for critical files,/Control_Plane/scripts/generate_manifest.py,BOOT-001
+BOOT-004,Manifest File,layer_2,active,P0,SHA256 hashes of 15 critical files,/Control_Plane/MANIFEST.json,BOOT-003
+BOOT-005,Init Script,layer_3,active,P0,Runs all 3 layers and reports status,/Control_Plane/scripts/init.py,BOOT-002
+BOOT-006,Init Documentation,layer_3,active,P0,Semantic layer documentation,/Control_Plane/init/init.md,BOOT-005
+BOOT-007,Plan Generator,layer_3,active,P0,Generates plan.json from selected items,/Control_Plane/scripts/apply_selection.py,BOOT-002
+BOOT-008,Agent Front Door - Claude,agent_governance,active,P0,Governance rules for Claude Code,/CLAUDE.md,BOOT-005
+BOOT-009,Agent Front Door - Copilot,agent_governance,active,P0,Governance rules for GitHub Copilot,/.github/copilot-instructions.md,BOOT-005
+BOOT-010,Agent Front Door - Cursor,agent_governance,active,P0,Governance rules for Cursor,/.cursorrules,BOOT-005
+BOOT-011,Agent Front Door - Cline,agent_governance,active,P0,Governance rules for Cline,/.clinerules,BOOT-005
+BOOT-012,Verb Execution Engine,automation,missing,P1,Automate install/update/verify/uninstall prompt execution,,BOOT-005
+BOOT-013,Mode Enforcement,automation,missing,P1,Enforce BUILD/STABILIZE/RESET mode constraints,,BOOT-005
+BOOT-014,Registry CRUD,automation,missing,P1,Automated add/modify/delete registry rows,,BOOT-002
+BOOT-015,Cloud Services Bootstrap,infrastructure,missing,P2,Bring up cloud services based on registry config,,BOOT-012
+BOOT-016,Module Swapping,infrastructure,missing,P2,Hot-swap modules like memory bus,,BOOT-012
+BOOT-017,Nested Registry Loader,automation,missing,P1,Full child_registry_path resolution and loading,,BOOT-007

@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "generated": "2026-01-15T05:54:15.150503+00:00",
+  "generated": "2026-01-15T07:19:38.851627+00:00",
   "generator": "Control_Plane/scripts/generate_manifest.py",
   "checksums": {
     "SYSTEM_CONSTITUTION.md": {
@@ -52,18 +52,18 @@
       "size": 4627
     },
     "Control_Plane/registries/frameworks_registry.csv": {
-      "sha256": "77fd6773580a32056e07d8310e800fab66751499ceaa4910ef35d703d93dd619",
-      "size": 13759
+      "sha256": "de632f46fcb2ed3f37ff2bdce18974d4c13fc09fdfd0e1ed58affd3a24f04805",
+      "size": 13788
     },
     "Control_Plane/registries/components_registry.csv": {
       "sha256": "e716a608db45c5ab0a200a2e014e2f7daa27d2fae0a040c050fa73eb42cc02c6",
       "size": 1300
     },
     "Control_Plane/registries/prompts_registry.csv": {
-      "sha256": "f3e2e35344fc8b67e01475a7295cc0f37c0529eb12f9fbb60837a2f6ccb7d53a",
-      "size": 1390
+      "sha256": "3ea42ea3b7afac12d72e42350d03525c34672f5a4d8ca9dcfb3129a385f6dff0",
+      "size": 1493
     }
   },
   "missing": [],
-  "registry_count": 3
+  "registry_count": 5
 }

@@ -19,3 +19,4 @@ BOOT-017,Nested Registry Loader,automation,active,P1,Full child_registry_path re
 BOOT-018,Prompt Management,automation,active,P1,Manage prompts registry and execute verb prompts,/Control_Plane/scripts/prompt.py,BOOT-005
 BOOT-019,Registry Linking,automation,active,P1,Manage registry relationships and dependency graphs,/Control_Plane/scripts/link.py,BOOT-014
 BOOT-020,Agent Front Door - Codex,agent_governance,active,P0,Governance rules for OpenAI Codex,/AGENTS.md,BOOT-005
+BOOT-021,Agent Front Door - Gemini,agent_governance,active,P0,Governance rules for Google Gemini,/GEMINI.md,BOOT-005

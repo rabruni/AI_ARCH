@@ -16,3 +16,5 @@ BOOT-014,Registry CRUD,automation,active,P1,Automated add/modify/delete registry
 BOOT-015,Cloud Services Bootstrap,infrastructure,active,P2,Bring up cloud services based on registry config,/Control_Plane/scripts/cloud.py,BOOT-012
 BOOT-016,Module Swapping,infrastructure,active,P2,Hot-swap modules like memory bus,/Control_Plane/scripts/module.py,BOOT-012
 BOOT-017,Nested Registry Loader,automation,active,P1,Full child_registry_path resolution and loading,/Control_Plane/scripts/nested.py,BOOT-007
+BOOT-018,Prompt Management,automation,active,P1,Manage prompts registry and execute verb prompts,/Control_Plane/scripts/prompt.py,BOOT-005
+BOOT-019,Registry Linking,automation,active,P1,Manage registry relationships and dependency graphs,/Control_Plane/scripts/link.py,BOOT-014

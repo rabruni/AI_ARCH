@@ -13,6 +13,6 @@ BOOT-011,Agent Front Door - Cline,agent_governance,active,P0,Governance rules fo
 BOOT-012,Verb Execution Engine,automation,active,P1,Automate install/update/verify/uninstall prompt execution,/Control_Plane/scripts/execute.py,BOOT-005
 BOOT-013,Mode Enforcement,automation,active,P1,Enforce BUILD/STABILIZE/RESET mode constraints,/Control_Plane/scripts/mode.py,BOOT-005
 BOOT-014,Registry CRUD,automation,active,P1,Automated add/modify/delete registry rows,/Control_Plane/scripts/registry.py,BOOT-002
-BOOT-015,Cloud Services Bootstrap,infrastructure,missing,P2,Bring up cloud services based on registry config,,BOOT-012
-BOOT-016,Module Swapping,infrastructure,missing,P2,Hot-swap modules like memory bus,,BOOT-012
+BOOT-015,Cloud Services Bootstrap,infrastructure,active,P2,Bring up cloud services based on registry config,/Control_Plane/scripts/cloud.py,BOOT-012
+BOOT-016,Module Swapping,infrastructure,active,P2,Hot-swap modules like memory bus,/Control_Plane/scripts/module.py,BOOT-012
 BOOT-017,Nested Registry Loader,automation,active,P1,Full child_registry_path resolution and loading,/Control_Plane/scripts/nested.py,BOOT-007

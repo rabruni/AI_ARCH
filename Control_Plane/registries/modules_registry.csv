@@ -1,0 +1,5 @@
+module_id,name,slot,selected,status,artifact_path,interface,version,description
+MOD-MEM-001,File Memory Bus,memory_bus,no,draft,,MemoryBusInterface,0.1.0,Simple file-based memory storage
+MOD-MEM-002,Redis Memory Bus,memory_bus,no,missing,,MemoryBusInterface,0.1.0,Redis-backed memory storage
+MOD-LLM-001,Anthropic Provider,llm_provider,no,draft,,LLMProviderInterface,0.1.0,Claude API provider
+MOD-LLM-002,OpenAI Provider,llm_provider,no,missing,,LLMProviderInterface,0.1.0,GPT API provider

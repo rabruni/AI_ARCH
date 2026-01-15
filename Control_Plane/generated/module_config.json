@@ -1,0 +1,26 @@
+{
+  "slots": {
+    "memory_bus": null,
+    "reasoning_engine": null,
+    "llm_provider": null,
+    "vector_store": null,
+    "cache": null
+  },
+  "last_updated": "2026-01-15T06:28:17.994843+00:00",
+  "history": [
+    {
+      "action": "swap",
+      "slot": "llm_provider",
+      "from": null,
+      "to": "MOD-LLM-001",
+      "timestamp": "2026-01-15T06:28:10.705256+00:00"
+    },
+    {
+      "action": "reset",
+      "slot": "llm_provider",
+      "from": "MOD-LLM-001",
+      "to": null,
+      "timestamp": "2026-01-15T06:28:17.994397+00:00"
+    }
+  ]
+}

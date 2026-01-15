@@ -1,29 +1,15 @@
 {
-  "generated_at": "2026-01-15T00:51:23.652155",
+  "generated_at": "2026-01-15T15:01:08.627844",
   "plans": [
     {
       "registry": "registries/control_plane_registry.csv",
       "items": [
         {
-          "id": "PRMPT-003",
-          "name": "Control Plane Verify",
+          "id": "PRMPT-001",
+          "name": "Control Plane Install",
           "entity_type": "prompt",
           "category": "control_plane",
-          "artifact_path": "/Control_Plane/control_plane/prompts/verify.md",
-          "install_prompt_path": "",
-          "update_prompt_path": "",
-          "verify_prompt_path": "",
-          "uninstall_prompt_path": "",
-          "child_registry_path": "",
-          "next_action": "",
-          "priority": "P0"
-        },
-        {
-          "id": "PRMPT-002",
-          "name": "Control Plane Update",
-          "entity_type": "prompt",
-          "category": "control_plane",
-          "artifact_path": "/Control_Plane/control_plane/prompts/update.md",
+          "artifact_path": "/Control_Plane/control_plane/prompts/install.md",
           "install_prompt_path": "",
           "update_prompt_path": "",
           "verify_prompt_path": "",
@@ -47,20 +33,6 @@
           "priority": "P1"
         },
         {
-          "id": "FMWK-900",
-          "name": "Repo OS Module",
-          "entity_type": "module",
-          "category": "Module",
-          "artifact_path": "/modules/repo_os/README.md",
-          "install_prompt_path": "",
-          "update_prompt_path": "",
-          "verify_prompt_path": "",
-          "uninstall_prompt_path": "",
-          "child_registry_path": "",
-          "next_action": "",
-          "priority": "P0"
-        },
-        {
           "id": "FMWK-001",
           "name": "Repo OS Spec",
           "entity_type": "framework",
@@ -75,11 +47,39 @@
           "priority": "P0"
         },
         {
-          "id": "PRMPT-001",
-          "name": "Control Plane Install",
+          "id": "PRMPT-002",
+          "name": "Control Plane Update",
           "entity_type": "prompt",
           "category": "control_plane",
-          "artifact_path": "/Control_Plane/control_plane/prompts/install.md",
+          "artifact_path": "/Control_Plane/control_plane/prompts/update.md",
+          "install_prompt_path": "",
+          "update_prompt_path": "",
+          "verify_prompt_path": "",
+          "uninstall_prompt_path": "",
+          "child_registry_path": "",
+          "next_action": "",
+          "priority": "P0"
+        },
+        {
+          "id": "PRMPT-003",
+          "name": "Control Plane Verify",
+          "entity_type": "prompt",
+          "category": "control_plane",
+          "artifact_path": "/Control_Plane/control_plane/prompts/verify.md",
+          "install_prompt_path": "",
+          "update_prompt_path": "",
+          "verify_prompt_path": "",
+          "uninstall_prompt_path": "",
+          "child_registry_path": "",
+          "next_action": "",
+          "priority": "P0"
+        },
+        {
+          "id": "FMWK-900",
+          "name": "Repo OS Module",
+          "entity_type": "module",
+          "category": "Module",
+          "artifact_path": "/modules/repo_os/README.md",
           "install_prompt_path": "",
           "update_prompt_path": "",
           "verify_prompt_path": "",

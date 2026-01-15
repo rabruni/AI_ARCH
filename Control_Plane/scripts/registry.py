@@ -104,25 +104,56 @@ def get_id_column(headers: list[str]) -> Optional[str]:
     return None
 
 
-def find_item_by_id(item_id: str) -> Optional[tuple[dict, Path, int]]:
-    """Find an item by ID across all registries. Returns (row, path, row_index)."""
-    registries = find_all_registries()
+def find_item(query: str) -> Optional[tuple[dict, Path, int]]:
+    """Find an item by ID or NAME across all registries. Returns (row, path, row_index).
 
+    Names are primary (P003), so we check name first, then ID.
+    """
+    registries = find_all_registries()
+    query_lower = query.lower().strip()
+    query_upper = query.upper().strip()
+
+    # First pass: exact name match (case-insensitive)
+    for reg_path in registries:
+        try:
+            headers, rows = read_registry(reg_path)
+            for idx, row in enumerate(rows):
+                name = row.get("name", "").strip()
+                if name.lower() == query_lower:
+                    return (row, reg_path, idx)
+        except Exception:
+            continue
+
+    # Second pass: ID match
     for reg_path in registries:
         try:
             headers, rows = read_registry(reg_path)
             id_col = get_id_column(headers)
-
             if not id_col:
                 continue
-
             for idx, row in enumerate(rows):
-                if row.get(id_col, "").strip() == item_id:
+                if row.get(id_col, "").strip().upper() == query_upper:
+                    return (row, reg_path, idx)
+        except Exception:
+            continue
+
+    # Third pass: partial name match (contains)
+    for reg_path in registries:
+        try:
+            headers, rows = read_registry(reg_path)
+            for idx, row in enumerate(rows):
+                name = row.get("name", "").strip()
+                if query_lower in name.lower():
                     return (row, reg_path, idx)
         except Exception:
             continue
 
     return None
+
+
+def find_item_by_id(item_id: str) -> Optional[tuple[dict, Path, int]]:
+    """Find an item by ID across all registries. Returns (row, path, row_index)."""
+    return find_item(item_id)
 
 
 def parse_fields(args: list[str]) -> dict:
@@ -177,17 +208,19 @@ def op_list(registry_name: Optional[str] = None):
         return 0
 
 
-def op_show(item_id: str):
-    """Show details of a specific item."""
-    found = find_item_by_id(item_id)
+def op_show(query: str):
+    """Show details of a specific item (by name or ID)."""
+    found = find_item(query)
 
     if not found:
-        print(f"Item not found: {item_id}")
+        print(f"Item not found: {query}")
         return 1
 
     row, reg_path, _ = found
+    item_name = row.get("name", query)
+    item_id = row.get("id", row.get(get_id_column(read_registry(reg_path)[0]) or "id", "?"))
 
-    print(f"\nItem: {item_id}")
+    print(f"\n{item_name} ({item_id})")
     print(f"Registry: {reg_path.relative_to(REPO_ROOT)}")
     print("=" * 60)
 
@@ -252,15 +285,16 @@ def op_add(registry_name: str, fields: dict):
     return 0
 
 
-def op_modify(item_id: str, fields: dict):
-    """Modify an existing item."""
-    found = find_item_by_id(item_id)
+def op_modify(query: str, fields: dict):
+    """Modify an existing item (by name or ID)."""
+    found = find_item(query)
 
     if not found:
-        print(f"Item not found: {item_id}")
+        print(f"Item not found: {query}")
         return 1
 
     row, reg_path, row_idx = found
+    item_name = row.get("name", query)
     headers, rows = read_registry(reg_path)
 
     # Track changes
@@ -281,7 +315,7 @@ def op_modify(item_id: str, fields: dict):
 
     write_registry(reg_path, headers, rows)
 
-    print(f"\nModified: {item_id}")
+    print(f"\nModified: {item_name}")
     print(f"Registry: {reg_path.relative_to(REPO_ROOT)}")
     print("\nChanges:")
     for key, old, new in changes:
@@ -290,25 +324,26 @@ def op_modify(item_id: str, fields: dict):
     return 0
 
 
-def op_delete(item_id: str, force: bool = False):
-    """Mark an item as deprecated (soft delete)."""
-    found = find_item_by_id(item_id)
+def op_delete(query: str, force: bool = False):
+    """Mark an item as deprecated (soft delete). Supports name or ID."""
+    found = find_item(query)
 
     if not found:
-        print(f"Item not found: {item_id}")
+        print(f"Item not found: {query}")
         return 1
 
     row, reg_path, row_idx = found
+    item_name = row.get("name", query)
     headers, rows = read_registry(reg_path)
 
     current_status = rows[row_idx].get("status", "")
 
     if current_status == "deprecated":
-        print(f"Item already deprecated: {item_id}")
+        print(f"Item already deprecated: {item_name}")
         return 0
 
     if not force:
-        print(f"\nWill deprecate: {item_id}")
+        print(f"\nWill deprecate: {item_name}")
         print(f"Current status: {current_status}")
         print("\nUse --force to confirm")
         return 2
@@ -321,7 +356,7 @@ def op_delete(item_id: str, force: bool = False):
 
     write_registry(reg_path, headers, rows)
 
-    print(f"\nDeprecated: {item_id}")
+    print(f"\nDeprecated: {item_name}")
     print(f"Registry: {reg_path.relative_to(REPO_ROOT)}")
     print("Status set to 'deprecated', selected set to 'no'")
 
@@ -354,9 +389,9 @@ def main():
 
     elif command == "show":
         if len(sys.argv) < 3:
-            print("Usage: registry.py show <item_id>")
+            print("Usage: registry.py show <name or id>")
             return 2
-        return op_show(sys.argv[2].upper())
+        return op_show(sys.argv[2])
 
     elif command == "add":
         if len(sys.argv) < 4:
@@ -368,19 +403,19 @@ def main():
 
     elif command == "modify":
         if len(sys.argv) < 4:
-            print("Usage: registry.py modify <item_id> <field=value> ...")
+            print("Usage: registry.py modify <name or id> <field=value> ...")
             return 2
-        item_id = sys.argv[2].upper()
+        query = sys.argv[2]
         fields = parse_fields(sys.argv[3:])
-        return op_modify(item_id, fields)
+        return op_modify(query, fields)
 
     elif command == "delete":
         if len(sys.argv) < 3:
-            print("Usage: registry.py delete <item_id> [--force]")
+            print("Usage: registry.py delete <name or id> [--force]")
             return 2
-        item_id = sys.argv[2].upper()
+        query = sys.argv[2]
         force = "--force" in sys.argv
-        return op_delete(item_id, force)
+        return op_delete(query, force)
 
     else:
         print(f"Unknown command: {command}")

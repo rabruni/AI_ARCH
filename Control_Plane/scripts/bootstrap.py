@@ -43,10 +43,15 @@ class BootstrapResult:
         self.checks = []
         self.passed = 0
         self.failed = 0
+        self.warnings = 0
 
     def ok(self, check: str):
         self.checks.append(("OK", check))
         self.passed += 1
+
+    def warn(self, check: str):
+        self.checks.append(("WARN", check))
+        self.warnings += 1
 
     def fail(self, check: str, reason: str):
         self.checks.append(("FAIL", f"{check}: {reason}"))
@@ -55,12 +60,15 @@ class BootstrapResult:
     def report(self) -> str:
         lines = ["=" * 50, "BOOTSTRAP REPORT", "=" * 50, ""]
         for status, msg in self.checks:
-            symbol = "✓" if status == "OK" else "✗"
+            symbol = {"OK": "✓", "WARN": "⚠", "FAIL": "✗"}[status]
             lines.append(f"  [{symbol}] {msg}")
         lines.append("")
         lines.append("-" * 50)
         if self.failed == 0:
-            lines.append(f"BOOTSTRAP OK: {self.passed}/{self.passed} checks passed")
+            status_msg = f"BOOTSTRAP OK: {self.passed} checks passed"
+            if self.warnings > 0:
+                status_msg += f" ({self.warnings} warnings)"
+            lines.append(status_msg)
             lines.append("System can exist. Run validate.py next.")
         else:
             lines.append(f"BOOTSTRAP FAIL: {self.failed} checks failed")
@@ -92,19 +100,60 @@ def check_directories(result: BootstrapResult):
             result.fail(f"Directory missing", dir_path)
 
 
+def tool_exists(tool: str, version_flag: str) -> bool:
+    """Check if a tool exists using multiple methods."""
+    # Method 1: shutil.which
+    if shutil.which(tool):
+        return True
+
+    # Method 2: Try running the command directly
+    try:
+        result = subprocess.run(
+            [tool, version_flag],
+            capture_output=True,
+            timeout=5
+        )
+        return result.returncode == 0
+    except (subprocess.TimeoutExpired, FileNotFoundError, OSError):
+        pass
+
+    # Method 3: Try common paths (for git especially)
+    common_paths = [
+        f"/usr/bin/{tool}",
+        f"/usr/local/bin/{tool}",
+        f"/opt/homebrew/bin/{tool}",
+    ]
+    for path in common_paths:
+        if os.path.isfile(path) and os.access(path, os.X_OK):
+            return True
+
+    return False
+
+
 def check_tools(result: BootstrapResult):
     """Check required tools are installed."""
-    tools = [
+    # Required tools - bootstrap fails if missing
+    required_tools = [
         ("python3", "--version"),
+    ]
+
+    # Optional tools - warning if missing, but bootstrap continues
+    optional_tools = [
         ("pip3", "--version"),  # pip3 on macOS
         ("git", "--version"),
     ]
 
-    for tool, version_flag in tools:
-        if shutil.which(tool):
+    for tool, version_flag in required_tools:
+        if tool_exists(tool, version_flag):
             result.ok(f"Tool installed: {tool}")
         else:
-            result.fail(f"Tool missing", tool)
+            result.fail(f"Tool missing (required)", tool)
+
+    for tool, version_flag in optional_tools:
+        if tool_exists(tool, version_flag):
+            result.ok(f"Tool installed: {tool}")
+        else:
+            result.warn(f"Tool not found (optional): {tool}")
 
 
 def check_versions_pinned(result: BootstrapResult):

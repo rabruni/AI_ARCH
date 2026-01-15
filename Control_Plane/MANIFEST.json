@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "generated": "2026-01-15T05:39:22.475691+00:00",
+  "generated": "2026-01-15T05:54:15.150503+00:00",
   "generator": "Control_Plane/scripts/generate_manifest.py",
   "checksums": {
     "SYSTEM_CONSTITUTION.md": {
@@ -40,8 +40,8 @@
       "size": 3220
     },
     "Control_Plane/scripts/bootstrap.py": {
-      "sha256": "7191111ccebbe9d35ce6140731eda6910728bfbe132fedfa6fad0378395f33e2",
-      "size": 6681
+      "sha256": "5bf72ec2c5972cee2dfd8e3e8df15af9979f8d2f70f7e79994afcebbfd4e86a7",
+      "size": 8165
     },
     "Control_Plane/scripts/validate_registry.py": {
       "sha256": "21f3828867bc31a172355ef034f7a9f248101e9e967dc902f06f94df6752cfe5",

@@ -15,4 +15,4 @@ BOOT-013,Mode Enforcement,automation,active,P1,Enforce BUILD/STABILIZE/RESET mod
 BOOT-014,Registry CRUD,automation,active,P1,Automated add/modify/delete registry rows,/Control_Plane/scripts/registry.py,BOOT-002
 BOOT-015,Cloud Services Bootstrap,infrastructure,missing,P2,Bring up cloud services based on registry config,,BOOT-012
 BOOT-016,Module Swapping,infrastructure,missing,P2,Hot-swap modules like memory bus,,BOOT-012
-BOOT-017,Nested Registry Loader,automation,missing,P1,Full child_registry_path resolution and loading,,BOOT-007
+BOOT-017,Nested Registry Loader,automation,active,P1,Full child_registry_path resolution and loading,/Control_Plane/scripts/nested.py,BOOT-007

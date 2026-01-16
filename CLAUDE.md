@@ -2,20 +2,10 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## First: Registration
+## On Startup: Boot the Control Plane
 
-**Ask the user:**
+**Run this immediately when starting a session:**
 
-> "This repository uses a Control Plane for managing state and configuration. Would you like to register this CLI session with the project?"
-
-If **yes**, run the registration flow below.
-If **no**, proceed with caution - you may not have full context.
-
----
-
-## Registration Flow
-
-### Step 1: Boot
 ```bash
 python3 Control_Plane/scripts/init.py
 ```
@@ -28,26 +18,17 @@ LAYER 3: INIT          [PASS]
 ✓ Ready to receive commands.
 ```
 
-### Step 2: Read the Spec
-```bash
-Read: Control_Plane/CONTROL_PLANE_SPEC.md
-```
+Then read: `Control_Plane/CONTROL_PLANE_SPEC.md`
 
-Understand:
-- Registry is source of truth
-- One registry: `Control_Plane/registries/control_plane_registry.csv`
+**Key concepts:**
+- Registry is source of truth: `Control_Plane/registries/control_plane_registry.csv`
 - Use NAMES for lookups, not IDs (P003)
 - Four verbs: install, update, verify, uninstall
 
-### Step 3: Confirm
-Tell the user:
-> "Registration complete. I've booted the Control Plane and understand the registry-driven workflow. Ready to receive commands."
-
 ---
 
-## Quick Reference (Post-Registration)
+## Commands
 
-### Commands
 ```bash
 # List everything
 python3 Control_Plane/scripts/registry.py list control_plane
@@ -62,7 +43,8 @@ python3 Control_Plane/scripts/registry.py modify "Local Dev Harness" selected=ye
 python3 Control_Plane/scripts/link.py check
 ```
 
-### Install Flow
+## Install Flow
+
 ```bash
 # 1. Select
 python3 Control_Plane/scripts/registry.py modify "Local Dev Harness" selected=yes
@@ -76,7 +58,8 @@ python3 Control_Plane/scripts/prompt.py execute install "Local Dev Harness"
 python3 Control_Plane/scripts/registry.py modify "Local Dev Harness" status=active
 ```
 
-### Critical Rules
+## Critical Rules
+
 | Rule | Description |
 |------|-------------|
 | P000 | Always run init.py first |
@@ -84,7 +67,8 @@ python3 Control_Plane/scripts/registry.py modify "Local Dev Harness" status=acti
 | P002 | Validate before commit |
 | P003 | Names are primary, IDs are reference |
 
-### Commit Format
+## Commit Format
+
 ```
 <type>: <description>
 
@@ -93,7 +77,8 @@ Co-Authored-By: Claude <noreply@anthropic.com>
 
 Types: `feat`, `fix`, `docs`, `chore`, `refactor`
 
-### Protected Paths
+## Protected Paths
+
 - `/_archive/` - no delete
 - `/SYSTEM_CONSTITUTION.md` - confirm before modify
 - `/Control_Plane/registries/` - validate after changes

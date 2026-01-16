@@ -16,41 +16,26 @@ Exit codes:
     2 = Circular dependency detected
 """
 
-import csv
 import json
 import sys
 from pathlib import Path
 from typing import Optional
 
+# Use canonical library
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-def get_repo_root() -> Path:
-    """Find repository root (contains .git/)."""
-    current = Path(__file__).resolve()
-    for parent in [current] + list(current.parents):
-        if (parent / ".git").is_dir():
-            return parent
-    return Path.cwd()
-
-
-REPO_ROOT = get_repo_root()
-CONTROL_PLANE = REPO_ROOT / "Control_Plane"
+from Control_Plane.lib import (
+    REPO_ROOT,
+    CONTROL_PLANE,
+    read_registry,
+    get_id_column,
+    resolve_artifact_path,
+)
 
 
 def resolve_path(path_str: str) -> Path:
-    """Resolve a registry path to absolute path."""
-    if not path_str:
-        return Path()
-
-    # Remove leading slash if present
-    if path_str.startswith("/"):
-        path_str = path_str[1:]
-
-    # If path starts with Control_Plane, use repo root
-    if path_str.startswith("Control_Plane"):
-        return REPO_ROOT / path_str
-
-    # Otherwise, path is relative to Control_Plane
-    return CONTROL_PLANE / path_str
+    """Resolve a registry path to absolute path. Delegates to library."""
+    return resolve_artifact_path(path_str)
 
 
 def get_root_registries() -> list[Path]:
@@ -59,23 +44,6 @@ def get_root_registries() -> list[Path]:
     if root_reg.is_dir():
         return sorted(root_reg.glob("*.csv"))
     return []
-
-
-def read_registry(reg_path: Path) -> tuple[list[str], list[dict]]:
-    """Read a registry and return headers and rows."""
-    with open(reg_path, newline="", encoding="utf-8") as f:
-        reader = csv.DictReader(f)
-        headers = reader.fieldnames or []
-        rows = list(reader)
-    return headers, rows
-
-
-def get_id_column(headers: list[str]) -> Optional[str]:
-    """Find the ID column (ends with _id)."""
-    for h in headers:
-        if h.endswith("_id"):
-            return h
-    return None
 
 
 class RegistryNode:

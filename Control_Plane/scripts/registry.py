@@ -18,142 +18,23 @@ Exit codes:
     3 = Validation failed
 """
 
-import csv
 import sys
-from datetime import datetime
 from pathlib import Path
 from typing import Optional
 
+# Use canonical library
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-def get_repo_root() -> Path:
-    """Find repository root (contains .git/)."""
-    current = Path(__file__).resolve()
-    for parent in [current] + list(current.parents):
-        if (parent / ".git").is_dir():
-            return parent
-    return Path.cwd()
-
-
-REPO_ROOT = get_repo_root()
-CONTROL_PLANE = REPO_ROOT / "Control_Plane"
-
-
-def find_all_registries() -> list[Path]:
-    """Find all CSV registries in Control_Plane."""
-    registries = []
-
-    # Root registries
-    root_reg = CONTROL_PLANE / "registries"
-    if root_reg.is_dir():
-        registries.extend(root_reg.glob("*.csv"))
-
-    # Module registries
-    modules_dir = CONTROL_PLANE / "modules"
-    if modules_dir.is_dir():
-        registries.extend(modules_dir.glob("**/registries/*.csv"))
-
-    # Init registry
-    init_reg = CONTROL_PLANE / "init" / "init_registry.csv"
-    if init_reg.is_file():
-        registries.append(init_reg)
-
-    # Boot OS registry
-    boot_reg = CONTROL_PLANE / "boot_os_registry.csv"
-    if boot_reg.is_file():
-        registries.append(boot_reg)
-
-    return sorted(registries)
-
-
-def find_registry_by_name(name: str) -> Optional[Path]:
-    """Find a registry by partial name match."""
-    registries = find_all_registries()
-    name_lower = name.lower()
-
-    for reg in registries:
-        if name_lower in reg.name.lower():
-            return reg
-
-    return None
-
-
-def read_registry(reg_path: Path) -> tuple[list[str], list[dict]]:
-    """Read a registry and return headers and rows."""
-    with open(reg_path, newline="", encoding="utf-8") as f:
-        reader = csv.DictReader(f)
-        headers = reader.fieldnames or []
-        rows = list(reader)
-    return headers, rows
-
-
-def write_registry(reg_path: Path, headers: list[str], rows: list[dict]):
-    """Write rows back to a registry."""
-    with open(reg_path, "w", newline="", encoding="utf-8") as f:
-        writer = csv.DictWriter(f, fieldnames=headers)
-        writer.writeheader()
-        writer.writerows(rows)
-
-
-def get_id_column(headers: list[str]) -> Optional[str]:
-    """Find the ID column (id or ends with _id)."""
-    if "id" in headers:
-        return "id"
-    for h in headers:
-        if h.endswith("_id"):
-            return h
-    return None
-
-
-def find_item(query: str) -> Optional[tuple[dict, Path, int]]:
-    """Find an item by ID or NAME across all registries. Returns (row, path, row_index).
-
-    Names are primary (P003), so we check name first, then ID.
-    """
-    registries = find_all_registries()
-    query_lower = query.lower().strip()
-    query_upper = query.upper().strip()
-
-    # First pass: exact name match (case-insensitive)
-    for reg_path in registries:
-        try:
-            headers, rows = read_registry(reg_path)
-            for idx, row in enumerate(rows):
-                name = row.get("name", "").strip()
-                if name.lower() == query_lower:
-                    return (row, reg_path, idx)
-        except Exception:
-            continue
-
-    # Second pass: ID match
-    for reg_path in registries:
-        try:
-            headers, rows = read_registry(reg_path)
-            id_col = get_id_column(headers)
-            if not id_col:
-                continue
-            for idx, row in enumerate(rows):
-                if row.get(id_col, "").strip().upper() == query_upper:
-                    return (row, reg_path, idx)
-        except Exception:
-            continue
-
-    # Third pass: partial name match (contains)
-    for reg_path in registries:
-        try:
-            headers, rows = read_registry(reg_path)
-            for idx, row in enumerate(rows):
-                name = row.get("name", "").strip()
-                if query_lower in name.lower():
-                    return (row, reg_path, idx)
-        except Exception:
-            continue
-
-    return None
-
-
-def find_item_by_id(item_id: str) -> Optional[tuple[dict, Path, int]]:
-    """Find an item by ID across all registries. Returns (row, path, row_index)."""
-    return find_item(item_id)
+from Control_Plane.lib import (
+    REPO_ROOT,
+    CONTROL_PLANE,
+    find_all_registries,
+    find_registry_by_name,
+    read_registry,
+    write_registry,
+    get_id_column,
+    find_item,
+)
 
 
 def parse_fields(args: list[str]) -> dict:
@@ -218,7 +99,9 @@ def op_show(query: str):
 
     row, reg_path, _ = found
     item_name = row.get("name", query)
-    item_id = row.get("id", row.get(get_id_column(read_registry(reg_path)[0]) or "id", "?"))
+    headers, _ = read_registry(reg_path)
+    id_col = get_id_column(headers)
+    item_id = row.get("id", row.get(id_col or "id", "?"))
 
     print(f"\n{item_name} ({item_id})")
     print(f"Registry: {reg_path.relative_to(REPO_ROOT)}")
@@ -319,7 +202,7 @@ def op_modify(query: str, fields: dict):
     print(f"Registry: {reg_path.relative_to(REPO_ROOT)}")
     print("\nChanges:")
     for key, old, new in changes:
-        print(f"  {key}: '{old}' → '{new}'")
+        print(f"  {key}: '{old}' -> '{new}'")
 
     return 0
 

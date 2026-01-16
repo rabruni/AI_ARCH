@@ -27,3 +27,4 @@ FMWK-050	Project Knowledge Base Pattern
 FMWK-051	Chat/Artifact Capture Workflow
 FMWK-052	Index/Registry System
 FMWK-900	Repo OS Module
+FMWK-053	Design Spec Pack + Gates (Module)

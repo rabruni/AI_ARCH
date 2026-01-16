@@ -65,7 +65,7 @@ python3 Control_Plane/scripts/module.py list     # modules only
 | P000 | Always run init.py first |
 | P001 | Registry is source of truth |
 | P002 | Validate before commit |
-| P003 | Names are primary, IDs are reference |
+| P003 | ID is primary key; names for convenience |
 
 ---
 

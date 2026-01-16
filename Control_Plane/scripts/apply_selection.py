@@ -7,15 +7,55 @@ Usage:
   python scripts/apply_selection.py
 """
 from __future__ import annotations
-import csv, json
+import csv
+import json
+import sys
 from pathlib import Path
 from collections import defaultdict, deque
 from typing import Dict, List, Set, Tuple
 
-ROOT = Path(__file__).resolve().parents[1]
-REG_DIR = ROOT / "registries"
-OUT = ROOT / "generated"
+# Use canonical library
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+
+from Control_Plane.lib import (
+    REPO_ROOT,
+    CONTROL_PLANE,
+    REGISTRIES_DIR,
+    GENERATED_DIR,
+    read_registry as lib_read_registry,
+)
+
+ROOT = CONTROL_PLANE
+REG_DIR = REGISTRIES_DIR
+OUT = GENERATED_DIR
 OUT.mkdir(exist_ok=True)
+
+
+def compute_next_action(row: Dict[str, str], artifact_exists: bool) -> str:
+    """Compute the next action for an item based on its state.
+
+    Decision matrix:
+    - status=missing, artifact missing -> "install"
+    - status=missing, artifact exists  -> "verify" (then mark active)
+    - status=draft,   artifact missing -> "install"
+    - status=draft,   artifact exists  -> "verify"
+    - status=active,  artifact missing -> "repair" (artifact was deleted?)
+    - status=active,  artifact exists  -> "" (ready, no action needed)
+    - status=deprecated -> "uninstall" or ""
+    """
+    status = (row.get("status", "") or "").strip().lower()
+
+    if status == "missing":
+        return "install" if not artifact_exists else "verify"
+    elif status == "draft":
+        return "install" if not artifact_exists else "verify"
+    elif status == "active":
+        return "repair" if not artifact_exists else ""
+    elif status == "deprecated":
+        return "uninstall"
+
+    return "install"  # Default for unknown status
+
 
 def read_csv(path: Path) -> List[Dict[str,str]]:
     with path.open(newline="", encoding="utf-8") as f:
@@ -76,18 +116,30 @@ def plan_registry(reg_path: Path) -> Tuple[Dict, List[Path]]:
         child = (r.get("child_registry_path","") or "").strip()
         if child:
             child_regs.append((ROOT / child.lstrip("/")).resolve())
+
+        # Check if artifact exists to compute next_action
+        artifact_path = (r.get("artifact_path", "") or "").strip()
+        artifact_exists = False
+        if artifact_path:
+            # Resolve path relative to repo root
+            check_path = REPO_ROOT / artifact_path.lstrip("/")
+            artifact_exists = check_path.exists()
+
+        next_action = compute_next_action(r, artifact_exists)
+
         items.append({
             "id": rid,
             "name": r.get("name",""),
             "entity_type": r.get("entity_type",""),
             "category": r.get("category", r.get("domain","")),
-            "artifact_path": r.get("artifact_path",""),
+            "artifact_path": artifact_path,
+            "status": r.get("status", ""),
             "install_prompt_path": r.get("install_prompt_path","") or r.get("prompt_path",""),
             "update_prompt_path": r.get("update_prompt_path",""),
             "verify_prompt_path": r.get("verify_prompt_path",""),
             "uninstall_prompt_path": r.get("uninstall_prompt_path",""),
             "child_registry_path": child,
-            "next_action": r.get("next_action",""),
+            "next_action": next_action,
             "priority": r.get("priority",""),
         })
     return {"registry": str(reg_path.relative_to(ROOT)), "items":items}, child_regs
@@ -127,7 +179,8 @@ def main():
             continue
         for it in p["items"]:
             suffix = f" → child:{it['child_registry_path']}" if it.get("child_registry_path") else ""
-            lines.append(f"- **{it['id']}** {it['name']} ({it.get('priority','')}) → {it.get('artifact_path','')}{suffix}")
+            action = f" [{it['next_action']}]" if it.get("next_action") else ""
+            lines.append(f"- **{it['id']}** {it['name']} ({it.get('priority','')}){action} → {it.get('artifact_path','')}{suffix}")
         lines.append("")
     (OUT / "selection_report.md").write_text("\n".join(lines), encoding="utf-8")
     print("OK: generated/plan.json and generated/selection_report.md")

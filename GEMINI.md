@@ -27,7 +27,7 @@ Then read: `Control_Plane/CONTROL_PLANE_SPEC.md`
 ## Key Concepts
 
 - **Registry is source of truth:** `Control_Plane/registries/control_plane_registry.csv`
-- **Use NAMES for lookups, not IDs** (P003)
+- **ID is primary key; names accepted for convenience** (P003)
 - **Four verbs:** install, update, verify, uninstall
 
 ---
@@ -57,7 +57,7 @@ python3 Control_Plane/scripts/link.py check
 | P000 | Always run init.py first |
 | P001 | Registry is source of truth |
 | P002 | Validate before commit |
-| P003 | Names are primary, IDs are reference |
+| P003 | ID is primary key; names for convenience |
 
 ---
 

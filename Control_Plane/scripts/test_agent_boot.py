@@ -9,30 +9,26 @@ This script checks if the system is ready for an agent to boot.
 Give the output to the agent and ask them to confirm each criterion.
 """
 
-import csv
 import subprocess
 import sys
 from pathlib import Path
 
+# Use canonical library
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-def get_repo_root() -> Path:
-    current = Path(__file__).resolve()
-    for parent in [current] + list(current.parents):
-        if (parent / ".git").is_dir():
-            return parent
-    return Path.cwd()
+from Control_Plane.lib import (
+    REPO_ROOT,
+    REGISTRIES_DIR,
+    read_registry,
+)
 
-
-REPO_ROOT = get_repo_root()
-REGISTRY = REPO_ROOT / "Control_Plane" / "registries" / "control_plane_registry.csv"
+REGISTRY = REGISTRIES_DIR / "control_plane_registry.csv"
 
 
 def check_registry_exists():
     """Check unified registry exists."""
     if REGISTRY.is_file():
-        with open(REGISTRY) as f:
-            reader = csv.DictReader(f)
-            rows = list(reader)
+        _, rows = read_registry(REGISTRY)
         return True, f"control_plane_registry.csv exists ({len(rows)} items)"
     return False, "control_plane_registry.csv NOT FOUND"
 

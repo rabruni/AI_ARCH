@@ -18,25 +18,25 @@ Exit codes:
     3 = Validation failed
 """
 
-import csv
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
 
+# Use canonical library
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-def get_repo_root() -> Path:
-    """Find repository root (contains .git/)."""
-    current = Path(__file__).resolve()
-    for parent in [current] + list(current.parents):
-        if (parent / ".git").is_dir():
-            return parent
-    return Path.cwd()
+from Control_Plane.lib import (
+    REPO_ROOT,
+    CONTROL_PLANE,
+    REGISTRIES_DIR,
+    read_registry,
+    get_id_column,
+    find_item,
+    resolve_artifact_path,
+)
 
-
-REPO_ROOT = get_repo_root()
-CONTROL_PLANE = REPO_ROOT / "Control_Plane"
-REGISTRY = CONTROL_PLANE / "registries" / "control_plane_registry.csv"
+REGISTRY = REGISTRIES_DIR / "control_plane_registry.csv"
 
 # Standard verb prompts
 VERB_PROMPTS = {
@@ -48,46 +48,18 @@ VERB_PROMPTS = {
 
 
 def resolve_path(path_str: str) -> Path:
-    """Resolve a path relative to repo root."""
-    if not path_str:
-        return Path()
-    if path_str.startswith("/"):
-        path_str = path_str[1:]
-    return REPO_ROOT / path_str
-
-
-def read_registry(registry_path: Path) -> tuple[list[str], list[dict]]:
-    """Read a registry file."""
-    if not registry_path.is_file():
-        return [], []
-    with open(registry_path, newline="", encoding="utf-8") as f:
-        reader = csv.DictReader(f)
-        headers = reader.fieldnames or []
-        rows = list(reader)
-    return headers, rows
-
-
-def get_id_column(headers: list[str]) -> Optional[str]:
-    """Find the ID column (id or ends with _id)."""
-    if "id" in headers:
-        return "id"
-    for h in headers:
-        if h.endswith("_id"):
-            return h
-    return None
+    """Resolve a path relative to repo root. Delegates to library."""
+    return resolve_artifact_path(path_str)
 
 
 def find_item_by_id(item_id: str) -> Optional[tuple[dict, Path, str]]:
-    """Find an item by ID in the unified registry."""
-    if not REGISTRY.is_file():
-        return None
-    headers, rows = read_registry(REGISTRY)
-    id_col = get_id_column(headers)
-    if not id_col:
-        return None
-    for row in rows:
-        if row.get(id_col, "").upper() == item_id.upper():
-            return row, REGISTRY, id_col
+    """Find an item by ID in the unified registry. Delegates to library."""
+    result = find_item(item_id)
+    if result:
+        row, reg_path, row_idx = result
+        headers, _ = read_registry(reg_path)
+        id_col = get_id_column(headers)
+        return row, reg_path, id_col or "id"
     return None
 
 

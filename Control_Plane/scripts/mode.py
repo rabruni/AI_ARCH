@@ -20,25 +20,22 @@ Exit codes:
     2 = Invalid mode or verb
 """
 
-import csv
 import json
 import sys
 from pathlib import Path
 from typing import Optional
 
+# Use canonical library
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-def get_repo_root() -> Path:
-    """Find repository root (contains .git/)."""
-    current = Path(__file__).resolve()
-    for parent in [current] + list(current.parents):
-        if (parent / ".git").is_dir():
-            return parent
-    return Path.cwd()
+from Control_Plane.lib import (
+    REPO_ROOT,
+    CONTROL_PLANE,
+    GENERATED_DIR,
+    count_registry_stats,
+)
 
-
-REPO_ROOT = get_repo_root()
-CONTROL_PLANE = REPO_ROOT / "Control_Plane"
-MODE_FILE = CONTROL_PLANE / "generated" / "mode.json"
+MODE_FILE = GENERATED_DIR / "mode.json"
 
 VALID_MODES = ["BUILD", "STABILIZE", "RESET"]
 

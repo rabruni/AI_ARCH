@@ -1,0 +1,4 @@
+id,name,type,path,status,version
+TPL-DFW-001,Spec Pack Templates,template,/modules/design_framework/templates/spec_pack/,active,0.1.0
+SCR-DFW-001,Apply Spec Pack Script,script,/modules/design_framework/scripts/apply_spec_pack.py,active,0.1.0
+STD-DFW-001,Design Framework Standard,standard,/modules/design_framework/standard.md,active,0.1.0

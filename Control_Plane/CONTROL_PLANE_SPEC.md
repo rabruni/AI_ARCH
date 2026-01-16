@@ -23,7 +23,7 @@ It provides a single source of truth for **what should exist**, **what does exis
 |-----------|-------------|
 | **Declarative** | Registry defines desired state; tools reconcile actual state |
 | **Registry-Driven** | All state lives in CSV registries, versioned in git |
-| **Names Primary** | Humans use names; IDs are for machine reference (P003) |
+| **ID Primary** | IDs are canonical keys; names accepted for human convenience (P003) |
 | **Verb-Based Operations** | Four standard verbs: install, update, verify, uninstall |
 | **Agent-Agnostic** | Any LLM (Claude, Codex, Gemini, etc.) boots the same way |
 

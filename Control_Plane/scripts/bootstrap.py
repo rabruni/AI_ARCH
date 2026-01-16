@@ -21,21 +21,10 @@ import shutil
 import subprocess
 from pathlib import Path
 
+# Use canonical library
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-def get_repo_root() -> Path:
-    """Find repository root (contains .git/)."""
-    current = Path(__file__).resolve()
-    for parent in [current] + list(current.parents):
-        if (parent / ".git").is_dir():
-            return parent
-    # Fallback: look for SYSTEM_CONSTITUTION.md
-    for parent in [current] + list(current.parents):
-        if (parent / "SYSTEM_CONSTITUTION.md").is_file():
-            return parent
-    return Path.cwd()
-
-
-REPO_ROOT = get_repo_root()
+from Control_Plane.lib import REPO_ROOT
 
 
 class BootstrapResult:

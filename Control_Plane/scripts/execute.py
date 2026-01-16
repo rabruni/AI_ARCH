@@ -19,26 +19,23 @@ Exit codes:
     3 = Execution failed
 """
 
-import csv
 import json
-import os
 import sys
 from datetime import datetime
 from pathlib import Path
 from typing import Optional
 
+# Use canonical library
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-def get_repo_root() -> Path:
-    """Find repository root (contains .git/)."""
-    current = Path(__file__).resolve()
-    for parent in [current] + list(current.parents):
-        if (parent / ".git").is_dir():
-            return parent
-    return Path.cwd()
-
-
-REPO_ROOT = get_repo_root()
-CONTROL_PLANE = REPO_ROOT / "Control_Plane"
+from Control_Plane.lib import (
+    REPO_ROOT,
+    CONTROL_PLANE,
+    read_registry,
+    get_id_column,
+    find_item,
+    resolve_artifact_path,
+)
 
 VALID_VERBS = ["install", "update", "verify", "uninstall"]
 

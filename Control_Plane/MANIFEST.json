@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "generated": "2026-01-15T07:51:23.360403+00:00",
+  "generated": "2026-01-16T07:55:46.553488+00:00",
   "generator": "Control_Plane/scripts/generate_manifest.py",
   "checksums": {
     "SYSTEM_CONSTITUTION.md": {
@@ -40,20 +40,20 @@
       "size": 3220
     },
     "Control_Plane/scripts/bootstrap.py": {
-      "sha256": "5bf72ec2c5972cee2dfd8e3e8df15af9979f8d2f70f7e79994afcebbfd4e86a7",
-      "size": 8165
+      "sha256": "88993a6f1c0c5b0d6a02135864a0b47a465937bd63a9fcb469052ad2f84d980f",
+      "size": 7818
     },
     "Control_Plane/scripts/validate_registry.py": {
-      "sha256": "21f3828867bc31a172355ef034f7a9f248101e9e967dc902f06f94df6752cfe5",
-      "size": 9188
+      "sha256": "cb2dba39eb1c3a1c5d42cd57add23e68ad806b4d01703e65aa23f1ee71d1d378",
+      "size": 9233
     },
     "Control_Plane/scripts/apply_selection.py": {
-      "sha256": "52a7f1969ecf4a79ff9e1b5ae269e66b2d25e5404a4efc25e5605647f0832273",
-      "size": 4678
+      "sha256": "1e80fe25a40a129366e5d2c703ec764580560f8501d7418d294e69227ec68b60",
+      "size": 6438
     },
     "Control_Plane/registries/control_plane_registry.csv": {
-      "sha256": "287bec969512a0b60c25422958d14c7271461da0c7df77ea427a38ecc4f45eb6",
-      "size": 9542
+      "sha256": "b2618f50d43476c72e9ccc8f9a4bb32130fbe39b901825a27a3eac6c2713e2bd",
+      "size": 9815
     }
   },
   "missing": [],

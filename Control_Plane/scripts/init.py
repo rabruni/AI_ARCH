@@ -15,27 +15,23 @@ Exit codes:
     3 = Plan generation failed
 """
 
-import csv
 import subprocess
 import sys
 from pathlib import Path
 
+# Use canonical library
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-def get_repo_root() -> Path:
-    """Find repository root (contains .git/)."""
-    current = Path(__file__).resolve()
-    for parent in [current] + list(current.parents):
-        if (parent / ".git").is_dir():
-            return parent
-    return Path.cwd()
-
-
-REPO_ROOT = get_repo_root()
+from Control_Plane.lib import (
+    REPO_ROOT,
+    CONTROL_PLANE,
+    count_registry_stats,
+)
 
 
 def run_layer(script_name: str, layer_num: int, layer_name: str) -> bool:
     """Run a layer script and return success status."""
-    script_path = REPO_ROOT / "Control_Plane" / "scripts" / script_name
+    script_path = CONTROL_PLANE / "scripts" / script_name
 
     print(f"\n{'='*60}")
     print(f"LAYER {layer_num}: {layer_name.upper()}")
@@ -47,42 +43,6 @@ def run_layer(script_name: str, layer_num: int, layer_name: str) -> bool:
     )
 
     return result.returncode == 0
-
-
-def count_registry_stats() -> dict:
-    """Count registry statistics for report."""
-    stats = {
-        "registries": 0,
-        "selected": 0,
-        "active": 0,
-        "missing": 0,
-    }
-
-    registry_dir = REPO_ROOT / "Control_Plane" / "registries"
-    if not registry_dir.is_dir():
-        return stats
-
-    csv_files = list(registry_dir.glob("*.csv"))
-    stats["registries"] = len(csv_files)
-
-    for csv_file in csv_files:
-        try:
-            with open(csv_file, newline="", encoding="utf-8") as f:
-                reader = csv.DictReader(f)
-                for row in reader:
-                    selected = row.get("selected", "").strip().lower()
-                    status = row.get("status", "").strip().lower()
-
-                    if selected == "yes":
-                        stats["selected"] += 1
-                    if status == "active":
-                        stats["active"] += 1
-                    if status == "missing":
-                        stats["missing"] += 1
-        except Exception:
-            pass
-
-    return stats
 
 
 def determine_mode(stats: dict) -> str:
@@ -102,13 +62,13 @@ def main():
 
     # Layer 1: Bootstrap
     if not run_layer("bootstrap.py", 1, "Bootstrap (Environmental)"):
-        print("\n❌ INIT FAILED: Bootstrap failed")
+        print("\n[FAIL] INIT FAILED: Bootstrap failed")
         print("   System cannot exist. Fix environmental issues.")
         return 1
 
     # Layer 2: Validate
     if not run_layer("validate.py", 2, "Validate (Integrity)"):
-        print("\n❌ INIT FAILED: Validation failed")
+        print("\n[FAIL] INIT FAILED: Validation failed")
         print("   System exists but data is corrupt. Fix integrity issues.")
         return 2
 
@@ -117,31 +77,31 @@ def main():
     print("LAYER 3: INIT (Semantic)")
     print(f"{'='*60}\n")
 
-    apply_script = REPO_ROOT / "Control_Plane" / "scripts" / "apply_selection.py"
+    apply_script = CONTROL_PLANE / "scripts" / "apply_selection.py"
     result = subprocess.run(
         ["python3", str(apply_script)],
         cwd=REPO_ROOT,
     )
 
     if result.returncode != 0:
-        print("\n❌ INIT FAILED: Plan generation failed")
+        print("\n[FAIL] INIT FAILED: Plan generation failed")
         return 3
 
-    # Final report
+    # Final report - use library function
     stats = count_registry_stats()
     mode = determine_mode(stats)
 
-    print(f"\n{'═'*60}")
+    print(f"\n{'='*60}")
     print("INIT COMPLETE")
-    print(f"{'═'*60}")
+    print(f"{'='*60}")
     print(f"  Registries: {stats['registries']} loaded")
     print(f"  Selected:   {stats['selected']} items")
     print(f"  Active:     {stats['active']} items")
     print(f"  Missing:    {stats['missing']} items (to install)")
     print(f"  Mode:       {mode}")
     print(f"  Plan:       Control_Plane/generated/plan.json")
-    print(f"{'═'*60}")
-    print("\n✓ Ready to receive commands.")
+    print(f"{'='*60}")
+    print("\n[OK] Ready to receive commands.")
     print("\nNext steps:")
     print("  - Read plan.json to see pending work")
     print("  - Use verb prompts to execute: install, update, verify, uninstall")

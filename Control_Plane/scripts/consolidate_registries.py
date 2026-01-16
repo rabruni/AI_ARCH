@@ -2,9 +2,15 @@
 """One-time script to consolidate 5 registries into 1."""
 import csv
 import json
+import sys
 from pathlib import Path
 
-REG_DIR = Path(__file__).parent.parent / "registries"
+# Use canonical library
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+
+from Control_Plane.lib import REGISTRIES_DIR
+
+REG_DIR = REGISTRIES_DIR
 OUTPUT = REG_DIR / "control_plane_registry.csv"
 
 # Unified schema

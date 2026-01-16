@@ -19,54 +19,30 @@ Exit codes:
     3 = Broken dependency found
 """
 
-import csv
 import sys
 from collections import defaultdict
 from pathlib import Path
 from typing import Optional
 
+# Use canonical library
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-def get_repo_root() -> Path:
-    """Find repository root (contains .git/)."""
-    current = Path(__file__).resolve()
-    for parent in [current] + list(current.parents):
-        if (parent / ".git").is_dir():
-            return parent
-    return Path.cwd()
-
-
-REPO_ROOT = get_repo_root()
-CONTROL_PLANE = REPO_ROOT / "Control_Plane"
+from Control_Plane.lib import (
+    REPO_ROOT,
+    CONTROL_PLANE,
+    REGISTRIES_DIR,
+    read_registry,
+    get_id_column,
+)
 
 # Unified registry
-REGISTRY = CONTROL_PLANE / "registries" / "control_plane_registry.csv"
+REGISTRY = REGISTRIES_DIR / "control_plane_registry.csv"
 
 # Also include boot_os_registry for backward compatibility
 REGISTRIES = [
     REGISTRY,
     CONTROL_PLANE / "boot_os_registry.csv",
 ]
-
-
-def read_registry(registry_path: Path) -> tuple[list[str], list[dict]]:
-    """Read a registry file."""
-    if not registry_path.is_file():
-        return [], []
-    with open(registry_path, newline="", encoding="utf-8") as f:
-        reader = csv.DictReader(f)
-        headers = reader.fieldnames or []
-        rows = list(reader)
-    return headers, rows
-
-
-def get_id_column(headers: list[str]) -> Optional[str]:
-    """Find the ID column (id or ends with _id)."""
-    if "id" in headers:
-        return "id"
-    for h in headers:
-        if h.endswith("_id"):
-            return h
-    return None
 
 
 def load_all_items() -> dict[str, tuple[dict, Path, str]]:

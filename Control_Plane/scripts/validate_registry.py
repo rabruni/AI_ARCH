@@ -16,10 +16,15 @@ import yaml
 from pathlib import Path
 from typing import Any, Dict, List, Set
 
-# Paths
-SCRIPT_DIR = Path(__file__).resolve().parent
-CONTROL_PLANE_ROOT = SCRIPT_DIR.parent
-REPO_ROOT = CONTROL_PLANE_ROOT.parent
+# Use canonical library
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+
+from Control_Plane.lib import (
+    REPO_ROOT,
+    CONTROL_PLANE,
+    REGISTRIES_DIR,
+)
+
 CONSTITUTION_PATH = REPO_ROOT / "SYSTEM_CONSTITUTION.md"
 
 

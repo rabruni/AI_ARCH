@@ -40,8 +40,27 @@ jobs:
           python -m pip install --upgrade pip
           pip install pyyaml
 
-      - name: Run Validator
+      - name: Run Registry Validator
         run: python3 Control_Plane/scripts/validate_registry.py
+
+      - name: Run Integrity Validator
+        run: python3 Control_Plane/scripts/validate.py
+
+  spec-packs:
+    name: Validate Spec Packs
+    runs-on: ubuntu-latest
+    needs: validate
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Validate Spec Packs
+        run: python3 Control_Plane/scripts/validate_spec_pack.py --all
 
   test:
     name: Run Tests

@@ -18,27 +18,26 @@ Exit codes:
     3 = Validation failed
 """
 
-import csv
 import json
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
 
+# Use canonical library
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-def get_repo_root() -> Path:
-    """Find repository root (contains .git/)."""
-    current = Path(__file__).resolve()
-    for parent in [current] + list(current.parents):
-        if (parent / ".git").is_dir():
-            return parent
-    return Path.cwd()
+from Control_Plane.lib import (
+    REPO_ROOT,
+    CONTROL_PLANE,
+    REGISTRIES_DIR,
+    GENERATED_DIR,
+    read_registry,
+    get_id_column,
+)
 
-
-REPO_ROOT = get_repo_root()
-CONTROL_PLANE = REPO_ROOT / "Control_Plane"
-REGISTRY = CONTROL_PLANE / "registries" / "control_plane_registry.csv"
-MODULE_CONFIG = CONTROL_PLANE / "generated" / "module_config.json"
+REGISTRY = REGISTRIES_DIR / "control_plane_registry.csv"
+MODULE_CONFIG = GENERATED_DIR / "module_config.json"
 
 # Predefined slots that can have swappable modules
 SLOTS = {

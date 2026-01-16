@@ -18,7 +18,6 @@ Exit codes:
     3 = Configuration error
 """
 
-import csv
 import json
 import os
 import subprocess
@@ -27,20 +26,20 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
 
+# Use canonical library
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-def get_repo_root() -> Path:
-    """Find repository root (contains .git/)."""
-    current = Path(__file__).resolve()
-    for parent in [current] + list(current.parents):
-        if (parent / ".git").is_dir():
-            return parent
-    return Path.cwd()
+from Control_Plane.lib import (
+    REPO_ROOT,
+    CONTROL_PLANE,
+    REGISTRIES_DIR,
+    GENERATED_DIR,
+    read_registry,
+    get_id_column,
+)
 
-
-REPO_ROOT = get_repo_root()
-CONTROL_PLANE = REPO_ROOT / "Control_Plane"
-CLOUD_REGISTRY = CONTROL_PLANE / "registries" / "cloud_services_registry.csv"
-CLOUD_STATE = CONTROL_PLANE / "generated" / "cloud_state.json"
+CLOUD_REGISTRY = REGISTRIES_DIR / "cloud_services_registry.csv"
+CLOUD_STATE = GENERATED_DIR / "cloud_state.json"
 
 # Supported providers and their provisioners
 PROVIDERS = {

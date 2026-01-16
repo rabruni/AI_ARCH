@@ -2,50 +2,52 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## First: Boot the Control Plane
+## First: Registration
 
+**Ask the user:**
+
+> "This repository uses a Control Plane for managing state and configuration. Would you like to register this CLI session with the project?"
+
+If **yes**, run the registration flow below.
+If **no**, proceed with caution - you may not have full context.
+
+---
+
+## Registration Flow
+
+### Step 1: Boot
 ```bash
 python3 Control_Plane/scripts/init.py
 ```
 
-This validates the system and shows current state. Run this before any other work.
-
-## What This Repo Is
-
-A **Control Plane** - a registry-driven management layer for:
-- LLM agents working on the codebase
-- Services and infrastructure
-- Application components and configuration
-
-**One registry. One file. One source of truth:**
+Confirm all 3 layers pass:
 ```
-Control_Plane/registries/control_plane_registry.csv
+LAYER 1: BOOTSTRAP     [PASS]
+LAYER 2: VALIDATE      [PASS]
+LAYER 3: INIT          [PASS]
+✓ Ready to receive commands.
 ```
 
-## Architecture
-
-```
-Control_Plane/
-├── registries/
-│   └── control_plane_registry.csv   # THE source of truth (46 items)
-├── scripts/
-│   ├── init.py          # Boot: bootstrap → validate → plan
-│   ├── registry.py      # CRUD: list, show, modify, delete
-│   ├── prompt.py        # Execute verb prompts (install/update/verify/uninstall)
-│   ├── module.py        # Swap runtime modules
-│   ├── link.py          # Dependency graph operations
-│   └── validate.py      # Integrity checks
-├── control_plane/prompts/
-│   ├── install.md       # Standard verb prompts (generic, work for any item)
-│   ├── update.md
-│   ├── verify.md
-│   └── uninstall.md
-└── CONTROL_PLANE_SPEC.md   # Full specification
+### Step 2: Read the Spec
+```bash
+Read: Control_Plane/CONTROL_PLANE_SPEC.md
 ```
 
-## Commands
+Understand:
+- Registry is source of truth
+- One registry: `Control_Plane/registries/control_plane_registry.csv`
+- Use NAMES for lookups, not IDs (P003)
+- Four verbs: install, update, verify, uninstall
 
-### Registry Operations (by NAME, not ID)
+### Step 3: Confirm
+Tell the user:
+> "Registration complete. I've booted the Control Plane and understand the registry-driven workflow. Ready to receive commands."
+
+---
+
+## Quick Reference (Post-Registration)
+
+### Commands
 ```bash
 # List everything
 python3 Control_Plane/scripts/registry.py list control_plane
@@ -53,7 +55,7 @@ python3 Control_Plane/scripts/registry.py list control_plane
 # Show item by name
 python3 Control_Plane/scripts/registry.py show "Definition of Done"
 
-# Modify item by name
+# Modify item
 python3 Control_Plane/scripts/registry.py modify "Local Dev Harness" selected=yes
 
 # Check dependencies
@@ -74,33 +76,15 @@ python3 Control_Plane/scripts/prompt.py execute install "Local Dev Harness"
 python3 Control_Plane/scripts/registry.py modify "Local Dev Harness" status=active
 ```
 
-### Module Swapping
-```bash
-python3 Control_Plane/scripts/module.py list
-python3 Control_Plane/scripts/module.py swap memory_bus "Redis Memory Bus"
-```
-
-## Critical Rules
-
+### Critical Rules
 | Rule | Description |
 |------|-------------|
 | P000 | Always run init.py first |
 | P001 | Registry is source of truth |
 | P002 | Validate before commit |
-| P003 | **Names are primary, IDs are reference** |
+| P003 | Names are primary, IDs are reference |
 
-## Registry Schema
-
-| Column | Purpose |
-|--------|---------|
-| id | Machine key (FMWK-001, MOD-001) |
-| name | Human key - **use this for lookups** |
-| entity_type | framework, module, component, prompt, cloud |
-| status | missing → draft → active → deprecated |
-| selected | yes/no - included in current plan |
-
-## Commit Format
-
+### Commit Format
 ```
 <type>: <description>
 
@@ -109,8 +93,7 @@ Co-Authored-By: Claude <noreply@anthropic.com>
 
 Types: `feat`, `fix`, `docs`, `chore`, `refactor`
 
-## Protected Paths
-
-- `/_archive/` - no delete (historical record)
+### Protected Paths
+- `/_archive/` - no delete
 - `/SYSTEM_CONSTITUTION.md` - confirm before modify
 - `/Control_Plane/registries/` - validate after changes

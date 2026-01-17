@@ -1,0 +1,26 @@
+[
+  {
+    "gate_id": "G0",
+    "status": "passed",
+    "category": "OK",
+    "reason": "gate not implemented; skipped",
+    "evidence_paths": [],
+    "recommended_route": null
+  },
+  {
+    "gate_id": "G1",
+    "status": "passed",
+    "category": "OK",
+    "reason": "structure ok",
+    "evidence_paths": [],
+    "recommended_route": null
+  },
+  {
+    "gate_id": "G2",
+    "status": "passed",
+    "category": "OK",
+    "reason": "schemas valid",
+    "evidence_paths": [],
+    "recommended_route": null
+  }
+]

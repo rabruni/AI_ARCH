@@ -1,0 +1,105 @@
+{
+  "version": "0.1.0",
+  "compiled_at": "2026-01-17T01:45:19.658287+00:00",
+  "agents": {},
+  "prompts": {},
+  "gates": {},
+  "flows": {
+    "VISION_TO_VALIDATE": {
+      "phases": [
+        {
+          "id": "Phase0A",
+          "role": "ROLE:Vision Lowering (Goal Compiler)",
+          "agent_selector": "Resolve via Agent Map (default Gemini)",
+          "prompt_key": "P-1 Vision Lowering",
+          "gate_keys": [
+            "G0"
+          ],
+          "iteration_rule": "Iterate up to 3 passes; each pass must reduce ambiguity/scope. If G0 fails, revise goals and retry (max 2 retries per pass).",
+          "constraint_rule": "Goals must be bounded, testable, artifact-defined; disallow 'perfect/intuitive' language unless tied to metrics.",
+          "outputs": "vision.md; outcomes.yaml; capabilities.yaml; goals.yaml; qualified_goals.yaml; deferred.yaml",
+          "stop_condition": "Stop if required inputs missing or >1 plausible interpretation; request human decision. Stop if 3 passes exhausted without qualified goals.",
+          "max_retries": null
+        },
+        {
+          "id": "Phase1",
+          "role": "ROLE:Designer",
+          "agent_selector": "Resolve via Agent Map (default Gemini)",
+          "prompt_key": "P1 Designer",
+          "gate_keys": [
+            "G0",
+            "G1",
+            "G2"
+          ],
+          "iteration_rule": "One spec per qualified goal. If spec exceeds scope, split into 2+ goals and return to VISION_TO_GOALS.",
+          "constraint_rule": "Spec must include exact file tree, artifacts, and acceptance gates. Non-goals mandatory.",
+          "outputs": "SPEC.md; plan.json; schema.json(optional)",
+          "stop_condition": "Stop if spec cannot define pass/fail gates; return to lowering/splitting.",
+          "max_retries": null
+        },
+        {
+          "id": "Phase2",
+          "role": "ROLE:Builder",
+          "agent_selector": "Resolve via Agent Map (default Claude, module work may use Codex)",
+          "prompt_key": "P1 Builder",
+          "gate_keys": [
+            "G1",
+            "G2",
+            "G3",
+            "CW1"
+          ],
+          "iteration_rule": "Implement minimal slice to pass gates; iterate until all gates green (max 3 cycles).",
+          "constraint_rule": "Only modify files listed in SPEC. No new scope.",
+          "outputs": "Repo changes (code/config/docs); gate outputs (logs)",
+          "stop_condition": "Stop if gate conflicts with SPEC; escalate to Designer to amend SPEC.",
+          "max_retries": null
+        },
+        {
+          "id": "Phase3",
+          "role": "ROLE:Runner",
+          "agent_selector": "Resolve via Agent Map (default Claude)",
+          "prompt_key": "P0",
+          "gate_keys": [
+            "G3",
+            "CW1"
+          ],
+          "iteration_rule": "Execute smoke/run commands defined in SPEC; if fail, return to SPEC_TO_BUILD.",
+          "constraint_rule": "No feature changes; only fixes to make run succeed under gates.",
+          "outputs": "Run logs; updated tests if needed",
+          "stop_condition": "Stop if runtime failures indicate missing spec requirements; return to GOAL_TO_SPEC.",
+          "max_retries": null
+        },
+        {
+          "id": "Phase4",
+          "role": "ROLE:Auditor",
+          "agent_selector": "Resolve via Agent Map (any; default Claude)",
+          "prompt_key": "P1 Auditor",
+          "gate_keys": [
+            "G1",
+            "G2",
+            "G3",
+            "CW1",
+            "CI1"
+          ],
+          "iteration_rule": "Independent verification. If mismatch found, open actionable fix list; Builder applies fixes then re-audit (max 2 re-audits).",
+          "constraint_rule": "Auditor cannot implement features; may strengthen tests/gates only.",
+          "outputs": "AUDIT.md; compliance report; gate outputs",
+          "stop_condition": "Stop if repeated failures (>2) \u2014 requires human decision on scope/spec.",
+          "max_retries": null
+        }
+      ]
+    }
+  },
+  "session_state": {
+    "SessionKey": "VISION_TO_VALIDATE",
+    "Phase": "Phase0A",
+    "Enabled": "1",
+    "Status": "ready",
+    "RetryCount": "0",
+    "MaxRetries": "3",
+    "AllowSkip": "0",
+    "LastRunTS": "",
+    "LastResult": "",
+    "Notes": "Vision lowering / goal qualification"
+  }
+}

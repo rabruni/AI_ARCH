@@ -29,7 +29,7 @@ from Control_Plane.lib import REPO_ROOT, CONTROL_PLANE
 
 # Paths
 TEMPLATES_DIR = CONTROL_PLANE / "modules" / "design_framework" / "templates"
-SPECS_DIR = REPO_ROOT / "docs" / "specs"
+SPECS_DIR = CONTROL_PLANE / "docs" / "specs"
 
 # Template files (8 files)
 TEMPLATE_FILES = [
@@ -79,8 +79,11 @@ def apply_spec_pack(target: str, force: bool = False) -> int:
         print(f"       Expected: {TEMPLATES_DIR.relative_to(REPO_ROOT)}")
         return 2
 
-    # Create target directory
+    # Create target directory and artifacts subdirectory
     target_dir.mkdir(parents=True, exist_ok=True)
+    artifacts_dir = target_dir / "artifacts"
+    artifacts_dir.mkdir(exist_ok=True)
+    (artifacts_dir / "gate_logs").mkdir(exist_ok=True)
 
     # Copy and customize templates
     today = datetime.now().strftime("%Y-%m-%d")
@@ -106,10 +109,12 @@ def apply_spec_pack(target: str, force: bool = False) -> int:
     print(f"\n[OK] Created spec pack: {target}")
     print(f"     Path: {target_dir.relative_to(REPO_ROOT)}")
     print(f"     Files: {copied}")
+    print(f"     Artifacts: {artifacts_dir.relative_to(REPO_ROOT)}/")
     print("\nNext steps:")
     print(f"  1. Edit the 8 files in {target_dir.relative_to(REPO_ROOT)}/")
-    print("  2. Replace all {{placeholder}} values")
-    print(f"  3. Validate: python3 Control_Plane/scripts/validate_spec_pack.py --target {target}")
+    print("  2. Replace all TBD/TODO/placeholder values")
+    print(f"  3. Run G0 gate: python3 Control_Plane/cp.py gate G0 {target}")
+    print(f"  4. Run G1 gate: python3 Control_Plane/cp.py gate G1 {target}")
 
     return 0
 

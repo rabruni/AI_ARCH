@@ -27,7 +27,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from Control_Plane.lib import REPO_ROOT, CONTROL_PLANE
 
 # Paths
-SPECS_DIR = REPO_ROOT / "docs" / "specs"
+SPECS_DIR = CONTROL_PLANE / "docs" / "specs"
 
 # Required files (8 files)
 REQUIRED_FILES = [

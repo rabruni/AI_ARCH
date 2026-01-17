@@ -11,7 +11,15 @@ Usage:
     cp verify [name-or-id]         # Verify item or all selected
     cp deps <name-or-id>           # Show dependencies
     cp plan                        # Regenerate plan.json
+    cp apply-spec --target <id>    # Create spec pack from templates
     cp validate-spec [--all]       # Validate spec packs
+    cp gate G0|G1|--all <target>   # Run gates on spec pack
+    cp compile-registry <xlsx> --output <path>
+    cp flow start <SPEC_ID> [--registry <json>] [--flow-key VISION_TO_VALIDATE]
+    cp flow status <SPEC_ID>
+    cp flow next <SPEC_ID>
+    cp flow done <SPEC_ID> [--phase PhaseX] [--paste|--stdin]
+    cp flow resume <SPEC_ID>
 
 Aliases:
     cp ls = cp list
@@ -19,6 +27,7 @@ Aliases:
     cp v = cp verify
     cp s = cp status
 """
+import json
 import subprocess
 import sys
 from pathlib import Path
@@ -42,6 +51,7 @@ from Control_Plane.lib import (
     count_registry_stats,
     resolve_artifact_path,
 )
+from Control_Plane.flow_runner import write_compiled_registry, FlowRunner
 
 
 def cmd_init() -> int:
@@ -399,6 +409,28 @@ def cmd_plan() -> int:
     return result.returncode
 
 
+def cmd_apply_spec(target: str, force: bool = False) -> int:
+    """Create spec pack from templates.
+
+    Args:
+        target: Spec pack ID (e.g., SPEC-001)
+        force: If True, overwrite existing spec pack
+    """
+    script = CONTROL_PLANE / "scripts" / "apply_spec_pack.py"
+
+    if not script.is_file():
+        print(f"[FAIL] apply_spec_pack.py not found")
+        print("Design Framework module may not be installed.")
+        return 1
+
+    cmd = ["python3", str(script), "--target", target]
+    if force:
+        cmd.append("--force")
+
+    result = subprocess.run(cmd, cwd=REPO_ROOT)
+    return result.returncode
+
+
 def cmd_validate_spec(target: str = None, validate_all: bool = False) -> int:
     """Validate spec packs.
 
@@ -425,6 +457,130 @@ def cmd_validate_spec(target: str = None, validate_all: bool = False) -> int:
 
     result = subprocess.run(cmd, cwd=REPO_ROOT)
     return result.returncode
+
+
+def cmd_gate(gate: str = None, target: str = None, run_all: bool = False) -> int:
+    """Run gates on spec pack.
+
+    Args:
+        gate: Gate to run (G0 or G1)
+        target: Spec pack ID
+        run_all: If True, run all gates in sequence
+    """
+    script = CONTROL_PLANE / "scripts" / "gate.py"
+
+    if not script.is_file():
+        print(f"[FAIL] gate.py not found")
+        print("Design Framework module may not be installed.")
+        return 1
+
+    # Extract spec ID from path if given
+    if target and "/" in target:
+        target = Path(target).name
+
+    cmd = ["python3", str(script)]
+    if run_all:
+        cmd.extend(["--all", target])
+    elif gate and target:
+        cmd.extend([gate.upper(), target])
+    else:
+        print("Usage: cp gate G0|G1 <target>")
+        print("       cp gate --all <target>")
+        return 1
+
+    result = subprocess.run(cmd, cwd=REPO_ROOT)
+    return result.returncode
+
+
+def cmd_compile_registry(xlsx_path: str, output_path: str) -> int:
+    """Compile registry XLSX to JSON."""
+    output = write_compiled_registry(xlsx_path, output_path)
+    print(f"[OK] Registry compiled: {output}")
+    return 0
+
+
+def _default_registry_path() -> Path:
+    return CONTROL_PLANE / "registries" / "compiled" / "registry.json"
+
+
+def _flow_runner_from_session(spec_id: str) -> FlowRunner:
+    spec_root = CONTROL_PLANE / "docs" / "specs" / spec_id
+    session_path = spec_root / "artifacts" / "session.json"
+    if not session_path.exists():
+        raise FileNotFoundError("Session not found. Run: cp flow start <SPEC_ID>")
+    session = json.loads(session_path.read_text(encoding="utf-8"))
+    registry_path = session.get("registry_path") or str(_default_registry_path())
+    flow_key = session.get("flow_key") or "DEFAULT"
+    return FlowRunner(
+        spec_id=spec_id,
+        registry_path=Path(registry_path),
+        flow_key=flow_key,
+        repo_root=REPO_ROOT,
+    )
+
+
+def cmd_flow_start(spec_id: str, registry_path: str | None, flow_key: str | None) -> int:
+    registry = Path(registry_path) if registry_path else _default_registry_path()
+    if not registry.exists():
+        print(f"[FAIL] Registry not found: {registry}")
+        return 1
+    flow_key = flow_key or _detect_flow_key(registry)
+    runner = FlowRunner(
+        spec_id=spec_id,
+        registry_path=registry,
+        flow_key=flow_key,
+        repo_root=REPO_ROOT,
+    )
+    session = runner.start()
+    print(f"[OK] Flow started: {spec_id}")
+    print(f"     Flow key: {session.get('flow_key')}")
+    print(f"     Current phase: {session.get('current_phase')}")
+    return 0
+
+
+def cmd_flow_status(spec_id: str) -> int:
+    runner = _flow_runner_from_session(spec_id)
+    session = runner.status()
+    if not session:
+        print(f"[FAIL] No session for {spec_id}")
+        return 1
+    print(json.dumps(session, indent=2))
+    return 0
+
+
+def cmd_flow_next(spec_id: str) -> int:
+    runner = _flow_runner_from_session(spec_id)
+    result = runner.next()
+    print(json.dumps(result, indent=2))
+    if result.get("prompt"):
+        print("\n--- Prompt ---\n")
+        print(result["prompt"])
+    return 0
+
+
+def cmd_flow_done(spec_id: str, phase_id: str | None, output: str | None) -> int:
+    runner = _flow_runner_from_session(spec_id)
+    result = runner.done(phase_id=phase_id, output=output)
+    print(json.dumps(result, indent=2))
+    return 0
+
+
+def cmd_flow_resume(spec_id: str) -> int:
+    runner = _flow_runner_from_session(spec_id)
+    result = runner.resume()
+    print(json.dumps(result, indent=2))
+    if result.get("prompt"):
+        print("\n--- Prompt ---\n")
+        print(result["prompt"])
+    return 0
+
+
+def _detect_flow_key(registry_path: Path) -> str:
+    data = json.loads(registry_path.read_text(encoding="utf-8"))
+    flows = data.get("flows", {})
+    if flows:
+        return next(iter(flows.keys()))
+    return "DEFAULT"
 
 
 def main():
@@ -475,6 +631,22 @@ def main():
         return cmd_deps(" ".join(args))
     elif command == "plan":
         return cmd_plan()
+    elif command == "apply-spec":
+        force = "--force" in args
+        target = None
+        if "--target" in args:
+            idx = args.index("--target")
+            if idx + 1 < len(args):
+                target = args[idx + 1]
+        else:
+            for arg in args:
+                if not arg.startswith("-"):
+                    target = arg
+                    break
+        if not target:
+            print("Usage: cp apply-spec --target <id>")
+            return 1
+        return cmd_apply_spec(target=target, force=force)
     elif command == "validate-spec":
         validate_all = "--all" in args
         target = None
@@ -489,6 +661,84 @@ def main():
                     target = arg
                     break
         return cmd_validate_spec(target=target, validate_all=validate_all)
+    elif command == "gate":
+        run_all = "--all" in args
+        gate = None
+        target = None
+        for arg in args:
+            if arg.upper() in ["G0", "G1"]:
+                gate = arg.upper()
+            elif not arg.startswith("-"):
+                target = arg
+        return cmd_gate(gate=gate, target=target, run_all=run_all)
+    elif command == "compile-registry":
+        if not args:
+            print("Usage: cp compile-registry <xlsx> --output <path>")
+            return 1
+        xlsx_path = args[0]
+        output_path = None
+        if "--output" in args:
+            idx = args.index("--output")
+            if idx + 1 < len(args):
+                output_path = args[idx + 1]
+        if not output_path:
+            output_path = str(_default_registry_path())
+        return cmd_compile_registry(xlsx_path, output_path)
+    elif command == "flow":
+        if not args:
+            print("Usage: cp flow <start|status|next|done|resume> <SPEC_ID>")
+            return 1
+        subcommand = args[0].lower()
+        if len(args) < 2:
+            print("Usage: cp flow <start|status|next|done|resume> <SPEC_ID>")
+            return 1
+        spec_id = args[1]
+        if subcommand == "start":
+            registry_path = None
+            flow_key = None
+            if "--registry" in args:
+                idx = args.index("--registry")
+                if idx + 1 < len(args):
+                    registry_path = args[idx + 1]
+            if "--flow-key" in args:
+                idx = args.index("--flow-key")
+                if idx + 1 < len(args):
+                    flow_key = args[idx + 1]
+            return cmd_flow_start(spec_id, registry_path, flow_key)
+        if subcommand == "status":
+            return cmd_flow_status(spec_id)
+        if subcommand == "next":
+            return cmd_flow_next(spec_id)
+        if subcommand == "done":
+            phase_id = None
+            output = None
+            if "--phase" in args:
+                idx = args.index("--phase")
+                if idx + 1 < len(args):
+                    phase_id = args[idx + 1]
+            if "--stdin" in args:
+                output = sys.stdin.read()
+            elif "--paste" in args:
+                skip_indices = set()
+                if "--phase" in args:
+                    idx = args.index("--phase")
+                    skip_indices.update({idx, idx + 1})
+                if "--paste" in args:
+                    idx = args.index("--paste")
+                    skip_indices.add(idx)
+                remaining = [
+                    arg
+                    for i, arg in enumerate(args[2:], start=2)
+                    if i not in skip_indices and not arg.startswith("--")
+                ]
+                output = " ".join(remaining).strip()
+                if not output:
+                    output = sys.stdin.read()
+            return cmd_flow_done(spec_id, phase_id, output)
+        if subcommand == "resume":
+            return cmd_flow_resume(spec_id)
+        print("Usage: cp flow <start|status|next|done|resume> <SPEC_ID>")
+        return 1
     elif command == "help" or command == "-h" or command == "--help":
         print(__doc__)
         return 0

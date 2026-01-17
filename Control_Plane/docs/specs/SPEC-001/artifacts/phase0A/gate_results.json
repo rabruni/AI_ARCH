@@ -1,0 +1,10 @@
+[
+  {
+    "gate_id": "G0",
+    "status": "passed",
+    "category": null,
+    "reason": "Stub gate pass",
+    "evidence_paths": [],
+    "recommended_route": null
+  }
+]

@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "generated": "2026-01-16T07:55:46.553488+00:00",
+  "generated": "2026-01-16T23:30:10.897559+00:00",
   "generator": "Control_Plane/scripts/generate_manifest.py",
   "checksums": {
     "SYSTEM_CONSTITUTION.md": {
@@ -52,8 +52,8 @@
       "size": 6438
     },
     "Control_Plane/registries/control_plane_registry.csv": {
-      "sha256": "b2618f50d43476c72e9ccc8f9a4bb32130fbe39b901825a27a3eac6c2713e2bd",
-      "size": 9815
+      "sha256": "a278f229308d636f3033868fb953ec6fd4d6d4c67190ab30b3116f64744b9070",
+      "size": 2761
     }
   },
   "missing": [],

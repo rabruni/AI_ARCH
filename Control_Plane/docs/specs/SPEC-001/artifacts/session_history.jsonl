@@ -16,3 +16,7 @@
 {"timestamp": "2026-01-17T05:24:02.951087+00:00", "event": "state_transition", "data": {"phase": "Phase0A", "action": "advance", "reason": "all_gates_passed", "retry_count": 0, "reroute_count": 0}}
 {"timestamp": "2026-01-17T05:24:03.266176+00:00", "event": "state_transition", "data": {"phase": "Phase1", "action": "advance", "reason": "all_gates_passed", "retry_count": 0, "reroute_count": 0}}
 {"timestamp": "2026-01-17T05:24:03.601503+00:00", "event": "state_transition", "data": {"phase": "Phase2", "action": "advance", "reason": "all_gates_passed", "retry_count": 0, "reroute_count": 0}}
+{"timestamp": "2026-01-17T05:33:58.060756+00:00", "event": "session_initialized", "data": {"spec_id": "SPEC-001", "flow_key": "VISION_TO_VALIDATE"}}
+{"timestamp": "2026-01-17T05:33:58.323582+00:00", "event": "state_transition", "data": {"phase": "Phase0A", "action": "advance", "reason": "all_gates_passed", "retry_count": 0, "reroute_count": 0}}
+{"timestamp": "2026-01-17T05:33:58.594767+00:00", "event": "state_transition", "data": {"phase": "Phase1", "action": "advance", "reason": "all_gates_passed", "retry_count": 0, "reroute_count": 0}}
+{"timestamp": "2026-01-17T05:33:58.927397+00:00", "event": "state_transition", "data": {"phase": "Phase2", "action": "advance", "reason": "all_gates_passed", "retry_count": 0, "reroute_count": 0}}

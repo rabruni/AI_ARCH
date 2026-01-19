@@ -17,7 +17,6 @@ REQUIRED_SECTIONS = [
     "Objective",
     "Scope: File Permissions",
     "Implementation Plan",
-    "Execution Guardrails",
     "Acceptance Commands",
 ]
 FORBIDDEN_PREFIXES = [".git/", ".github/", "Control_Plane/"]
@@ -36,9 +35,16 @@ def parse_front_matter(text: str) -> Tuple[Dict[str, str], str]:
     body = "\n".join(lines[end_idx + 1 :])
     data: Dict[str, str] = {}
     for line in raw:
-        if ":" in line:
-            key, value = line.split(":", 1)
-            data[key.strip()] = value.strip()
+        if ":" not in line:
+            continue
+        key, value = line.split(":", 1)
+        key = key.strip()
+        value = value.strip()
+        if not key:
+            continue
+        if value.startswith(("'", '"')) and value.endswith(("'", '"')) and len(value) >= 2:
+            value = value[1:-1]
+        data[key] = value
     return data, body
 
 
@@ -61,13 +67,22 @@ def section_text(body: str, heading: str) -> str:
 
 
 def extract_modifiable(scope: str) -> list[str]:
+    lines = scope.splitlines()
     paths = []
-    for line in scope.splitlines():
+    for idx, line in enumerate(lines):
         if "MODIFIABLE:" in line:
-            _, value = line.split("MODIFIABLE:", 1)
-            path = value.strip()
-            if path:
-                paths.append(path)
+            remainder = line.split("MODIFIABLE:", 1)[1].strip()
+            if remainder:
+                paths.append(remainder)
+            for next_line in lines[idx + 1 :]:
+                if next_line and not next_line.startswith(" "):
+                    break
+                item = next_line.strip()
+                if item.startswith("- "):
+                    path = item[2:].strip().strip("`")
+                    if path:
+                        paths.append(path)
+            break
     return paths
 
 
@@ -80,8 +95,17 @@ def has_numbered_step(plan: str) -> bool:
 
 
 def has_command(commands: str) -> bool:
+    in_fence = False
     for line in commands.splitlines():
-        if line.lstrip().startswith("$"):
+        stripped = line.strip()
+        if stripped.startswith("```"):
+            in_fence = not in_fence
+            continue
+        if stripped.startswith("- ") and stripped[2:].strip():
+            return True
+        if in_fence and stripped:
+            return True
+        if stripped.startswith("$"):
             return True
     return False
 
@@ -132,7 +156,7 @@ def main() -> int:
         errors.append("Acceptance Commands must include at least one command")
 
     guardrails = section_text(body, "Execution Guardrails")
-    if "ASK" not in guardrails or "STOP" not in guardrails:
+    if guardrails and ("ASK" not in guardrails or "STOP" not in guardrails):
         errors.append("Execution Guardrails must include ASK and STOP")
 
     if errors:

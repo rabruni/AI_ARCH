@@ -1,0 +1,15 @@
+# Flow Phase Prompt
+Spec ID: SPEC-002
+Phase: Phase0A
+Spec Path: Control_Plane/docs/specs/SPEC-002
+
+Prompt Key: P-1 Vision Lowering
+
+## Previous Phase Outputs
+- (none)
+
+## Gates Required
+- G0
+
+## Constraints
+Goals must be bounded, testable, artifact-defined; disallow 'perfect/intuitive' language unless tied to metrics.

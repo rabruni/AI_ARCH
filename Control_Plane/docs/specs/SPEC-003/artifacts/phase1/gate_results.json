@@ -1,0 +1,32 @@
+[
+  {
+    "gate_id": "G0",
+    "status": "passed",
+    "category": "OK",
+    "reason": "MODE=COMMIT, ALTITUDE=L3",
+    "evidence_paths": [],
+    "recommended_route": null,
+    "evidence": {
+      "work_item_path": "work_items/WI-003-01.md",
+      "work_item_validated": true
+    }
+  },
+  {
+    "gate_id": "G1",
+    "status": "passed",
+    "category": "OK",
+    "reason": "structure ok",
+    "evidence_paths": [],
+    "recommended_route": null,
+    "evidence": null
+  },
+  {
+    "gate_id": "G2",
+    "status": "passed",
+    "category": "OK",
+    "reason": "schemas valid",
+    "evidence_paths": [],
+    "recommended_route": null,
+    "evidence": null
+  }
+]

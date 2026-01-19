@@ -10,7 +10,9 @@ L3
 - Goal: 00_overview.md#n/a
 - Non-Goals: 01_problem.md#n/a
 - Acceptance: 05_testing.md#n/a
-- Work Item: work_items/WI-003-01.md
+
+## WORK_ITEM_PATH
+work_items/WI-003-01.md
 
 ## STOP CONDITIONS
 - Stop if spec pack validation fails.

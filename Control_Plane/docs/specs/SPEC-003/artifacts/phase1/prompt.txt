@@ -1,0 +1,21 @@
+# Flow Phase Prompt
+Spec ID: SPEC-003
+Phase: Phase1
+Spec Path: Control_Plane/docs/specs/SPEC-003
+
+Prompt Key: P1 Designer
+
+## Previous Phase Outputs
+- Control_Plane/docs/specs/SPEC-003/artifacts/phase0A/gate_results.json
+- Control_Plane/docs/specs/SPEC-003/artifacts/phase0A/output.txt
+- Control_Plane/docs/specs/SPEC-003/artifacts/phase0A/prompt.txt
+- Control_Plane/docs/specs/SPEC-003/artifacts/phase2/gate_results.json
+- Control_Plane/docs/specs/SPEC-003/artifacts/phase2/output.txt
+
+## Gates Required
+- G0
+- G1
+- G2
+
+## Constraints
+Spec must include exact file tree, artifacts, and acceptance gates. Non-goals mandatory.

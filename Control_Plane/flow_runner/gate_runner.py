@@ -171,9 +171,21 @@ class GateRunner:
                 recommended_route="Phase0A",
             )
 
-        # Check for WORK_ITEM_PATH (optional)
+        # Check for WORK_ITEM_PATH (REQUIRED when MODE=COMMIT and work_items/ exists)
         work_item_path = self._extract_work_item_path(sections, refs_content)
         evidence: Dict[str, Any] | None = None
+
+        # If spec has work_items/ directory, WORK_ITEM_PATH is mandatory
+        work_items_dir = spec_root / "work_items"
+        if work_items_dir.exists() and not work_item_path:
+            return GateResult(
+                gate_id="G0",
+                status="failed",
+                category="GOAL_DEFECT",
+                reason="MODE=COMMIT requires WORK_ITEM_PATH when work_items/ exists",
+                evidence_paths=[],
+                recommended_route="Phase0A",
+            )
 
         if work_item_path:
             # Resolve path relative to repo root
@@ -224,6 +236,25 @@ class GateRunner:
             work_item_content = resolved_path.read_text(encoding="utf-8")
             work_item_id = self._extract_work_item_id(work_item_content)
             work_item_hash = hashlib.sha256(work_item_content.encode("utf-8")).hexdigest()
+
+            # Check for hash mismatch (tampering detection)
+            previous_hash = self._get_previous_work_item_hash(spec_id)
+            if previous_hash and previous_hash != work_item_hash:
+                return GateResult(
+                    gate_id="G0",
+                    status="failed",
+                    category="GOAL_DEFECT",
+                    reason=f"WORK_ITEM integrity violation: hash mismatch (expected {previous_hash[:16]}..., got {work_item_hash[:16]}...)",
+                    evidence_paths=[],
+                    recommended_route="Phase0A",
+                    evidence={
+                        "work_item_path": work_item_path,
+                        "work_item_id": work_item_id,
+                        "expected_hash": previous_hash,
+                        "actual_hash": work_item_hash,
+                        "work_item_validated": False,
+                    },
+                )
 
             evidence = {
                 "work_item_path": work_item_path,
@@ -333,6 +364,24 @@ class GateRunner:
         for line in lines[1:end_idx]:
             if line.startswith("ID:"):
                 return line.split(":", 1)[1].strip()
+        return None
+
+    def _get_previous_work_item_hash(self, spec_id: str) -> str | None:
+        """Get previously recorded work item hash from gate_results.json files."""
+        artifacts_root = self.repo_root / "Control_Plane" / "docs" / "specs" / spec_id / "artifacts"
+        if not artifacts_root.exists():
+            return None
+        for gate_file in artifacts_root.rglob("gate_results.json"):
+            try:
+                data = json.loads(gate_file.read_text(encoding="utf-8"))
+                for item in data:
+                    if item.get("gate_id") == "G0" and item.get("status") == "passed":
+                        evidence = item.get("evidence") or {}
+                        prev_hash = evidence.get("work_item_hash")
+                        if prev_hash:
+                            return prev_hash
+            except Exception:
+                continue
         return None
 
     def _run_g1(self, spec_id: str) -> GateResult:

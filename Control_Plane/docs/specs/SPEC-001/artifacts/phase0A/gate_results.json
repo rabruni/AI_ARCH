@@ -3,8 +3,9 @@
     "gate_id": "G0",
     "status": "passed",
     "category": "OK",
-    "reason": "gate not implemented; skipped",
+    "reason": "MODE=COMMIT, ALTITUDE=L2",
     "evidence_paths": [],
-    "recommended_route": null
+    "recommended_route": null,
+    "evidence": null
   }
 ]

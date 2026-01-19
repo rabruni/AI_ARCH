@@ -85,7 +85,7 @@ PY
 fi
 
 if [[ "${SPEC_ID}" == "SPEC-003" ]]; then
-  run_step "Step 8 Verify G0 with valid WORK_ITEM" \
+  run_step "Step 8 Verify G0 with valid WORK_ITEM (path, id, hash)" \
     python3 - <<'PY'
 import json
 from pathlib import Path
@@ -96,20 +96,29 @@ for path in artifact_root.rglob("gate_results.json"):
     for item in data:
         if item.get("gate_id") == "G0" and item.get("status") == "passed":
             evidence = item.get("evidence") or {}
-            if evidence.get("work_item_validated") is True:
-                found_g0_pass = True
-                break
+            # Check all required evidence fields
+            if not evidence.get("work_item_path"):
+                raise SystemExit("G0 evidence missing work_item_path")
+            if not evidence.get("work_item_id"):
+                raise SystemExit("G0 evidence missing work_item_id")
+            if not evidence.get("work_item_hash"):
+                raise SystemExit("G0 evidence missing work_item_hash")
+            if evidence.get("work_item_validated") is not True:
+                raise SystemExit("G0 evidence work_item_validated is not True")
+            found_g0_pass = True
+            print(f"G0 evidence verified: id={evidence['work_item_id']}, hash={evidence['work_item_hash'][:16]}...")
+            break
     if found_g0_pass:
         break
 if not found_g0_pass:
-    raise SystemExit("G0 did not pass with work_item_validated=True for SPEC-003")
+    raise SystemExit("G0 did not pass with complete evidence for SPEC-003")
 PY
 
   log "Testing G0 failure with invalid work item..."
   # Temporarily swap to invalid work item
   COMMIT_MD="Control_Plane/docs/specs/SPEC-003/08_commit.md"
   BACKUP=$(cat "${COMMIT_MD}")
-  sed -i.bak 's|work_items/WI-003-01.md|work_items/WI-003-02-invalid.md|' "${COMMIT_MD}"
+  sed -i.bak 's|WI-003-01.md|WI-003-02-invalid.md|' "${COMMIT_MD}"
 
   # Run G0 and expect failure
   run_step "Step 9 Verify G0 fails with invalid WORK_ITEM" \

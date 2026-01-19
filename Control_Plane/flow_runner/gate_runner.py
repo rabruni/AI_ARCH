@@ -1,6 +1,7 @@
 """Gate execution (G0-G3)."""
 from __future__ import annotations
 
+import hashlib
 import json
 import re
 import subprocess
@@ -175,8 +176,8 @@ class GateRunner:
         evidence: Dict[str, Any] | None = None
 
         if work_item_path:
-            # Resolve path relative to spec root
-            resolved_path = spec_root / work_item_path
+            # Resolve path relative to repo root
+            resolved_path = self.repo_root / work_item_path
             if not resolved_path.exists():
                 return GateResult(
                     gate_id="G0",
@@ -219,7 +220,17 @@ class GateRunner:
                     evidence={"work_item_path": work_item_path, "work_item_validated": False},
                 )
 
-            evidence = {"work_item_path": work_item_path, "work_item_validated": True}
+            # Extract work item ID and compute hash
+            work_item_content = resolved_path.read_text(encoding="utf-8")
+            work_item_id = self._extract_work_item_id(work_item_content)
+            work_item_hash = hashlib.sha256(work_item_content.encode("utf-8")).hexdigest()
+
+            evidence = {
+                "work_item_path": work_item_path,
+                "work_item_id": work_item_id,
+                "work_item_hash": work_item_hash,
+                "work_item_validated": True,
+            }
 
         return GateResult(
             gate_id="G0",
@@ -308,6 +319,20 @@ class GateRunner:
             if match:
                 return match.group(1).strip()
 
+        return None
+
+    def _extract_work_item_id(self, content: str) -> str | None:
+        """Extract ID from YAML front matter of a work item."""
+        lines = content.splitlines()
+        if not lines or lines[0].strip() != "---":
+            return None
+        try:
+            end_idx = lines[1:].index("---") + 1
+        except ValueError:
+            return None
+        for line in lines[1:end_idx]:
+            if line.startswith("ID:"):
+                return line.split(":", 1)[1].strip()
         return None
 
     def _run_g1(self, spec_id: str) -> GateResult:

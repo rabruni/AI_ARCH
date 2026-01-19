@@ -5,7 +5,8 @@
     "category": "OK",
     "reason": "MODE=COMMIT, ALTITUDE=L2",
     "evidence_paths": [],
-    "recommended_route": null
+    "recommended_route": null,
+    "evidence": null
   },
   {
     "gate_id": "G1",
@@ -13,7 +14,8 @@
     "category": "OK",
     "reason": "structure ok",
     "evidence_paths": [],
-    "recommended_route": null
+    "recommended_route": null,
+    "evidence": null
   },
   {
     "gate_id": "G2",
@@ -21,6 +23,7 @@
     "category": "OK",
     "reason": "schemas valid",
     "evidence_paths": [],
-    "recommended_route": null
+    "recommended_route": null,
+    "evidence": null
   }
 ]

@@ -5,7 +5,8 @@
     "category": "OK",
     "reason": "structure ok",
     "evidence_paths": [],
-    "recommended_route": null
+    "recommended_route": null,
+    "evidence": null
   },
   {
     "gate_id": "G2",
@@ -13,7 +14,8 @@
     "category": "OK",
     "reason": "schemas valid",
     "evidence_paths": [],
-    "recommended_route": null
+    "recommended_route": null,
+    "evidence": null
   },
   {
     "gate_id": "G3",
@@ -23,7 +25,8 @@
     "evidence_paths": [
       "artifacts/phase2/gate_logs/G3.log"
     ],
-    "recommended_route": null
+    "recommended_route": null,
+    "evidence": null
   },
   {
     "gate_id": "CW1",
@@ -31,6 +34,7 @@
     "category": "OK",
     "reason": "gate not implemented; skipped",
     "evidence_paths": [],
-    "recommended_route": null
+    "recommended_route": null,
+    "evidence": null
   }
 ]

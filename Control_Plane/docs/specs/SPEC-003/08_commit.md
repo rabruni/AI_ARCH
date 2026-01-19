@@ -12,7 +12,7 @@ L3
 - Acceptance: 05_testing.md#n/a
 
 ## WORK_ITEM_PATH
-work_items/WI-003-01.md
+Control_Plane/docs/specs/SPEC-003/work_items/WI-003-01.md
 
 ## STOP CONDITIONS
 - Stop if spec pack validation fails.

@@ -3,17 +3,19 @@
     "gate_id": "G0",
     "status": "passed",
     "category": "OK",
-    "reason": "gate not implemented; skipped",
+    "reason": "MODE=COMMIT, ALTITUDE=L2",
     "evidence_paths": [],
-    "recommended_route": null
+    "recommended_route": null,
+    "evidence": null
   },
   {
     "gate_id": "G1",
-    "status": "passed",
-    "category": "OK",
-    "reason": "structure ok",
+    "status": "failed",
+    "category": "SPEC_DEFECT",
+    "reason": "Missing: 01_problem.md, 02_solution.md, 03_requirements.md, 04_design.md, 06_rollout.md",
     "evidence_paths": [],
-    "recommended_route": null
+    "recommended_route": "Phase1",
+    "evidence": null
   },
   {
     "gate_id": "G2",
@@ -21,6 +23,7 @@
     "category": "OK",
     "reason": "schemas valid",
     "evidence_paths": [],
-    "recommended_route": null
+    "recommended_route": null,
+    "evidence": null
   }
 ]

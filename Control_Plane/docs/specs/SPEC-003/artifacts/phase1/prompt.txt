@@ -11,6 +11,7 @@ Prompt Key: P1 Designer
 - Control_Plane/docs/specs/SPEC-003/artifacts/phase0A/prompt.txt
 - Control_Plane/docs/specs/SPEC-003/artifacts/phase2/gate_results.json
 - Control_Plane/docs/specs/SPEC-003/artifacts/phase2/output.txt
+- Control_Plane/docs/specs/SPEC-003/artifacts/phase2/prompt.txt
 
 ## Gates Required
 - G0

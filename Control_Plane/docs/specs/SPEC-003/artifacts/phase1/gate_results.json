@@ -7,7 +7,9 @@
     "evidence_paths": [],
     "recommended_route": null,
     "evidence": {
-      "work_item_path": "work_items/WI-003-01.md",
+      "work_item_path": "Control_Plane/docs/specs/SPEC-003/work_items/WI-003-01.md",
+      "work_item_id": "WI-003-01",
+      "work_item_hash": "806b7055d56f55ba1fdc921d7058be6a88846213f44f9c846911ab9302229a0e",
       "work_item_validated": true
     }
   },

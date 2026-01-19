@@ -5,6 +5,7 @@
     "category": "OK",
     "reason": "MODE=COMMIT, ALTITUDE=L2",
     "evidence_paths": [],
-    "recommended_route": null
+    "recommended_route": null,
+    "evidence": null
   }
 ]

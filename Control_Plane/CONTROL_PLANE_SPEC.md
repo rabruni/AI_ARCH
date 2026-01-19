@@ -27,6 +27,32 @@ It provides a single source of truth for **what should exist**, **what does exis
 | **Verb-Based Operations** | Four standard verbs: install, update, verify, uninstall |
 | **Agent-Agnostic** | Any LLM (Claude, Codex, Gemini, etc.) boots the same way |
 
+## Gate G3 Command Constraint
+
+- Gate G3 executes only the first line in `05_testing.md` that starts with `$`.
+- Multiline shell constructs (including heredocs) will not execute correctly.
+- Recommended pattern: keep `$ <command>` single-line and call a script for complex logic.
+
+## Commit Point: 08_commit.md (EXPLORE vs COMMIT)
+
+MODE=EXPLORE means the spec pack is still shaping questions and scope; execution is blocked.
+MODE=COMMIT means the spec is ready to run gates and proceed with execution.
+
+Minimal `08_commit.md` example (references only):
+```
+MODE: EXPLORE
+ALTITUDE: Phase1
+REFERENCES:
+- Goal: 00_overview.md#goals
+- Non-Goals: 00_overview.md#non-goals
+- Acceptance: 06_validation.md#acceptance
+STOP CONDITIONS:
+- Missing required inputs
+- More than one plausible interpretation
+```
+
+Humans naturally explore through questions; separating EXPLORE from COMMIT prevents scope drift while keeping intent anchored to references instead of duplicated text.
+
 ---
 
 ## Architecture

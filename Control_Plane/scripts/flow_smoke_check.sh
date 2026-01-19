@@ -66,3 +66,20 @@ G3_LOG="${ARTIFACTS_DIR}/phase2/gate_logs/G3.log"
 
 run_step "Step 6 Verify gate_results.json" test -f "${GATE_RESULTS}"
 run_step "Step 7 Verify G3.log" test -f "${G3_LOG}"
+
+if [[ "${SPEC_ID}" == "SPEC-002" ]]; then
+  run_step "Step 8 Verify G0 gate present" \
+    python3 - <<'PY'
+import json
+from pathlib import Path
+artifact_root = Path("Control_Plane/docs/specs/SPEC-002/artifacts")
+found = False
+for path in artifact_root.rglob("gate_results.json"):
+    data = json.loads(path.read_text(encoding="utf-8"))
+    if any(item.get("gate_id") == "G0" for item in data):
+        found = True
+        break
+if not found:
+    raise SystemExit("Missing G0 entry in any gate_results.json under SPEC-002")
+PY
+fi

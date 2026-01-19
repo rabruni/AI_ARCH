@@ -29,7 +29,7 @@ from Control_Plane.lib import REPO_ROOT, CONTROL_PLANE
 # Paths
 SPECS_DIR = CONTROL_PLANE / "docs" / "specs"
 
-# Required files (8 files)
+# Required files (9 files)
 REQUIRED_FILES = [
     "00_overview.md",
     "01_problem.md",
@@ -39,7 +39,12 @@ REQUIRED_FILES = [
     "05_testing.md",
     "06_rollout.md",
     "07_registry.md",
+    "08_commit.md",
 ]
+
+# Required headings in 08_commit.md (case-insensitive)
+COMMIT_REQUIRED_HEADINGS = ["mode", "altitude", "references", "stop conditions"]
+COMMIT_REQUIRED_REFS = ["goal", "non-goals", "acceptance"]
 
 # Patterns that indicate incomplete content
 INCOMPLETE_PATTERNS = [
@@ -105,6 +110,62 @@ def find_incomplete_markers(content: str) -> list:
     return found
 
 
+def validate_commit_file(file_path: Path, result: "ValidationResult") -> None:
+    """Validate 08_commit.md structure and content."""
+    content = file_path.read_text(encoding="utf-8")
+
+    # Parse sections (case-insensitive)
+    sections: dict = {}
+    current_heading = None
+    current_lines: list = []
+
+    for line in content.splitlines():
+        heading_match = re.match(r"^##\s+(.+)$", line, re.IGNORECASE)
+        if heading_match:
+            if current_heading is not None:
+                sections[current_heading] = "\n".join(current_lines)
+            current_heading = heading_match.group(1).strip().lower()
+            current_lines = []
+        else:
+            current_lines.append(line)
+
+    if current_heading is not None:
+        sections[current_heading] = "\n".join(current_lines)
+
+    # Check required headings
+    for heading in COMMIT_REQUIRED_HEADINGS:
+        if heading not in sections:
+            result.error(f"08_commit.md: Missing required section: ## {heading.upper()}")
+
+    # Check MODE value
+    if "mode" in sections:
+        mode = sections["mode"].strip().upper()
+        if mode not in ("EXPLORE", "COMMIT"):
+            result.error(f"08_commit.md: MODE must be EXPLORE or COMMIT, got: '{mode}'")
+
+    # Check ALTITUDE value
+    if "altitude" in sections:
+        altitude = sections["altitude"].strip().upper()
+        if altitude not in ("L4", "L3", "L2", "L1"):
+            result.error(f"08_commit.md: ALTITUDE must be L4/L3/L2/L1, got: '{altitude}'")
+
+    # Check REFERENCES section has required keys
+    if "references" in sections:
+        refs_content = sections["references"].lower()
+        for ref in COMMIT_REQUIRED_REFS:
+            if f"{ref}:" not in refs_content:
+                result.error(f"08_commit.md: REFERENCES missing required line: {ref}")
+
+    # Check STOP CONDITIONS has at least 1 bullet
+    if "stop conditions" in sections:
+        bullets = [
+            line for line in sections["stop conditions"].splitlines()
+            if line.strip().startswith("-")
+        ]
+        if not bullets:
+            result.error("08_commit.md: STOP CONDITIONS must have at least 1 bullet point")
+
+
 def validate_spec_pack(target: str, force: bool = False) -> int:
     """Validate a spec pack.
 
@@ -141,6 +202,28 @@ def validate_spec_pack(target: str, force: bool = False) -> int:
             markers = find_incomplete_markers(content)
             for line_num, marker in markers:
                 result.warn(f"{filename}:{line_num}: Incomplete marker '{marker}'")
+
+            # Special validation for 08_commit.md
+            if filename == "08_commit.md":
+                validate_commit_file(file_path, result)
+
+            if filename == "05_testing.md":
+                heredoc_markers = ["<<EOF", "<<'EOF'", "<<'PY'", "<<'"]
+                if any(marker in content for marker in heredoc_markers):
+                    result.error(
+                        "05_testing.md: G3 executes only the first $ line; "
+                        "heredocs are not supported. Use a single-line '$ <command>' "
+                        "and call a script for complex logic."
+                    )
+                dollar_lines = [
+                    line for line in content.splitlines()
+                    if line.lstrip().startswith("$")
+                ]
+                if len(dollar_lines) > 1:
+                    result.error(
+                        "05_testing.md: G3 executes only the first $ line; "
+                        "use a single-line '$ <command>' and call a script for complex logic."
+                    )
 
     # Check for README (optional but recommended)
     if not (target_dir / "README.md").is_file():

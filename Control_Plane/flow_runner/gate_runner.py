@@ -1,7 +1,8 @@
-"""Gate execution (G1-G3)."""
+"""Gate execution (G0-G3)."""
 from __future__ import annotations
 
 import json
+import re
 import subprocess
 from dataclasses import dataclass
 from pathlib import Path
@@ -24,7 +25,9 @@ class GateRunner:
         self.repo_root = repo_root
 
     def run_gate(self, gate_key: str, spec_id: str, phase_id: str) -> Dict[str, Any]:
-        if gate_key == "G1":
+        if gate_key == "G0":
+            result = self._run_g0(spec_id)
+        elif gate_key == "G1":
             result = self._run_g1(spec_id)
         elif gate_key == "G2":
             result = self._run_g2(spec_id)
@@ -71,6 +74,170 @@ class GateRunner:
         self._write_results(spec_id, phase_id, serialized)
         self._print_summary(serialized)
         return {"gates": serialized}
+
+    def _run_g0(self, spec_id: str) -> GateResult:
+        """G0: Ready-to-Test gate. Enforces EXPLORE vs COMMIT mode."""
+        spec_root = self.repo_root / "Control_Plane" / "docs" / "specs" / spec_id
+        commit_md = spec_root / "08_commit.md"
+
+        if not commit_md.exists():
+            return GateResult(
+                gate_id="G0",
+                status="failed",
+                category="GOAL_DEFECT",
+                reason="08_commit.md not found. Create it with MODE=COMMIT to proceed.",
+                evidence_paths=[],
+                recommended_route="Phase0A",
+            )
+
+        content = commit_md.read_text(encoding="utf-8")
+
+        # Parse sections (case-insensitive)
+        sections = self._parse_commit_sections(content)
+
+        # Check required headings exist
+        required_headings = ["mode", "altitude", "references", "stop conditions"]
+        missing_headings = [h for h in required_headings if h not in sections]
+        if missing_headings:
+            return GateResult(
+                gate_id="G0",
+                status="failed",
+                category="GOAL_DEFECT",
+                reason=f"08_commit.md missing required sections: {', '.join(missing_headings)}",
+                evidence_paths=[],
+                recommended_route="Phase0A",
+            )
+
+        # Check MODE
+        mode_content = sections.get("mode", "").strip().upper()
+        if mode_content == "EXPLORE":
+            return GateResult(
+                gate_id="G0",
+                status="failed",
+                category="GOAL_DEFECT",
+                reason="MODE=EXPLORE: shaping is allowed, but execution is blocked. Set MODE=COMMIT to proceed.",
+                evidence_paths=[],
+                recommended_route="Phase0A",
+            )
+
+        if mode_content != "COMMIT":
+            return GateResult(
+                gate_id="G0",
+                status="failed",
+                category="GOAL_DEFECT",
+                reason=f"MODE must be EXPLORE or COMMIT, got: '{mode_content}'",
+                evidence_paths=[],
+                recommended_route="Phase0A",
+            )
+
+        # Check ALTITUDE
+        altitude = sections.get("altitude", "").strip().upper()
+        valid_altitudes = {"L4", "L3", "L2", "L1"}
+        if altitude not in valid_altitudes:
+            return GateResult(
+                gate_id="G0",
+                status="failed",
+                category="GOAL_DEFECT",
+                reason=f"ALTITUDE must be L4/L3/L2/L1, got: '{altitude}'",
+                evidence_paths=[],
+                recommended_route="Phase0A",
+            )
+
+        # Check REFERENCES
+        refs_content = sections.get("references", "")
+        ref_errors = self._validate_references(refs_content, spec_root)
+        if ref_errors:
+            return GateResult(
+                gate_id="G0",
+                status="failed",
+                category="GOAL_DEFECT",
+                reason=f"REFERENCES errors: {'; '.join(ref_errors)}",
+                evidence_paths=[],
+                recommended_route="Phase0A",
+            )
+
+        # Check STOP CONDITIONS has at least 1 bullet
+        stop_content = sections.get("stop conditions", "")
+        bullets = [line for line in stop_content.splitlines() if line.strip().startswith("-")]
+        if not bullets:
+            return GateResult(
+                gate_id="G0",
+                status="failed",
+                category="GOAL_DEFECT",
+                reason="STOP CONDITIONS must have at least 1 bullet point",
+                evidence_paths=[],
+                recommended_route="Phase0A",
+            )
+
+        return GateResult(
+            gate_id="G0",
+            status="passed",
+            category="OK",
+            reason=f"MODE=COMMIT, ALTITUDE={altitude}",
+            evidence_paths=[],
+            recommended_route=None,
+        )
+
+    def _parse_commit_sections(self, content: str) -> Dict[str, str]:
+        """Parse 08_commit.md into sections by heading (case-insensitive)."""
+        sections: Dict[str, str] = {}
+        current_heading = None
+        current_lines: List[str] = []
+
+        for line in content.splitlines():
+            # Check for ## heading (case-insensitive)
+            heading_match = re.match(r"^##\s+(.+)$", line, re.IGNORECASE)
+            if heading_match:
+                # Save previous section
+                if current_heading is not None:
+                    sections[current_heading] = "\n".join(current_lines)
+                current_heading = heading_match.group(1).strip().lower()
+                current_lines = []
+            else:
+                current_lines.append(line)
+
+        # Save last section
+        if current_heading is not None:
+            sections[current_heading] = "\n".join(current_lines)
+
+        return sections
+
+    def _validate_references(self, refs_content: str, spec_root: Path) -> List[str]:
+        """Validate REFERENCES section. Returns list of error messages."""
+        errors: List[str] = []
+        required_refs = {"goal", "non-goals", "acceptance"}
+        found_refs: Dict[str, str] = {}
+
+        for line in refs_content.splitlines():
+            line = line.strip()
+            if not line or line.startswith("#"):
+                continue
+            # Strip leading "- " for markdown list items
+            if line.startswith("- "):
+                line = line[2:].strip()
+            # Match "Key: path#anchor" or "Key: path"
+            match = re.match(r"^([^:]+):\s*(.+)$", line, re.IGNORECASE)
+            if match:
+                key = match.group(1).strip().lower()
+                value = match.group(2).strip()
+                found_refs[key] = value
+
+        # Check all required refs exist
+        for ref in required_refs:
+            if ref not in found_refs:
+                errors.append(f"Missing reference: {ref}")
+            else:
+                # Validate file path exists (ignore anchor)
+                path_value = found_refs[ref]
+                if path_value.lower() != "n/a":
+                    # Extract file path (before #)
+                    file_path = path_value.split("#")[0].strip()
+                    if file_path:
+                        full_path = spec_root / file_path
+                        if not full_path.exists():
+                            errors.append(f"{ref}: file not found: {file_path}")
+
+        return errors
 
     def _run_g1(self, spec_id: str) -> GateResult:
         spec_root = self.repo_root / "Control_Plane" / "docs" / "specs" / spec_id

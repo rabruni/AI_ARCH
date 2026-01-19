@@ -1,6 +1,7 @@
 """Gate execution (G0-G3)."""
 from __future__ import annotations
 
+import hashlib
 import json
 import re
 import subprocess
@@ -18,6 +19,7 @@ class GateResult:
     reason: str
     evidence_paths: List[str]
     recommended_route: str | None
+    evidence: Dict[str, Any] | None = None
 
 
 class GateRunner:
@@ -169,6 +171,67 @@ class GateRunner:
                 recommended_route="Phase0A",
             )
 
+        # Check for WORK_ITEM_PATH (optional)
+        work_item_path = self._extract_work_item_path(sections, refs_content)
+        evidence: Dict[str, Any] | None = None
+
+        if work_item_path:
+            # Resolve path relative to repo root
+            resolved_path = self.repo_root / work_item_path
+            if not resolved_path.exists():
+                return GateResult(
+                    gate_id="G0",
+                    status="failed",
+                    category="GOAL_DEFECT",
+                    reason=f"WORK_ITEM_PATH not found: {work_item_path}",
+                    evidence_paths=[],
+                    recommended_route="Phase0A",
+                )
+
+            # Validate work item using validate_work_item.py
+            validator_script = self.repo_root / "Control_Plane" / "scripts" / "validate_work_item.py"
+            if not validator_script.exists():
+                return GateResult(
+                    gate_id="G0",
+                    status="failed",
+                    category="GOAL_DEFECT",
+                    reason="validate_work_item.py not found",
+                    evidence_paths=[],
+                    recommended_route="Phase0A",
+                )
+
+            result = subprocess.run(
+                ["python3", str(validator_script), str(resolved_path)],
+                cwd=self.repo_root,
+                capture_output=True,
+                text=True,
+                timeout=30,
+            )
+
+            if result.returncode != 0:
+                error_msg = result.stdout.strip() or result.stderr.strip() or "validation failed"
+                return GateResult(
+                    gate_id="G0",
+                    status="failed",
+                    category="GOAL_DEFECT",
+                    reason=f"WORK_ITEM validation failed: {error_msg}",
+                    evidence_paths=[],
+                    recommended_route="Phase0A",
+                    evidence={"work_item_path": work_item_path, "work_item_validated": False},
+                )
+
+            # Extract work item ID and compute hash
+            work_item_content = resolved_path.read_text(encoding="utf-8")
+            work_item_id = self._extract_work_item_id(work_item_content)
+            work_item_hash = hashlib.sha256(work_item_content.encode("utf-8")).hexdigest()
+
+            evidence = {
+                "work_item_path": work_item_path,
+                "work_item_id": work_item_id,
+                "work_item_hash": work_item_hash,
+                "work_item_validated": True,
+            }
+
         return GateResult(
             gate_id="G0",
             status="passed",
@@ -176,6 +239,7 @@ class GateRunner:
             reason=f"MODE=COMMIT, ALTITUDE={altitude}",
             evidence_paths=[],
             recommended_route=None,
+            evidence=evidence,
         )
 
     def _parse_commit_sections(self, content: str) -> Dict[str, str]:
@@ -238,6 +302,38 @@ class GateRunner:
                             errors.append(f"{ref}: file not found: {file_path}")
 
         return errors
+
+    def _extract_work_item_path(self, sections: Dict[str, str], refs_content: str) -> str | None:
+        """Extract WORK_ITEM_PATH from sections or REFERENCES."""
+        # Check for dedicated WORK_ITEM_PATH section
+        work_item_section = sections.get("work_item_path", "").strip()
+        if work_item_section:
+            return work_item_section.splitlines()[0].strip()
+
+        # Check for "Work Item:" in REFERENCES
+        for line in refs_content.splitlines():
+            line = line.strip()
+            if line.startswith("- "):
+                line = line[2:].strip()
+            match = re.match(r"^work\s*item\s*:\s*(.+)$", line, re.IGNORECASE)
+            if match:
+                return match.group(1).strip()
+
+        return None
+
+    def _extract_work_item_id(self, content: str) -> str | None:
+        """Extract ID from YAML front matter of a work item."""
+        lines = content.splitlines()
+        if not lines or lines[0].strip() != "---":
+            return None
+        try:
+            end_idx = lines[1:].index("---") + 1
+        except ValueError:
+            return None
+        for line in lines[1:end_idx]:
+            if line.startswith("ID:"):
+                return line.split(":", 1)[1].strip()
+        return None
 
     def _run_g1(self, spec_id: str) -> GateResult:
         spec_root = self.repo_root / "Control_Plane" / "docs" / "specs" / spec_id

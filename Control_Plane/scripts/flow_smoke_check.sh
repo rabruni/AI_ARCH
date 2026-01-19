@@ -83,3 +83,60 @@ if not found:
     raise SystemExit("Missing G0 entry in any gate_results.json under SPEC-002")
 PY
 fi
+
+if [[ "${SPEC_ID}" == "SPEC-003" ]]; then
+  run_step "Step 8 Verify G0 with valid WORK_ITEM (path, id, hash)" \
+    python3 - <<'PY'
+import json
+from pathlib import Path
+artifact_root = Path("Control_Plane/docs/specs/SPEC-003/artifacts")
+found_g0_pass = False
+for path in artifact_root.rglob("gate_results.json"):
+    data = json.loads(path.read_text(encoding="utf-8"))
+    for item in data:
+        if item.get("gate_id") == "G0" and item.get("status") == "passed":
+            evidence = item.get("evidence") or {}
+            # Check all required evidence fields
+            if not evidence.get("work_item_path"):
+                raise SystemExit("G0 evidence missing work_item_path")
+            if not evidence.get("work_item_id"):
+                raise SystemExit("G0 evidence missing work_item_id")
+            if not evidence.get("work_item_hash"):
+                raise SystemExit("G0 evidence missing work_item_hash")
+            if evidence.get("work_item_validated") is not True:
+                raise SystemExit("G0 evidence work_item_validated is not True")
+            found_g0_pass = True
+            print(f"G0 evidence verified: id={evidence['work_item_id']}, hash={evidence['work_item_hash'][:16]}...")
+            break
+    if found_g0_pass:
+        break
+if not found_g0_pass:
+    raise SystemExit("G0 did not pass with complete evidence for SPEC-003")
+PY
+
+  log "Testing G0 failure with invalid work item..."
+  # Temporarily swap to invalid work item
+  COMMIT_MD="Control_Plane/docs/specs/SPEC-003/08_commit.md"
+  BACKUP=$(cat "${COMMIT_MD}")
+  sed -i.bak 's|WI-003-01.md|WI-003-02-invalid.md|' "${COMMIT_MD}"
+
+  # Run G0 and expect failure
+  run_step "Step 9 Verify G0 fails with invalid WORK_ITEM" \
+    python3 - <<'PY'
+import sys
+sys.path.insert(0, ".")
+from pathlib import Path
+from Control_Plane.flow_runner.gate_runner import GateRunner
+runner = GateRunner(Path.cwd())
+result = runner.run_gate("G0", "SPEC-003", "Phase0A")
+if result["status"] != "failed":
+    raise SystemExit(f"Expected G0 to fail with invalid work item, got: {result['status']}")
+if "validation failed" not in result.get("reason", "").lower():
+    raise SystemExit(f"Expected validation failure message, got: {result.get('reason')}")
+print("G0 correctly failed for invalid work item")
+PY
+
+  # Restore original
+  echo "${BACKUP}" > "${COMMIT_MD}"
+  rm -f "${COMMIT_MD}.bak"
+fi

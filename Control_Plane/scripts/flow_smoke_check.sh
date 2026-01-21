@@ -139,4 +139,32 @@ PY
   # Restore original
   echo "${BACKUP}" > "${COMMIT_MD}"
   rm -f "${COMMIT_MD}.bak"
+
+  log "Testing G0 failure with tampered work item (hash mismatch)..."
+  # Tamper with the valid work item file
+  WORK_ITEM="Control_Plane/docs/specs/SPEC-003/work_items/WI-003-01.md"
+  WORK_ITEM_BACKUP=$(cat "${WORK_ITEM}")
+  echo "# TAMPERED CONTENT" >> "${WORK_ITEM}"
+
+  # Run G0 and expect hash mismatch failure
+  run_step "Step 10 Verify G0 fails with tampered WORK_ITEM (hash mismatch)" \
+    python3 - <<'PY'
+import sys
+sys.path.insert(0, ".")
+from pathlib import Path
+from Control_Plane.flow_runner.gate_runner import GateRunner
+runner = GateRunner(Path.cwd())
+result = runner.run_gate("G0", "SPEC-003", "Phase0A")
+if result["status"] != "failed":
+    raise SystemExit(f"Expected G0 to fail with tampered work item, got: {result['status']}")
+if "hash mismatch" not in result.get("reason", "").lower():
+    raise SystemExit(f"Expected hash mismatch message, got: {result.get('reason')}")
+evidence = result.get("evidence") or {}
+if not evidence.get("expected_hash") or not evidence.get("actual_hash"):
+    raise SystemExit("Expected hash evidence in failure result")
+print(f"G0 correctly detected tampering: expected={evidence['expected_hash'][:16]}..., actual={evidence['actual_hash'][:16]}...")
+PY
+
+  # Restore original work item
+  echo "${WORK_ITEM_BACKUP}" > "${WORK_ITEM}"
 fi

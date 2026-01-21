@@ -1,12 +1,14 @@
 import unittest
 
-from shaper.shaper.cli import converge
-from shaper.shaper.model import ShaperModel
+from shaper.cli import converge
+from shaper.model import ShaperModel
+from shaper.state_machine import ShaperStateMachine
 
 
 class ConvergeFlowTests(unittest.TestCase):
     def test_converge_fills_missing_sections(self):
         model = ShaperModel()
+        machine = ShaperStateMachine()
         prompts = []
         responses = iter(
             [
@@ -27,7 +29,7 @@ class ConvergeFlowTests(unittest.TestCase):
         def fake_output(message):
             prompts.append(message)
 
-        converge(model, input_func=fake_input, output_func=fake_output)
+        converge(model, machine, input_func=fake_input, output_func=fake_output)
 
         self.assertEqual(model.meta["ID"], "WI-1")
         self.assertEqual(model.meta["Title"], "Title text")

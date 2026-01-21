@@ -1,7 +1,7 @@
 import unittest
 
-from shaper.shaper.model import ShaperModel
-from shaper.shaper.work_item import render_work_item
+from shaper.model import ShaperModel
+from shaper.work_item import render_work_item
 
 
 class FreezeBehaviorTests(unittest.TestCase):

@@ -3,6 +3,7 @@ from __future__ import annotations
 import sys
 
 from .model import ShaperModel
+from .state_machine import ShaperStateMachine
 from .work_item import render_work_item
 
 
@@ -30,8 +31,9 @@ def disallowed_request(text: str) -> str | None:
     return None
 
 
-def reveal(model: ShaperModel) -> str:
+def reveal(model: ShaperModel, machine: ShaperStateMachine) -> str:
     model.revealed_once = True
+    machine.reveal()
     missing = model.missing_sections()
     lines = [
         "Objective:",
@@ -58,7 +60,12 @@ def reveal(model: ShaperModel) -> str:
     return "\n".join(lines)
 
 
-def converge(model: ShaperModel, input_func=input, output_func=print) -> None:
+def converge(
+    model: ShaperModel,
+    machine: ShaperStateMachine,
+    input_func=input,
+    output_func=print,
+) -> None:
     questions = {
         "ID": "ID is missing. Provide ID:",
         "Title": "Title is missing. Provide Title:",
@@ -82,16 +89,21 @@ def converge(model: ShaperModel, input_func=input, output_func=print) -> None:
             model.meta[next_item] = response
         elif next_item == "Objective":
             model.objective.append(response)
+            machine.confirm_phase("objective")
         elif next_item == "Scope":
             model.scope.append(response)
+            machine.confirm_phase("scope")
         elif next_item == "Implementation Plan":
             model.plan.append(response)
+            machine.confirm_phase("plan")
         elif next_item == "Acceptance Commands":
             model.acceptance.append(response)
+            machine.confirm_phase("acceptance")
 
 
 def process_line(
     model: ShaperModel,
+    machine: ShaperStateMachine,
     line: str,
     input_func=input,
     output_func=print,
@@ -102,28 +114,41 @@ def process_line(
         return
 
     if is_trigger(line, TRIGGER_REVEAL):
-        output_func(reveal(model))
+        output_func(reveal(model, machine))
         return
     if is_trigger(line, TRIGGER_CONVERGE):
-        if not model.revealed_once:
+        try:
+            machine.converge()
+        except ValueError:
             output_func("Refuse: reveal required before converge.")
             return
-        converge(model, input_func=input_func, output_func=output_func)
+        converge(model, machine, input_func=input_func, output_func=output_func)
         return
     if is_trigger(line, TRIGGER_FREEZE):
+        if not model.revealed_once:
+            output_func("Refuse: reveal required before freeze.")
+            return
         missing = model.missing_sections()
         if missing:
             output_func("Cannot freeze. Missing: " + ", ".join(missing))
+            return
+        _confirm_phases_from_model(model, machine)
+        altitude = model.meta.get("ALTITUDE")
+        if not machine.can_freeze(altitude):
+            output_func("Cannot freeze. L4 phases not confirmed.")
             return
         output_func(render_work_item(model))
         model.reset()
         return
 
     model.ingest(line)
+    machine.start_shaping()
+    _confirm_phases_from_line(line, machine)
 
 
 def main() -> int:
     model = ShaperModel()
+    machine = ShaperStateMachine()
     while True:
         try:
             line = input("> ")
@@ -133,10 +158,33 @@ def main() -> int:
             print("")
             break
 
-        process_line(model, line)
+        process_line(model, machine, line)
 
     return 0
 
 
 if __name__ == "__main__":
     sys.exit(main())
+
+
+def _confirm_phases_from_line(line: str, machine: ShaperStateMachine) -> None:
+    lowered = line.strip().lower()
+    if lowered.startswith("objective:"):
+        machine.confirm_phase("objective")
+    elif lowered.startswith("scope:"):
+        machine.confirm_phase("scope")
+    elif lowered.startswith("plan:") or lowered.startswith("step:"):
+        machine.confirm_phase("plan")
+    elif lowered.startswith("acceptance:") or lowered.startswith("command:"):
+        machine.confirm_phase("acceptance")
+
+
+def _confirm_phases_from_model(model: ShaperModel, machine: ShaperStateMachine) -> None:
+    if model.objective:
+        machine.confirm_phase("objective")
+    if model.scope:
+        machine.confirm_phase("scope")
+    if model.plan:
+        machine.confirm_phase("plan")
+    if model.acceptance:
+        machine.confirm_phase("acceptance")

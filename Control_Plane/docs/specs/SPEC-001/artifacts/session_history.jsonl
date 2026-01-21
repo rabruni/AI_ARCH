@@ -24,3 +24,11 @@
 {"timestamp": "2026-01-19T08:06:18.315305+00:00", "event": "state_transition", "data": {"phase": "Phase0A", "action": "advance", "reason": "all_gates_passed", "retry_count": 0, "reroute_count": 0}}
 {"timestamp": "2026-01-19T08:06:18.612468+00:00", "event": "state_transition", "data": {"phase": "Phase1", "action": "retry", "reason": "retry_same_phase", "categories": ["SPEC_DEFECT"], "retry_count": 1, "reroute_count": 0}}
 {"timestamp": "2026-01-19T08:06:18.981788+00:00", "event": "state_transition", "data": {"phase": "Phase1", "action": "reroute", "reason": "phase_redirect", "reroute_count": 1}}
+{"timestamp": "2026-01-19T08:10:53.633542+00:00", "event": "session_initialized", "data": {"spec_id": "SPEC-001", "flow_key": "VISION_TO_VALIDATE"}}
+{"timestamp": "2026-01-19T08:10:53.929592+00:00", "event": "state_transition", "data": {"phase": "Phase0A", "action": "advance", "reason": "all_gates_passed", "retry_count": 0, "reroute_count": 0}}
+{"timestamp": "2026-01-19T08:10:54.247483+00:00", "event": "state_transition", "data": {"phase": "Phase1", "action": "retry", "reason": "retry_same_phase", "categories": ["SPEC_DEFECT"], "retry_count": 1, "reroute_count": 0}}
+{"timestamp": "2026-01-19T08:10:54.599160+00:00", "event": "state_transition", "data": {"phase": "Phase1", "action": "reroute", "reason": "phase_redirect", "reroute_count": 1}}
+{"timestamp": "2026-01-19T08:14:24.272283+00:00", "event": "session_initialized", "data": {"spec_id": "SPEC-001", "flow_key": "VISION_TO_VALIDATE"}}
+{"timestamp": "2026-01-19T08:14:24.577430+00:00", "event": "state_transition", "data": {"phase": "Phase0A", "action": "advance", "reason": "all_gates_passed", "retry_count": 0, "reroute_count": 0}}
+{"timestamp": "2026-01-19T08:14:24.897877+00:00", "event": "state_transition", "data": {"phase": "Phase1", "action": "retry", "reason": "retry_same_phase", "categories": ["SPEC_DEFECT"], "retry_count": 1, "reroute_count": 0}}
+{"timestamp": "2026-01-19T08:14:25.255735+00:00", "event": "state_transition", "data": {"phase": "Phase1", "action": "reroute", "reason": "phase_redirect", "reroute_count": 1}}

@@ -1,6 +1,6 @@
 import unittest
 
-from shaper.shaper.model import ShaperModel
+from shaper.model import ShaperModel
 
 
 class MetaRequiredFreezeTests(unittest.TestCase):

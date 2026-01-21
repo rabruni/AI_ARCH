@@ -1,6 +1,6 @@
 import unittest
 
-from shaper.shaper.cli import is_trigger, TRIGGER_CONVERGE, TRIGGER_FREEZE, TRIGGER_REVEAL
+from shaper.cli import is_trigger, TRIGGER_CONVERGE, TRIGGER_FREEZE, TRIGGER_REVEAL
 
 
 class TriggerTests(unittest.TestCase):

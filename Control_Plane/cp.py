@@ -11,6 +11,7 @@ Usage:
     cp verify [name-or-id]         # Verify item or all selected
     cp deps <name-or-id>           # Show dependencies
     cp plan                        # Regenerate plan.json
+    cp shape                       # Interactive artifact shaping (L3/L4)
     cp apply-spec --target <id>    # Create spec pack from templates
     cp validate-spec [--all]       # Validate spec packs
     cp gate G0|G1|--all <target>   # Run gates on spec pack
@@ -409,6 +410,27 @@ def cmd_plan() -> int:
     return result.returncode
 
 
+def cmd_shape(output_dir: str = None) -> int:
+    """Interactive artifact shaping (L3 work items, L4 specs).
+
+    Launches the Shaper v2 interactive CLI for creating structured artifacts.
+    Auto-detects altitude (L3 or L4) based on input keywords.
+
+    Args:
+        output_dir: Directory for output artifacts (default: current directory)
+    """
+    try:
+        from Control_Plane.modules.design_framework.shaper.cli import ShaperCli
+    except ImportError as e:
+        print(f"[FAIL] Shaper module not available: {e}")
+        print("Ensure Shaper v2 is installed in Control_Plane/modules/design_framework/shaper/")
+        return 1
+
+    output_path = Path(output_dir) if output_dir else Path(".")
+    shaper = ShaperCli(output_dir=output_path)
+    return shaper.run()
+
+
 def cmd_apply_spec(target: str, force: bool = False) -> int:
     """Create spec pack from templates.
 
@@ -631,6 +653,13 @@ def main():
         return cmd_deps(" ".join(args))
     elif command == "plan":
         return cmd_plan()
+    elif command == "shape":
+        output_dir = None
+        if "--output-dir" in args:
+            idx = args.index("--output-dir")
+            if idx + 1 < len(args):
+                output_dir = args[idx + 1]
+        return cmd_shape(output_dir=output_dir)
     elif command == "apply-spec":
         force = "--force" in args
         target = None

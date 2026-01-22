@@ -61,6 +61,9 @@ L3_SIGNALS = frozenset([
     "plan",
     "acceptance",
     "test",
+    # L3 field names (strong signal of work item intent)
+    "objective",
+    "scope",
 ])
 
 CLARIFICATION_PROMPT = "Clarify target altitude: L3 (work item) or L4 (spec)."

@@ -304,6 +304,8 @@ class ShaperCli:
                 self._output(route.clarification or CLARIFICATION_PROMPT)
                 return
             self._start_session(route.altitude)
+            self.model.ingest(line)  # Process the first line
+            return  # End the turn
 
         self.machine.on_edit()
         self.model.ingest(line)

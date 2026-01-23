@@ -1,1 +1,0 @@
-"""Shaper package root."""

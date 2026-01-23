@@ -1,9 +1,0 @@
-[build-system]
-requires = ["setuptools>=61.0"]
-build-backend = "setuptools.build_meta"
-
-[project]
-name = "shaper"
-version = "0.1.0"
-description = "Minimal shaper CLI for WORK_ITEM.md drafting"
-requires-python = ">=3.9"

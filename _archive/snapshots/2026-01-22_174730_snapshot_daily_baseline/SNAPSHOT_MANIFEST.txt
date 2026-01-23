@@ -1,0 +1,5 @@
+Snapshot created: 2026-01-22_174730
+Label: daily_baseline
+Source: /Users/raymondbruni/AI_ARCH
+Files: 589
+Directories: 134

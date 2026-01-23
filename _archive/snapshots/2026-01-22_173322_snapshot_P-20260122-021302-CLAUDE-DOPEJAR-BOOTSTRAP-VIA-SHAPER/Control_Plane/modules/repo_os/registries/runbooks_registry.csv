@@ -1,2 +1,0 @@
-registry_version,created_at,runbook_pack_id,name,entity_type,purpose,artifact_path,status,selected,dependencies,install_prompt_path,update_prompt_path,verify_prompt_path,uninstall_prompt_path,child_registry_path,ci_gate,safety_level,notes
-v0.1,2026-01-15 02:40:00,ROS-RB001,Runbooks Library,runbook_pack,Runbook tree for frameworks (skeletons).,/runbooks,active,yes,,,,/control_plane/prompts/verify.md,,,optional,standard,Contains TODO skeletons; promote to active as completed.

@@ -1,2 +1,0 @@
-registry_version,created_at,profile_id,name,entity_type,purpose,artifact_path,status,selected,dependencies,install_prompt_path,update_prompt_path,verify_prompt_path,uninstall_prompt_path,child_registry_path,ci_gate,safety_level,notes
-v0.1,2026-01-15 02:40:00,ROS-PROF001,Personal Minimal,profile,Starter selection profile for Phase 1.,/modules/repo_os/profiles/personal_minimal.json,active,yes,,,,/control_plane/prompts/verify.md,,,optional,standard,

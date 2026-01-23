@@ -1,3 +1,0 @@
-# Slow Vector Store
-
-(TODO)

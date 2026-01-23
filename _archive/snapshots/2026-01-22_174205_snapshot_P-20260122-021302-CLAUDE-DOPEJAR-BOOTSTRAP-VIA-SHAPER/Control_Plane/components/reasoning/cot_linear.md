@@ -1,3 +1,0 @@
-# Cot Linear
-
-(TODO)

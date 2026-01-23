@@ -1,5 +1,0 @@
-registry_version,created_at,doc_id,name,entity_type,purpose,artifact_path,status,selected,dependencies,install_prompt_path,update_prompt_path,verify_prompt_path,uninstall_prompt_path,child_registry_path,ci_gate,safety_level,notes
-v0.1,2026-01-15 02:40:00,ROS-D001,Repo Root README,doc,Explains repo OS usage at root.,/README.md,active,yes,,,,/control_plane/prompts/verify.md,,,optional,standard,
-v0.1,2026-01-15 02:40:00,ROS-D002,Repo Root HOWTO,doc,How to use repo OS and control plane loop.,/HOWTO_USE.md,active,yes,ROS-D001,,,/control_plane/prompts/verify.md,,,optional,standard,
-v0.1,2026-01-15 02:40:00,ROS-D010,Control Plane Contract,doc,Defines recursive control plane semantics.,/control_plane/CONTROL_PLANE_CONTRACT.md,active,yes,,,,/control_plane/prompts/verify.md,,,required,standard,
-v0.1,2026-01-15 02:40:00,ROS-D020,Repo OS Module README,doc,Entry point for repo_os module.,/modules/repo_os/README.md,active,yes,ROS-D010,,,/control_plane/prompts/verify.md,,,optional,standard,

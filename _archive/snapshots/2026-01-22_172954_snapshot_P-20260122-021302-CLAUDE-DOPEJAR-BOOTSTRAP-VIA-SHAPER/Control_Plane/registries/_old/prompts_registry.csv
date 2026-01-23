@@ -1,8 +1,0 @@
-registry_version,created_at,prompt_id,name,entity_type,domain,purpose,artifact_path,status,selected,dependencies,priority,last_updated,notes
-v0.2,2026-01-15 01:14:43,PRMPT-001,Control Plane Install,prompt,control_plane,Install template used by apply/agents.,/Control_Plane/control_plane/prompts/install.md,active,yes,,P0,,
-v0.2,2026-01-15 01:14:43,PRMPT-002,Control Plane Update,prompt,control_plane,Update template used by apply/agents.,/Control_Plane/control_plane/prompts/update.md,active,yes,,P0,,
-v0.2,2026-01-15 01:14:43,PRMPT-003,Control Plane Verify,prompt,control_plane,Verify template used by CI/agents.,/Control_Plane/control_plane/prompts/verify.md,active,yes,,P0,,
-v0.2,2026-01-15 01:14:43,PRMPT-004,Control Plane Uninstall,prompt,control_plane,Uninstall template used by apply/agents.,/Control_Plane/control_plane/prompts/uninstall.md,active,yes,,P1,,
-v0.2,2026-01-15 01:14:43,PRMPT-010,Repo OS Bootstrap Meta-Prompt,prompt,bootstrap,One-shot prompt to scaffold repo OS into an empty repo.,/Control_Plane/prompts/bootstrap_repo_os.md,active,no,,P0,,
-v0.2,2026-01-15 01:14:43,PRMPT-011,Framework Install Meta-Prompt,prompt,ops,Prompt that installs selected frameworks from registry plan.,/Control_Plane/prompts/install_selected_frameworks.md,active,no,,P0,,
-v0.2,2026-01-15 01:14:43,PRMPT-012,Framework Verify Meta-Prompt,prompt,ops,Prompt that verifies selected frameworks and updates status/evidence.,/Control_Plane/prompts/verify_selected_frameworks.md,active,no,,P0,,

@@ -1,0 +1,5 @@
+agent_id,agent_name,role,description
+AGT-001,Claude,Builder,Primary Implementer: Builds first-pass implementations and maintains development momentum.
+AGT-002,Codex,Enforcer,Spec Enforcer: Ensures system conforms to spec; owns tests and gates.
+AGT-003,Gemini,Validator,Validator: Protects correctness, relevance, and safety; audits designs.
+AGT-004,Orchestrator,Orchestrator,Control Authority: Coordinates flow and enforces role separation.

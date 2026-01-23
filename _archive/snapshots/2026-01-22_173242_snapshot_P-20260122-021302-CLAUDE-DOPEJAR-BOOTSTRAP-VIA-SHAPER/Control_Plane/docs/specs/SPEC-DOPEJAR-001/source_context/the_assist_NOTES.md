@@ -1,0 +1,11 @@
+# the_assist Source Notes
+- **Architecture:** `locked_system` (Slow/Fast loops), 4-layer HRM (Intent/Planner/Executor/Evaluator).
+- **Agents:** Orchestrator, Perception, HRM. Personality: Donna/Pepper.
+- **Core Components:**
+  - `core/orchestrator.py`: Main core.
+  - `hrm/`: Altitude governance.
+  - `core/memory_v2.py`: Compressed memory.
+  - `adapters/intent_to_commitment.py`: Bridge logic.
+- **Entry Points:** `main_locked.py` (Current), `main_hrm.py` (HRM), `main.py` (Legacy).
+- **DoPeJar Relevance:** Foundation for cognitive kernel.
+- **Key Patterns:** HRM layers, altitude governance, memory architecture.

@@ -1,0 +1,20 @@
+# Flow Phase Prompt
+Spec ID: SPEC-002
+Phase: Phase0A
+Spec Path: Control_Plane/docs/specs/SPEC-002
+
+Prompt Key: P-1 Vision Lowering
+
+## Previous Phase Outputs
+- Control_Plane/docs/specs/SPEC-002/artifacts/phase1/gate_results.json
+- Control_Plane/docs/specs/SPEC-002/artifacts/phase1/output.txt
+- Control_Plane/docs/specs/SPEC-002/artifacts/phase1/prompt.txt
+- Control_Plane/docs/specs/SPEC-002/artifacts/phase2/gate_results.json
+- Control_Plane/docs/specs/SPEC-002/artifacts/phase2/output.txt
+- Control_Plane/docs/specs/SPEC-002/artifacts/phase2/prompt.txt
+
+## Gates Required
+- G0
+
+## Constraints
+Goals must be bounded, testable, artifact-defined; disallow 'perfect/intuitive' language unless tied to metrics.

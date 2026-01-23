@@ -1,0 +1,3 @@
+registry_version,created_at,workflow_id,name,entity_type,purpose,artifact_path,status,selected,dependencies,install_prompt_path,update_prompt_path,verify_prompt_path,uninstall_prompt_path,child_registry_path,ci_gate,safety_level,notes
+v0.1,2026-01-15 02:40:00,ROS-W001,Repo OS Validation Workflow,workflow,Validate registries + generate plan on push/PR.,/.github/workflows/repo_os_validation.yml,active,yes,,,,/control_plane/prompts/verify.md,,,required,standard,
+v0.1,2026-01-15 02:40:00,ROS-W002,Repo Guardrails Workflow,workflow,"Guardrails checks (prompt edits, required files, etc.).",/.github/workflows/repo_guardrails.yml,draft,no,ROS-W001,,,/control_plane/prompts/verify.md,,,optional,standard,

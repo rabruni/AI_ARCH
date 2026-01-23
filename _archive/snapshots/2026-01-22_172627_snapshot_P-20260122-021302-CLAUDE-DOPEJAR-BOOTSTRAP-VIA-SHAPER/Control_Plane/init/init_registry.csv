@@ -1,0 +1,8 @@
+registry_version,created_at,init_id,name,purpose,artifact_path,status,selected,priority,last_updated,notes
+v0.1,2026-01-14,INIT-001,Init Entry Point,Main bootstrap procedure for LLMs,/init/init.md,active,yes,P0,2026-01-14,Primary entry point - read this first
+v0.1,2026-01-14,INIT-002,State Initialization,State and registry loading procedure,/init/state_initialization_procedure.md,active,yes,P0,2026-01-14,Steps 1-3 and 6-9
+v0.1,2026-01-14,INIT-003,Governance Mode,Governance constraints and enforcement,/init/governance_mode_specification.md,active,yes,P0,2026-01-14,Step 5 and 10
+v0.1,2026-01-14,INIT-004,Verb Prompts Loader,Load install/update/verify/uninstall prompts,/init/actions_loader_spec.md,active,yes,P0,2026-01-14,Step 4
+v0.1,2026-01-14,INIT-005,CLAUDE.md Schema,JSON Schema for CLAUDE.md files,/init/CLAUDE_md_schema.json,active,yes,P1,2026-01-14,Reference schema
+v0.1,2026-01-14,INIT-006,Coverage Report,LLM instruction coverage analysis,/init/init_instruction_coverage_report.md,active,yes,P2,2026-01-14,Documentation
+v0.1,2026-01-14,INIT-007,Coverage JSON,Machine-readable coverage data,/init/init_command_instruction_coverage.json,active,yes,P2,2026-01-14,Reference data

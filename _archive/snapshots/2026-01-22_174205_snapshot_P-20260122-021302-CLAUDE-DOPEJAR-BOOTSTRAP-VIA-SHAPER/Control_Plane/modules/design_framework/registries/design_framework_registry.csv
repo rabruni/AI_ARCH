@@ -1,0 +1,6 @@
+id,name,type,path,status,version
+TPL-DFW-001,Spec Pack Templates,template,/modules/design_framework/templates/,active,1.0.0
+SCR-DFW-001,Apply Spec Pack Script (Canonical),script,/Control_Plane/scripts/apply_spec_pack.py,active,1.0.0
+SCR-DFW-002,Validate Spec Pack Script,script,/Control_Plane/scripts/validate_spec_pack.py,active,1.0.0
+SCR-DFW-003,Gate Script,script,/Control_Plane/scripts/gate.py,active,1.0.0
+STD-DFW-001,Design Framework Standard,standard,/modules/design_framework/standard.md,active,1.0.0

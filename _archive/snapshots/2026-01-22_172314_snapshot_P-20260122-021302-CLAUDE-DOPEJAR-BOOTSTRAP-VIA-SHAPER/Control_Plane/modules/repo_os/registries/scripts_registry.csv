@@ -1,0 +1,5 @@
+registry_version,created_at,script_id,name,entity_type,purpose,artifact_path,status,selected,dependencies,install_prompt_path,update_prompt_path,verify_prompt_path,uninstall_prompt_path,child_registry_path,ci_gate,safety_level,notes
+v0.1,2026-01-15 02:40:00,ROS-S001,Registry Validator,script,Validate registries and referenced artifacts (recursive).,/scripts/validate_registry.py,active,yes,,,,/control_plane/prompts/verify.md,,,required,standard,
+v0.1,2026-01-15 02:40:00,ROS-S002,Selection Planner,script,Generate ordered execution plan from selected rows (recursive).,/scripts/apply_selection.py,active,yes,ROS-S001,,,/control_plane/prompts/verify.md,,,required,standard,
+v0.1,2026-01-15 02:40:00,ROS-S010,Repo OS Installer,script,Non-interactive installer for Repo OS into a target repo.,/modules/repo_os/scripts/repo_os_install.sh,draft,no,ROS-S001,,,/control_plane/prompts/verify.md,,,optional,standard,
+v0.1,2026-01-15 02:40:00,ROS-S011,Repo OS Upgrade,script,Safe migration workflow between Repo OS versions.,/modules/repo_os/scripts/repo_os_upgrade.sh,draft,no,ROS-S010,,,/control_plane/prompts/verify.md,,,optional,standard,

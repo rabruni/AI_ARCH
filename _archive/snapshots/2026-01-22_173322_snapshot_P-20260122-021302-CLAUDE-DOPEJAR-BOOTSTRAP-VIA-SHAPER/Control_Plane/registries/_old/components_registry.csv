@@ -1,0 +1,6 @@
+registry_version,created_at,component_id,name,entity_type,domain,purpose,artifact_path,status,selected,dependencies,priority,capability_group,capability_key,version_current,version_target,params_schema_path,last_updated,notes
+v0.1,2026-01-15 01:14:43,CMP-001,Memory Bus: Fast KV Cache,component,architecture,Fast working-memory mechanism for reasoning stack.,/components/memory/fast_kv_cache.md,missing,no,,P1,memory_bus,fast_kv,,,,,
+v0.1,2026-01-15 01:14:43,CMP-002,Memory Bus: Slow Vector Store,component,architecture,Long-term semantic memory via embeddings + retrieval.,/components/memory/slow_vector_store.md,missing,no,,P1,memory_bus,vector_store,,,,,
+v0.1,2026-01-15 01:14:43,CMP-003,Reasoning Model: HRM Controller,component,architecture,Hierarchical controller selecting depth/altitude.,/components/reasoning/hrm_controller.md,missing,no,,P0,reasoning_model,hrm,,,,,
+v0.1,2026-01-15 01:14:43,CMP-004,Reasoning Model: CoT Linear,component,architecture,Single-pass chain-of-thought reasoning baseline.,/components/reasoning/cot_linear.md,missing,no,,P2,reasoning_model,cot,,,,,
+v0.1,2026-01-15 01:14:43,CMP-010,Tooling: Eval Harness Runner,component,harness,CLI harness to run eval suites and generate reports.,/components/harness/eval_runner.md,missing,no,CMP-003,P0,tooling,eval_runner,,,,,

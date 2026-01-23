@@ -1,0 +1,22 @@
+boot_os_id,name,category,status,priority,description,artifact_path,depends_on
+BOOT-001,Bootstrap Script,layer_1,active,P0,Environmental checks - directories/tools/versions/CI/registries,/Control_Plane/scripts/bootstrap.py,
+BOOT-002,Validate Script,layer_2,active,P0,Integrity checks - checksums/schema/references/version,/Control_Plane/scripts/validate.py,BOOT-001
+BOOT-003,Manifest Generator,layer_2,active,P0,Generate SHA256 checksums for critical files,/Control_Plane/scripts/generate_manifest.py,BOOT-001
+BOOT-004,Manifest File,layer_2,active,P0,SHA256 hashes of 15 critical files,/Control_Plane/MANIFEST.json,BOOT-003
+BOOT-005,Init Script,layer_3,active,P0,Runs all 3 layers and reports status,/Control_Plane/scripts/init.py,BOOT-002
+BOOT-006,Init Documentation,layer_3,active,P0,Semantic layer documentation,/Control_Plane/init/init.md,BOOT-005
+BOOT-007,Plan Generator,layer_3,active,P0,Generates plan.json from selected items,/Control_Plane/scripts/apply_selection.py,BOOT-002
+BOOT-008,Agent Front Door - Claude,agent_governance,active,P0,Governance rules for Claude Code,/CLAUDE.md,BOOT-005
+BOOT-009,Agent Front Door - Copilot,agent_governance,active,P0,Governance rules for GitHub Copilot,/.github/copilot-instructions.md,BOOT-005
+BOOT-010,Agent Front Door - Cursor,agent_governance,active,P0,Governance rules for Cursor,/.cursorrules,BOOT-005
+BOOT-011,Agent Front Door - Cline,agent_governance,active,P0,Governance rules for Cline,/.clinerules,BOOT-005
+BOOT-012,Verb Execution Engine,automation,active,P1,Automate install/update/verify/uninstall prompt execution,/Control_Plane/scripts/execute.py,BOOT-005
+BOOT-013,Mode Enforcement,automation,active,P1,Enforce BUILD/STABILIZE/RESET mode constraints,/Control_Plane/scripts/mode.py,BOOT-005
+BOOT-014,Registry CRUD,automation,active,P1,Automated add/modify/delete registry rows,/Control_Plane/scripts/registry.py,BOOT-002
+BOOT-015,Cloud Services Bootstrap,infrastructure,active,P2,Bring up cloud services based on registry config,/Control_Plane/scripts/cloud.py,BOOT-012
+BOOT-016,Module Swapping,infrastructure,active,P2,Hot-swap modules like memory bus,/Control_Plane/scripts/module.py,BOOT-012
+BOOT-017,Nested Registry Loader,automation,active,P1,Full child_registry_path resolution and loading,/Control_Plane/scripts/nested.py,BOOT-007
+BOOT-018,Prompt Management,automation,active,P1,Manage prompts registry and execute verb prompts,/Control_Plane/scripts/prompt.py,BOOT-005
+BOOT-019,Registry Linking,automation,active,P1,Manage registry relationships and dependency graphs,/Control_Plane/scripts/link.py,BOOT-014
+BOOT-020,Agent Front Door - Codex,agent_governance,active,P0,Governance rules for OpenAI Codex,/AGENTS.md,BOOT-005
+BOOT-021,Agent Front Door - Gemini,agent_governance,active,P0,Governance rules for Google Gemini,/GEMINI.md,BOOT-005

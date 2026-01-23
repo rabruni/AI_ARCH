@@ -1,0 +1,20 @@
+{"timestamp": "2026-01-19T06:31:39.403404+00:00", "event": "session_initialized", "data": {"spec_id": "SPEC-003", "flow_key": "VISION_TO_VALIDATE"}}
+{"timestamp": "2026-01-19T06:31:39.781247+00:00", "event": "state_transition", "data": {"phase": "Phase0A", "action": "advance", "reason": "all_gates_passed", "retry_count": 0, "reroute_count": 0}}
+{"timestamp": "2026-01-19T06:31:40.143107+00:00", "event": "state_transition", "data": {"phase": "Phase1", "action": "retry", "reason": "retry_same_phase", "categories": ["SPEC_DEFECT"], "retry_count": 1, "reroute_count": 0}}
+{"timestamp": "2026-01-19T06:31:40.435026+00:00", "event": "state_transition", "data": {"phase": "Phase1", "action": "reroute", "reason": "phase_redirect", "reroute_count": 1}}
+{"timestamp": "2026-01-19T06:32:21.074876+00:00", "event": "session_initialized", "data": {"spec_id": "SPEC-003", "flow_key": "VISION_TO_VALIDATE"}}
+{"timestamp": "2026-01-19T06:32:21.442130+00:00", "event": "state_transition", "data": {"phase": "Phase0A", "action": "advance", "reason": "all_gates_passed", "retry_count": 0, "reroute_count": 0}}
+{"timestamp": "2026-01-19T06:32:21.812035+00:00", "event": "state_transition", "data": {"phase": "Phase1", "action": "advance", "reason": "all_gates_passed", "retry_count": 0, "reroute_count": 0}}
+{"timestamp": "2026-01-19T06:32:22.365947+00:00", "event": "state_transition", "data": {"phase": "Phase2", "action": "advance", "reason": "all_gates_passed", "retry_count": 0, "reroute_count": 0}}
+{"timestamp": "2026-01-19T08:06:31.408015+00:00", "event": "session_initialized", "data": {"spec_id": "SPEC-003", "flow_key": "VISION_TO_VALIDATE"}}
+{"timestamp": "2026-01-19T08:06:31.775823+00:00", "event": "state_transition", "data": {"phase": "Phase0A", "action": "advance", "reason": "all_gates_passed", "retry_count": 0, "reroute_count": 0}}
+{"timestamp": "2026-01-19T08:06:32.157405+00:00", "event": "state_transition", "data": {"phase": "Phase1", "action": "advance", "reason": "all_gates_passed", "retry_count": 0, "reroute_count": 0}}
+{"timestamp": "2026-01-19T08:06:32.697591+00:00", "event": "state_transition", "data": {"phase": "Phase2", "action": "advance", "reason": "all_gates_passed", "retry_count": 0, "reroute_count": 0}}
+{"timestamp": "2026-01-19T08:11:00.255328+00:00", "event": "session_initialized", "data": {"spec_id": "SPEC-003", "flow_key": "VISION_TO_VALIDATE"}}
+{"timestamp": "2026-01-19T08:11:00.655257+00:00", "event": "state_transition", "data": {"phase": "Phase0A", "action": "advance", "reason": "all_gates_passed", "retry_count": 0, "reroute_count": 0}}
+{"timestamp": "2026-01-19T08:11:01.028115+00:00", "event": "state_transition", "data": {"phase": "Phase1", "action": "advance", "reason": "all_gates_passed", "retry_count": 0, "reroute_count": 0}}
+{"timestamp": "2026-01-19T08:11:01.564963+00:00", "event": "state_transition", "data": {"phase": "Phase2", "action": "advance", "reason": "all_gates_passed", "retry_count": 0, "reroute_count": 0}}
+{"timestamp": "2026-01-19T08:14:15.614405+00:00", "event": "session_initialized", "data": {"spec_id": "SPEC-003", "flow_key": "VISION_TO_VALIDATE"}}
+{"timestamp": "2026-01-19T08:14:16.002200+00:00", "event": "state_transition", "data": {"phase": "Phase0A", "action": "advance", "reason": "all_gates_passed", "retry_count": 0, "reroute_count": 0}}
+{"timestamp": "2026-01-19T08:14:16.387872+00:00", "event": "state_transition", "data": {"phase": "Phase1", "action": "advance", "reason": "all_gates_passed", "retry_count": 0, "reroute_count": 0}}
+{"timestamp": "2026-01-19T08:14:16.917456+00:00", "event": "state_transition", "data": {"phase": "Phase2", "action": "advance", "reason": "all_gates_passed", "retry_count": 0, "reroute_count": 0}}

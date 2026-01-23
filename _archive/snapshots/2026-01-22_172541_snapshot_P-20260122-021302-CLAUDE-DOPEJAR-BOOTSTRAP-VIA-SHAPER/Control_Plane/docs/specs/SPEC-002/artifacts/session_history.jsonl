@@ -1,0 +1,16 @@
+{"timestamp": "2026-01-19T04:57:45.894936+00:00", "event": "session_initialized", "data": {"spec_id": "SPEC-002", "flow_key": "VISION_TO_VALIDATE"}}
+{"timestamp": "2026-01-19T04:57:46.177376+00:00", "event": "state_transition", "data": {"phase": "Phase0A", "action": "advance", "reason": "all_gates_passed", "retry_count": 0, "reroute_count": 0}}
+{"timestamp": "2026-01-19T04:57:46.479058+00:00", "event": "state_transition", "data": {"phase": "Phase1", "action": "advance", "reason": "all_gates_passed", "retry_count": 0, "reroute_count": 0}}
+{"timestamp": "2026-01-19T04:57:46.937860+00:00", "event": "state_transition", "data": {"phase": "Phase2", "action": "advance", "reason": "all_gates_passed", "retry_count": 0, "reroute_count": 0}}
+{"timestamp": "2026-01-19T08:06:25.132377+00:00", "event": "session_initialized", "data": {"spec_id": "SPEC-002", "flow_key": "VISION_TO_VALIDATE"}}
+{"timestamp": "2026-01-19T08:06:25.443956+00:00", "event": "state_transition", "data": {"phase": "Phase0A", "action": "advance", "reason": "all_gates_passed", "retry_count": 0, "reroute_count": 0}}
+{"timestamp": "2026-01-19T08:06:25.764781+00:00", "event": "state_transition", "data": {"phase": "Phase1", "action": "advance", "reason": "all_gates_passed", "retry_count": 0, "reroute_count": 0}}
+{"timestamp": "2026-01-19T08:06:26.247522+00:00", "event": "state_transition", "data": {"phase": "Phase2", "action": "advance", "reason": "all_gates_passed", "retry_count": 0, "reroute_count": 0}}
+{"timestamp": "2026-01-19T08:10:56.976988+00:00", "event": "session_initialized", "data": {"spec_id": "SPEC-002", "flow_key": "VISION_TO_VALIDATE"}}
+{"timestamp": "2026-01-19T08:10:57.282550+00:00", "event": "state_transition", "data": {"phase": "Phase0A", "action": "advance", "reason": "all_gates_passed", "retry_count": 0, "reroute_count": 0}}
+{"timestamp": "2026-01-19T08:10:57.580743+00:00", "event": "state_transition", "data": {"phase": "Phase1", "action": "advance", "reason": "all_gates_passed", "retry_count": 0, "reroute_count": 0}}
+{"timestamp": "2026-01-19T08:10:58.085585+00:00", "event": "state_transition", "data": {"phase": "Phase2", "action": "advance", "reason": "all_gates_passed", "retry_count": 0, "reroute_count": 0}}
+{"timestamp": "2026-01-19T08:14:27.211205+00:00", "event": "session_initialized", "data": {"spec_id": "SPEC-002", "flow_key": "VISION_TO_VALIDATE"}}
+{"timestamp": "2026-01-19T08:14:27.516437+00:00", "event": "state_transition", "data": {"phase": "Phase0A", "action": "advance", "reason": "all_gates_passed", "retry_count": 0, "reroute_count": 0}}
+{"timestamp": "2026-01-19T08:14:27.826482+00:00", "event": "state_transition", "data": {"phase": "Phase1", "action": "advance", "reason": "all_gates_passed", "retry_count": 0, "reroute_count": 0}}
+{"timestamp": "2026-01-19T08:14:28.302608+00:00", "event": "state_transition", "data": {"phase": "Phase2", "action": "advance", "reason": "all_gates_passed", "retry_count": 0, "reroute_count": 0}}

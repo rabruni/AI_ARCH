@@ -1,0 +1,5 @@
+Snapshot created: 2026-01-22_172954
+Label: P-20260122-021302-CLAUDE-DOPEJAR-BOOTSTRAP-VIA-SHAPER
+Source: /Users/raymondbruni/AI_ARCH
+Files: 589
+Directories: 134

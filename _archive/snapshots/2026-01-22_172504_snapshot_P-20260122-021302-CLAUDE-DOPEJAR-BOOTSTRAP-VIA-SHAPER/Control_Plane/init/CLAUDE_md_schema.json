@@ -1,0 +1,224 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "CLAUDE.md File Definition",
+  "description": "Schema for CLAUDE.md - a repository behavior anchoring file that provides instructions and constraints for LLMs (Claude and others) working in a codebase",
+  "type": "object",
+  "properties": {
+    "fileType": {
+      "type": "string",
+      "const": "CLAUDE.md",
+      "description": "Marker indicating this is a Claude behavior anchor file"
+    },
+    "purpose": {
+      "type": "string",
+      "description": "Core intent: Pin LLM behavior to repository standards across sessions"
+    },
+    "audience": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Target LLMs (e.g., 'Claude', 'GPT-4', 'agents')"
+    },
+    "behavioral_rules": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "rule_id": {
+            "type": "string",
+            "description": "Unique identifier (e.g., P000, R001)"
+          },
+          "priority": {
+            "type": "string",
+            "enum": ["CRITICAL", "HIGH", "MEDIUM", "LOW"],
+            "description": "Enforcement priority"
+          },
+          "category": {
+            "type": "string",
+            "enum": ["initialization", "navigation", "validation", "modification", "safety", "reporting"],
+            "description": "Type of behavior being governed"
+          },
+          "directive": {
+            "type": "string",
+            "description": "Specific instruction (e.g., 'Always read P000 first')"
+          },
+          "rationale": {
+            "type": "string",
+            "description": "Why this rule exists (governance, safety, consistency)"
+          },
+          "consequence": {
+            "type": "string",
+            "description": "What happens if rule is violated"
+          }
+        },
+        "required": ["rule_id", "priority", "directive"]
+      },
+      "description": "List of behavioral constraints and instructions"
+    },
+    "protected_artifacts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string",
+            "description": "Path to protected file/directory"
+          },
+          "protection_level": {
+            "type": "string",
+            "enum": ["no_delete", "no_modify", "read_only", "append_only"],
+            "description": "Type of protection"
+          },
+          "reason": {
+            "type": "string",
+            "description": "Why this artifact is protected"
+          }
+        },
+        "required": ["path", "protection_level"]
+      },
+      "description": "Files/directories that must not be altered"
+    },
+    "required_first_reads": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Prompts or files that MUST be read before taking actions"
+    },
+    "required_final_verifications": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Checks that MUST run before finalizing output"
+    },
+    "guardrails": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Guardrail name"
+          },
+          "check": {
+            "type": "string",
+            "description": "Validation to perform"
+          },
+          "fail_mode": {
+            "type": "string",
+            "enum": ["halt", "warn", "log"],
+            "description": "Action on failure"
+          }
+        }
+      },
+      "description": "Validation gates and safety checks"
+    },
+    "conventions": {
+      "type": "object",
+      "properties": {
+        "code_style": {
+          "type": "string",
+          "description": "Coding style guide reference"
+        },
+        "commit_format": {
+          "type": "string",
+          "description": "Commit message convention"
+        },
+        "file_naming": {
+          "type": "string",
+          "description": "File naming conventions"
+        },
+        "documentation": {
+          "type": "string",
+          "description": "Documentation standards"
+        }
+      },
+      "description": "Repository conventions and standards"
+    },
+    "determinism_anchors": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Rules ensuring consistent behavior across sessions"
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "version": {
+          "type": "string",
+          "description": "CLAUDE.md version"
+        },
+        "last_updated": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Last update timestamp"
+        },
+        "created_by": {
+          "type": "string",
+          "description": "Original creator"
+        },
+        "regeneration_prompt": {
+          "type": "string",
+          "description": "Path to prompt that regenerates/validates this file"
+        }
+      }
+    }
+  },
+  "required": ["fileType", "purpose", "behavioral_rules"],
+  "example": {
+    "fileType": "CLAUDE.md",
+    "purpose": "Pin Claude behavior to repository rules across sessions",
+    "audience": ["Claude", "agents"],
+    "behavioral_rules": [
+      {
+        "rule_id": "P000",
+        "priority": "CRITICAL",
+        "category": "initialization",
+        "directive": "Always read P000 first before taking any action",
+        "rationale": "Ensures consistent interpretation of rules",
+        "consequence": "Behavior may be inconsistent with repository intent"
+      },
+      {
+        "rule_id": "R001",
+        "priority": "HIGH",
+        "category": "modification",
+        "directive": "Never edit v1 prompts in /modules/repo_os/prompts/v1/",
+        "rationale": "v1 prompts are immutable governance artifacts",
+        "consequence": "Invalidates control plane integrity"
+      }
+    ],
+    "protected_artifacts": [
+      {
+        "path": "/_archive",
+        "protection_level": "no_delete",
+        "reason": "Historical record and rollback capability"
+      }
+    ],
+    "required_first_reads": [
+      "/README.md",
+      "/CONTROL_PLANE_CONTRACT.md"
+    ],
+    "required_final_verifications": [
+      "run validate_registry.py",
+      "check prompts/index.csv is current"
+    ],
+    "conventions": {
+      "code_style": "See /docs/CODE_STYLE.md",
+      "commit_format": "feat/fix/docs: <description>",
+      "file_naming": "snake_case for scripts, PascalCase for classes",
+      "documentation": "Markdown with code examples"
+    },
+    "determinism_anchors": [
+      "Always use absolute paths",
+      "Always version-pin dependencies",
+      "Always validate before committing"
+    ],
+    "metadata": {
+      "version": "1.0",
+      "regeneration_prompt": "/modules/repo_os/prompts/v1/03_claude_reliability_anchor.md"
+    }
+  }
+}

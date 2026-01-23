@@ -1,0 +1,7 @@
+id,name,type,category,description,path,status,selected,priority
+REG-ROOT-001,Agent Role Registry,registry,Staffing,Defines dynamic role assignments for agents.,/agent_role_registry.csv,active,yes,P0
+REG-SYS-001,Control Plane Registry,registry,System,Core registry for the Control Plane system.,/Control_Plane/registries/control_plane_registry.csv,active,yes,P0
+REG-SYS-002,Init Registry,registry,System,Registry for initialization scripts and checks.,/Control_Plane/init/init_registry.csv,active,yes,P1
+REG-SYS-003,Boot OS Registry,registry,System,Registry for boot operations.,/Control_Plane/boot_os_registry.csv,active,yes,P1
+REG-MOD-001,Repo OS Registry,registry,Module,Registry for the Repo OS module.,/Control_Plane/modules/repo_os/registries/repo_os_registry.csv,active,yes,P1
+REG-MOD-002,Design Framework Registry,registry,Module,Registry for the Design Framework module.,/Control_Plane/modules/design_framework/registries/design_framework_registry.csv,active,yes,P1

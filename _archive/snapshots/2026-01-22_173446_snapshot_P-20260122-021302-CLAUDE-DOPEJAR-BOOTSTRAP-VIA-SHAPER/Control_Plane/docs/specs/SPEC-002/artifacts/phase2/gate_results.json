@@ -1,0 +1,40 @@
+[
+  {
+    "gate_id": "G1",
+    "status": "passed",
+    "category": "OK",
+    "reason": "structure ok",
+    "evidence_paths": [],
+    "recommended_route": null,
+    "evidence": null
+  },
+  {
+    "gate_id": "G2",
+    "status": "passed",
+    "category": "OK",
+    "reason": "schemas valid",
+    "evidence_paths": [],
+    "recommended_route": null,
+    "evidence": null
+  },
+  {
+    "gate_id": "G3",
+    "status": "passed",
+    "category": "OK",
+    "reason": "command ok",
+    "evidence_paths": [
+      "artifacts/phase2/gate_logs/G3.log"
+    ],
+    "recommended_route": null,
+    "evidence": null
+  },
+  {
+    "gate_id": "CW1",
+    "status": "passed",
+    "category": "OK",
+    "reason": "gate not implemented; skipped",
+    "evidence_paths": [],
+    "recommended_route": null,
+    "evidence": null
+  }
+]

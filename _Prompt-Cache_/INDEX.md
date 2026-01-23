@@ -15,4 +15,13 @@ Single source of truth for prompt/feedback handoffs in `/_Prompt-Cache_/`.
 | 20260122_212500 | 20 | feedback | Claude | F-20260122-START-LOOP | passed | `Claude_Start_Loop_Feedback.md` | P-20260122-START-LOOP | Auto loop started, PID 439 |
 
 | 20260122_213000 | 3 | feedback | Orchestrator | F-20260122-VERIFY-AUTO-LOOP-FIX | passed | `Gemini_Verify_Auto_Loop_Fix_Feedback.md` | `P-20260122-VERIFY-AUTO-LOOP-FIX` | Verification of Auto Loop Fix |
-| 20260122_213500 | 21 | prompt | Claude | P-20260122-PROOF-OF-LIFE | sent | `Claude_Proof_Of_Life.md` |  | Proof of Life for Automation |
+| 20260122_213500 | 21 | prompt | Claude | P-20260122-PROOF-OF-LIFE | complete | `Claude_Proof_Of_Life.md` |  | Proof of Life for Automation |
+| 20260122_212700 | 21 | feedback | Claude | F-20260122-PROOF-OF-LIFE | passed | `Claude_Proof_Of_Life_Feedback.md` | P-20260122-PROOF-OF-LIFE | Proof of life confirmed |
+| 20260122_214500 | 22 | prompt | Codex | P-20260122-CODEX-ADHERENCE-TEST | complete | `Codex_Adherence_Test.md` |  | Adherence test: verify Codex follows boot.py role system |
+| 20260122_221500 | 22 | feedback | Orchestrator | F-20260122-CODEX-ADHERENCE-TEST | passed | `Gemini_Verify_Codex_Adherence_Feedback.md` | P-20260122-CODEX-ADHERENCE-TEST | Validation of Codex Adherence Test |
+| 20260122_221200 | 23 | prompt | Claude | P-20260122-CLAUDE-ADHERENCE-TEST | sent | `Claude_Adherence_Test.md` |  | Adherence test: verify Claude follows boot.py role system |
+| 20260122_221200 | 24 | prompt | Gemini | P-20260122-GEMINI-ADHERENCE-TEST | complete | `Gemini_Adherence_Test.md` |  | Adherence test: verify Gemini follows boot.py role system |
+| 20260122_221800 | 24 | feedback | Orchestrator | F-20260122-GEMINI-ADHERENCE-TEST | passed | `Gemini_Adherence_Test_Response.md` | P-20260122-GEMINI-ADHERENCE-TEST | Gemini adherence test response |
+| 20260122_222000 | 23 | prompt | Gemini | P-20260122-GEMINI-ADHERENCE-TEST | complete | `Gemini_Adherence_Test.md` |  | Adherence test: verify Gemini follows protocol as Validator |
+| 20260122_223000 | 23 | feedback | Gemini | F-20260122-GEMINI-ADHERENCE-TEST | passed | `Gemini_Adherence_Test_Response.md` | P-20260122-GEMINI-ADHERENCE-TEST | Response to Gemini Adherence Test |
+| 20260122_222000 | 24 | prompt | Claude | P-20260122-CLAUDE-ADHERENCE-TEST | sent | `Claude_Adherence_Test.md` |  | Adherence test: verify Claude follows protocol as Primary Implementer |

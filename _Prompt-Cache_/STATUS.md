@@ -1,18 +1,44 @@
 # Prompt-Cache Status
 
-Living status board for active prompt threads. Index of record: `/_Prompt-Cache_/INDEX.md`.
+Living status board for active prompt threads.
 
-## Active Threads
+## System Status
 
-### Operations
+| Component | Status |
+|-----------|--------|
+| Orchestrator | Claude (active) |
+| Auto Loop | v4.0 RUNNING (PID 8611) |
+| Boot System | boot.py v1.0 |
+| Mode | IDLE |
 
-- Exec order 20 (Claude): `P-20260122-START-LOOP` (`/_Prompt-Cache_/Claude_Start_Loop.md`) — **completed (PASS)**
-  - Feedback: `/_Prompt-Cache_/Claude_Start_Loop_Feedback.md`
-  - PID: 439
-  - Note: Codex requires TTY (cannot run in background subprocess)
+## Agent Boot Command
 
-**System Status**: Auto Loop v3.1 RUNNING
+All agents use the unified boot system:
+```bash
+python3 boot.py --agent <Name> --interactive
+```
 
-### Previous Debug Challenge (Completed)
-- Claude: PASS (Identified Root Cause)
-- Codex: PASS (Identified Root Cause)
+## Completed Infrastructure Work
+
+- [x] boot.py - Unified agent boot system
+- [x] auto_loop.py v4.0 - Uses boot.py for prompts
+- [x] AGENTS.md - Points to boot.py
+- [x] CLAUDE.md / CODEX.md / GEMINI.md - Updated
+- [x] Codex Adherence Test - P-20260122-CODEX-ADHERENCE-TEST (passed)
+
+## Agent Pull (post-init)
+
+**Gemini**: `P-20260122-GEMINI-ADHERENCE-TEST` — **complete**
+  - Goal: Verify Gemini follows Startup Protocol as Validator
+
+**Claude** (non-orchestrator): `P-20260122-CLAUDE-ADHERENCE-TEST` — **ready**
+  - Goal: Verify Claude follows Startup Protocol as Primary Implementer
+
+---
+
+## How to Create a Task
+
+1. Write prompt file: `/_Prompt-Cache_/<Agent>_<Timestamp>_<Name>.md`
+2. Add entry to `INDEX.md` with status=`sent`
+3. Update this file with task reference
+4. auto_loop.py will dispatch automatically

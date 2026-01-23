@@ -25,14 +25,12 @@ python3 boot.py --agent <Name> --interactive
 - [x] AGENTS.md - Points to boot.py
 - [x] CLAUDE.md / CODEX.md / GEMINI.md - Updated
 - [x] Codex Adherence Test - P-20260122-CODEX-ADHERENCE-TEST (passed)
+- [x] Gemini Adherence Test - P-20260122-GEMINI-ADHERENCE-TEST (passed)
+- [x] Claude Adherence Test - P-20260122-CLAUDE-ADHERENCE-TEST (passed)
 
 ## Agent Pull (post-init)
 
-**Gemini**: `P-20260122-GEMINI-ADHERENCE-TEST` — **complete**
-  - Goal: Verify Gemini follows Startup Protocol as Validator
-
-**Claude** (non-orchestrator): `P-20260122-CLAUDE-ADHERENCE-TEST` — **ready**
-  - Goal: Verify Claude follows Startup Protocol as Primary Implementer
+No pending tasks.
 
 ---
 

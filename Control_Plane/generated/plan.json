@@ -1,15 +1,15 @@
 {
-  "generated_at": "2026-01-22T22:13:48.581164",
+  "generated_at": "2026-01-22T22:14:42.806507",
   "plans": [
     {
       "registry": "registries/control_plane_registry.csv",
       "items": [
         {
-          "id": "PRMPT-002",
-          "name": "Control Plane Update",
-          "entity_type": "prompt",
-          "category": "control_plane",
-          "artifact_path": "/Control_Plane/control_plane/prompts/update.md",
+          "id": "FMWK-001",
+          "name": "Repo OS Spec",
+          "entity_type": "framework",
+          "category": "Governance",
+          "artifact_path": "/runbooks/governance/repo_os_spec.md",
           "status": "active",
           "install_prompt_path": "",
           "update_prompt_path": "",
@@ -20,11 +20,11 @@
           "priority": "P0"
         },
         {
-          "id": "MOD-DFW-001",
-          "name": "Design Framework Module",
-          "entity_type": "module",
-          "category": "Module",
-          "artifact_path": "/Control_Plane/modules/design_framework/README.md",
+          "id": "REG-AGT-001",
+          "name": "Agent Role Registry",
+          "entity_type": "registry",
+          "category": "Governance",
+          "artifact_path": "/Control_Plane/config/agent_role_registry.csv",
           "status": "active",
           "install_prompt_path": "",
           "update_prompt_path": "",
@@ -50,36 +50,6 @@
           "priority": "P0"
         },
         {
-          "id": "MOD-LCK-001",
-          "name": "Locked System Framework",
-          "entity_type": "module",
-          "category": "Module",
-          "artifact_path": "/Control_Plane/modules/locked_system/__init__.py",
-          "status": "active",
-          "install_prompt_path": "",
-          "update_prompt_path": "",
-          "verify_prompt_path": "",
-          "uninstall_prompt_path": "",
-          "child_registry_path": "",
-          "next_action": "",
-          "priority": "P0"
-        },
-        {
-          "id": "FMWK-001",
-          "name": "Repo OS Spec",
-          "entity_type": "framework",
-          "category": "Governance",
-          "artifact_path": "/runbooks/governance/repo_os_spec.md",
-          "status": "active",
-          "install_prompt_path": "",
-          "update_prompt_path": "",
-          "verify_prompt_path": "",
-          "uninstall_prompt_path": "",
-          "child_registry_path": "",
-          "next_action": "",
-          "priority": "P0"
-        },
-        {
           "id": "PRMPT-004",
           "name": "Control Plane Uninstall",
           "entity_type": "prompt",
@@ -93,6 +63,21 @@
           "child_registry_path": "",
           "next_action": "",
           "priority": "P1"
+        },
+        {
+          "id": "PRMPT-002",
+          "name": "Control Plane Update",
+          "entity_type": "prompt",
+          "category": "control_plane",
+          "artifact_path": "/Control_Plane/control_plane/prompts/update.md",
+          "status": "active",
+          "install_prompt_path": "",
+          "update_prompt_path": "",
+          "verify_prompt_path": "",
+          "uninstall_prompt_path": "",
+          "child_registry_path": "",
+          "next_action": "",
+          "priority": "P0"
         },
         {
           "id": "FMWK-005",
@@ -140,11 +125,26 @@
           "priority": "P0"
         },
         {
-          "id": "REG-AGT-001",
-          "name": "Agent Role Registry",
-          "entity_type": "registry",
-          "category": "Governance",
-          "artifact_path": "/Control_Plane/config/agent_role_registry.csv",
+          "id": "MOD-DFW-001",
+          "name": "Design Framework Module",
+          "entity_type": "module",
+          "category": "Module",
+          "artifact_path": "/Control_Plane/modules/design_framework/README.md",
+          "status": "active",
+          "install_prompt_path": "",
+          "update_prompt_path": "",
+          "verify_prompt_path": "",
+          "uninstall_prompt_path": "",
+          "child_registry_path": "",
+          "next_action": "",
+          "priority": "P0"
+        },
+        {
+          "id": "MOD-LCK-001",
+          "name": "Locked System Framework",
+          "entity_type": "module",
+          "category": "Module",
+          "artifact_path": "/Control_Plane/modules/locked_system/__init__.py",
           "status": "active",
           "install_prompt_path": "",
           "update_prompt_path": "",

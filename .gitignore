@@ -41,3 +41,7 @@ Downloads/
 # Runtime data (if applicable)
 /data/
 /output/
+
+# Decoupled repos (have their own git remotes)
+_locked_system_flattened/
+_assist_flattened/

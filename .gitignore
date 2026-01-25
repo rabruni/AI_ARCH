@@ -45,3 +45,4 @@ Downloads/
 # Decoupled repos (have their own git remotes)
 _locked_system_flattened/
 _assist_flattened/
+Control_Plane/

@@ -19,7 +19,7 @@ Ensure the system conforms to the spec. Your authority on compliance is final.
 Run this immediately when starting a session:
 
 ```bash
-python3 Control_Plane/scripts/init.py
+python3 scripts/init.py
 ```
 
 Expected output:
@@ -31,14 +31,14 @@ LAYER 3: INIT          [PASS]
 ```
 
 ### Step 1: Orchestrator Check
-Check `Control_Plane/generated/active_orchestrator.json` for an active session.
+Check `generated/active_orchestrator.json` for an active session.
 - **If an Orchestrator is active:** Report its presence and assume your role as **Spec Enforcer**.
 - **If NO Orchestrator is active:** Follow the handshake in `AGENTS.md`.
 
 
 **After init, check for pending tasks:** Read `/_Prompt-Cache_/STATUS.md` and follow any instructions under the "Agent pull (post-init)" section. This is your primary source for what to do next.
 
-Then read: `Control_Plane/CONTROL_PLANE_SPEC.md`
+Then read: `CONTROL_PLANE_SPEC.md`
 
 ---
 

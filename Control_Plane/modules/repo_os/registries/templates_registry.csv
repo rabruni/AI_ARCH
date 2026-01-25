@@ -1,3 +1,0 @@
-registry_version,created_at,template_id,name,entity_type,purpose,artifact_path,status,selected,dependencies,install_prompt_path,update_prompt_path,verify_prompt_path,uninstall_prompt_path,child_registry_path,ci_gate,safety_level,notes
-v0.1,2026-01-15 02:40:00,ROS-T001,ADR Template,template,Architecture Decision Record template.,/templates/adr/0000-template.md,active,yes,,,,/control_plane/prompts/verify.md,,,optional,standard,
-v0.1,2026-01-15 02:40:00,ROS-T002,PR Template,template,Pull request checklist template.,/templates/pr/PULL_REQUEST_TEMPLATE.md,active,yes,,,,/control_plane/prompts/verify.md,,,optional,standard,
